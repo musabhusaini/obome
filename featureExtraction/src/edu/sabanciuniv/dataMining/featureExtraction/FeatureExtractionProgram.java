@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package featureextraction;
+package edu.sabanciuniv.dataMining.featureExtraction;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -15,12 +15,13 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+
         
 /**
  *
  * @author bgulcu
  */
-public class FeatureExtraction {    
+public class FeatureExtractionProgram {    
     public Statement stmt;
     public Statement insert_stmt;
     public FELib lib_fe = new FELib();
@@ -35,7 +36,7 @@ public class FeatureExtraction {
     public JList keyword_list;
     public JLabel review_label;
     
-    public FeatureExtraction(Statement stmt, Statement insert_stmt, FELib lib_fe) throws SQLException{
+    public FeatureExtractionProgram(Statement stmt, Statement insert_stmt, FELib lib_fe) throws SQLException{
         this.stmt = stmt;
         this.insert_stmt = insert_stmt;
         this.lib_fe = lib_fe;
@@ -94,25 +95,23 @@ public class FeatureExtraction {
         btn_lst[0] = new JButton("Add");
         btn_lst[0].addActionListener(new ActionListener() {
 
-            @Override
-            public void actionPerformed(ActionEvent ae) {
+			public void actionPerformed(ActionEvent ae) {
                 try {
                     i_add_aspect(ae);
                 } catch (SQLException ex) {
-                    Logger.getLogger(FeatureExtraction.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(FeatureExtractionProgram.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }
+			}
         });
         //# next button
         btn_lst[1] = new JButton("Next");
         btn_lst[1].addActionListener(new ActionListener() {
 
-            @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
                     i_get_next_sample(ae);
                 } catch (SQLException ex) {
-                    Logger.getLogger(FeatureExtraction.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(FeatureExtractionProgram.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
@@ -136,13 +135,12 @@ public class FeatureExtraction {
         //listener'i ayarlayamadim...
         this.aspect_list.addListSelectionListener(new ListSelectionListener() {
 
-            @Override
             public void valueChanged(ListSelectionEvent lse) {
                 try {
                     //throw new UnsupportedOperationException("Not supported yet.");
                     set_aspect(lse);
                 } catch (SQLException ex) {
-                    Logger.getLogger(FeatureExtraction.class.getName()).log(Level.SEVERE, null, ex);
+                    Logger.getLogger(FeatureExtractionProgram.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         });
@@ -222,15 +220,15 @@ public class FeatureExtraction {
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
         // TODO code application logic here
         System.out.println("helpme!");
-        String jdriver = "com.mysql.jdbc.Driver";
-	String url = "jdbc:mysql://localhost:3306/tripadvisor";
-	String user_name = "root";
-	String password = "password";
+        
         FELib lib_fe = new FELib();
+        String jdriver = "com.mysql.jdbc.Driver";
+		String url = "jdbc:mysql://localhost:3306/tripadvisor";
+		String user_name = "java_user";
+		String password = "java_user_pwd";
 
         Statement stmt = lib_fe.get_db_connection(jdriver, url, user_name, password);
         Statement insert_stmt = lib_fe.get_db_connection(jdriver, url, user_name, password);
-        FeatureExtraction slf = new FeatureExtraction(stmt, insert_stmt, lib_fe);
+        FeatureExtractionProgram slf = new FeatureExtractionProgram(stmt, insert_stmt, lib_fe);
     }
-
 }
