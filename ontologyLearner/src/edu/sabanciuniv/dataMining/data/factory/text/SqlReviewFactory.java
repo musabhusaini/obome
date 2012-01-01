@@ -1,9 +1,10 @@
 package edu.sabanciuniv.dataMining.data.factory.text;
 
-import java.sql.Connection;
+import java.nio.ByteBuffer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 import edu.sabanciuniv.dataMining.data.factory.GenericSqlIdentifiableObjectFactory;
@@ -26,14 +27,23 @@ public class SqlReviewFactory extends GenericSqlIdentifiableObjectFactory<TextDo
 	}
 
 	@Override
-	protected PreparedStatement prepareStatement(Connection sqlConnection) throws SQLException {
-		return sqlConnection.prepareStatement("SELECT [uuid], [content] FROM reviews;");
+	protected PreparedStatement prepareStatement() throws SQLException {
+		return getSqlConnection().prepareStatement("SELECT uuid, content FROM reviews;");
 	}
 
 	@Override
 	protected TextDocument createObject(ResultSet sqlRs) throws SQLException {
 		TextDocument doc = new TextDocument(this.options);
-		doc.setIdentifier(sqlRs.getString("uuid"));
+		
+		Object uuidObj = sqlRs.getObject("uuid");
+		UUID uuid;
+		if (uuidObj instanceof byte[]) {
+			ByteBuffer bb = ByteBuffer.wrap((byte[])uuidObj);
+			uuid = new UUID(bb.getLong(), bb.getLong());
+		} else {
+			uuid = UUID.fromString(uuidObj.toString());
+		}
+		doc.setIdentifier(uuid);
 		doc.setText(sqlRs.getString("content"));
 		return doc;
 	}

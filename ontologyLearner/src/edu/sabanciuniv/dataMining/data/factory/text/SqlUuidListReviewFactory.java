@@ -1,11 +1,12 @@
 package edu.sabanciuniv.dataMining.data.factory.text;
 
+import java.nio.ByteBuffer;
 import java.security.InvalidParameterException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.UUID;
 
 import com.google.common.collect.Iterables;
 
@@ -14,10 +15,10 @@ import com.google.common.collect.Iterables;
  * @author Mus'ab Husaini
  */
 public class SqlUuidListReviewFactory extends SqlReviewFactory {
-	private Iterable<String> uuids;
-	private Iterator<String> iterator;
+	private Iterable<UUID> uuids;
+	private Iterator<UUID> iterator;
 	
-	public SqlUuidListReviewFactory(Iterable<String> uuids) {
+	public SqlUuidListReviewFactory(Iterable<UUID> uuids) {
 		super();
 		
 		if (uuids == null) {
@@ -28,13 +29,13 @@ public class SqlUuidListReviewFactory extends SqlReviewFactory {
 		this.iterator = this.uuids.iterator();
 	}
 
-	public Iterable<String> getUuids() {
+	public Iterable<UUID> getUuids() {
 		return Iterables.unmodifiableIterable(this.uuids);
 	}
 
 	@Override
-	protected PreparedStatement prepareStatement(Connection sqlConnection) throws SQLException {
-		return sqlConnection.prepareStatement("SELECT [uuid], [content] FROM reviews WHERE [uuid]=?;");
+	protected PreparedStatement prepareStatement() throws SQLException {
+		return this.getSqlConnection().prepareStatement("SELECT uuid, content FROM " + this.getTableName() + " WHERE uuid=?;");
 	}
 
 	@Override
@@ -43,12 +44,17 @@ public class SqlUuidListReviewFactory extends SqlReviewFactory {
 			return null;
 		}
 		
-		String uuid = this.iterator.next();
+		UUID uuid = this.iterator.next();
 		if (uuid == null) {
 			return null;
 		}
 		
-		sqlStatement.setString(1, uuid);
+		byte[] uuidBytes = new byte[16];
+		ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
+		bb.putLong(uuid.getMostSignificantBits());
+		bb.putLong(uuid.getLeastSignificantBits());
+		sqlStatement.setBytes(1, uuidBytes);
+//		sqlStatement.setString(1, uuid);
 		return sqlStatement.executeQuery();
 	}
 	

@@ -1,7 +1,6 @@
 package edu.sabanciuniv.dataMining.data.factory.text;
 
 import java.security.InvalidParameterException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -30,7 +29,7 @@ public class SqlTopNReviewFactory extends SqlReviewFactory {
 	}
 
 	@Override
-	protected PreparedStatement prepareStatement(Connection sqlConnection) throws SQLException {
-		return sqlConnection.prepareStatement("SELECT TOP " + n + " [uuid], [content] FROM reviews;");
+	protected PreparedStatement prepareStatement() throws SQLException {
+		return this.getSqlConnection().prepareStatement("SELECT TOP " + n + " [uuid], [content] FROM reviews;");
 	}
 }

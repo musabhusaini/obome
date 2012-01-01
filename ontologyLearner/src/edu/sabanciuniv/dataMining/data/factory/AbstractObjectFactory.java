@@ -35,6 +35,11 @@ public abstract class AbstractObjectFactory<T> implements ObjectFactory<T> {
 	}
 	
 	@Override
+	public boolean isPristine() {
+		return this.getCount() == 0;
+	}
+	
+	@Override
 	public void close() {
 	}
 	

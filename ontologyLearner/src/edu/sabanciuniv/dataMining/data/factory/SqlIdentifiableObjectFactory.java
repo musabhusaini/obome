@@ -15,17 +15,9 @@ public class SqlIdentifiableObjectFactory extends GenericSqlIdentifiableObjectFa
 	 * Creates a new instance of {@link SqlIdentifiableObjectFactory}.
 	 */
 	public SqlIdentifiableObjectFactory() {
-		this(null);
+		// Do nothing.
 	}
-	
-	/**
-	 * Creates a new instance of {@link SqlIdentifiableObjectFactory}.
-	 * @param tableName The table from which to get the instances.
-	 */
-	public SqlIdentifiableObjectFactory(String tableName) {
-		super(tableName);
-	}
-	
+
 	@Override
 	protected IdentifiableObject createObject(ResultSet sqlRs) throws SQLException {
 		return new IdentifiableObject(sqlRs.getString("uuid"));

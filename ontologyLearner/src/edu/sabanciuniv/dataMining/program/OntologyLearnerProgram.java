@@ -9,14 +9,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import com.google.common.collect.Iterables;
 
 import net.didion.jwnl.JWNLException;
 
+import edu.sabanciuniv.dataMining.data.factory.text.SqlLimitedReviewFactory;
 import edu.sabanciuniv.dataMining.data.factory.text.SqlReviewFactory;
-import edu.sabanciuniv.dataMining.data.factory.text.SqlTopNReviewFactory;
 import edu.sabanciuniv.dataMining.data.factory.text.SqlUuidListReviewFactory;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
@@ -29,8 +30,24 @@ import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
 public class OntologyLearnerProgram {
 	
-	private static Iterable<String> getClusterHeads(int n) throws SQLException {
-		SqlReviewFactory factory = new SqlTopNReviewFactory(n);
+	private static final String SQL_URL = "jdbc:mysql://localhost/trip_advisor";
+	private static final String SQL_USERNAME = "java_user";
+	private static final String SQL_PASSWORD = "java_user_pwd";
+	private static final String REVIEWS_TABLE = "reviews";
+	private static final String FEATURES_TABLE = "features";
+	
+	private static SqlReviewFactory prepareReviewFactory(SqlReviewFactory factory) {
+		factory.setSqlUrl(SQL_URL);
+		factory.setSqlUserName(SQL_USERNAME);
+		factory.setSqlPassword(SQL_PASSWORD);
+		factory.setTableName(REVIEWS_TABLE);
+		factory.initialize();
+		return factory;
+	}
+
+	private static Iterable<UUID> getClusterHeads(int start, int finish) throws SQLException {
+		SqlReviewFactory factory = new SqlLimitedReviewFactory(start, finish);
+		OntologyLearnerProgram.prepareReviewFactory(factory);
 		TextDocumentFeaturesClusterer clusterer = new TextDocumentFeaturesClusterer(factory);
 		clusterer.setRejectTolerance(0.0);
 		clusterer.setMinDataCoverage(0.99);
@@ -42,18 +59,20 @@ public class OntologyLearnerProgram {
 		clusterWorld = clusterer.prune();
 		System.out.println("down to " + Iterables.size(clusterWorld.getClusters()) + " clusters now.");
 
-		List<String> clusterHeads = new ArrayList<String>();
+		List<UUID> clusterHeads = new ArrayList<UUID>();
 		for (FeaturesCluster<LinguisticToken> cluster : clusterWorld.getClusters()) {
-			clusterHeads.add(((TextDocumentSummary)cluster.getHead()).getIdentifier().toString());
+			clusterHeads.add(((TextDocumentSummary)cluster.getHead()).getIdentifier());
 		}
 		
 		return clusterHeads;
 	}
 	
-	private static HashMap<String,Long> getFeatureMap(Iterable<String> clusterHeads) {
+	private static HashMap<String,Long> getFeatureMap(Iterable<UUID> clusterHeads) {
+//	private static HashMap<String,Long> getFeatureMap(ObjectFactory<TextDocument> factory) {
 		// Get features map.
 		HashMap<String,Long> features = new HashMap<String,Long>();
 		SqlReviewFactory factory = new SqlUuidListReviewFactory(clusterHeads);
+		OntologyLearnerProgram.prepareReviewFactory(factory);
 		factory.getOptions().setFeatureType(TextDocumentOptions.FeatureType.SMART_NOUNS);
 		TextDocument doc;
 		while ((doc = factory.create()) != null) {
@@ -84,7 +103,7 @@ public class OntologyLearnerProgram {
 	 */
 	public static void main(String[] args) throws IOException, ClassNotFoundException, SQLException {
 		// Read data.
-		HashMap<String,Long> features = OntologyLearnerProgram.getFeatureMap(OntologyLearnerProgram.getClusterHeads(100));
+		HashMap<String,Long> features = OntologyLearnerProgram.getFeatureMap(OntologyLearnerProgram.getClusterHeads(0, 10));
 		
 		// Sort features by frequency;
 		List<Entry<String,Long>> sortedFeatures = new ArrayList<Entry<String,Long>>(features.entrySet());
@@ -92,20 +111,16 @@ public class OntologyLearnerProgram {
 		System.out.println(sortedFeatures);
 		
 		// Delete all existing records so we don't have duplicates.
-		Connection sqlConn = DriverManager.getConnection("jdbc:sqlserver://localhost;instanceName=SQLEXPRESS;databaseName=TripAdvisor;integratedSecurity=true");
+		Connection sqlConn = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
 		PreparedStatement sqlStmt;
-		sqlStmt = sqlConn.prepareStatement("DELETE FROM review_features");
+		sqlStmt = sqlConn.prepareStatement("TRUNCATE TABLE " + FEATURES_TABLE);
 		sqlStmt.executeUpdate();
 		
 		// Write all words to database.
 		System.out.println("Writing to database...");
-		sqlStmt = sqlConn.prepareStatement("INSERT INTO review_features([feature], [count]) VALUES(?, ?)");
+		sqlStmt = sqlConn.prepareStatement("INSERT INTO " + FEATURES_TABLE + "(feature, count) VALUES(?, ?)");
 		for (Entry<String,Long> entry : sortedFeatures) {
 			String word = entry.getKey();
-//			if (word.length() < 3 || word.matches("^[a-z]+$")) {
-//				continue;
-//			}
-//			
 			try {
 				sqlStmt.setString(1, word);
 				sqlStmt.setLong(2, entry.getValue());

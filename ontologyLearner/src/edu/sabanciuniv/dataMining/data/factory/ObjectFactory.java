@@ -13,6 +13,12 @@ public interface ObjectFactory<T> {
 	public T create();
 	
 	/**
+	 * Gets a flag indicating whether this factory is at its initial state or not.
+	 * @return A flag indicating whether this factory has been used or not.
+	 */
+	public boolean isPristine();
+	
+	/**
 	 * Resets this factory to the initial position.
 	 * @return A flag indicating if this was successfully completed.
 	 */

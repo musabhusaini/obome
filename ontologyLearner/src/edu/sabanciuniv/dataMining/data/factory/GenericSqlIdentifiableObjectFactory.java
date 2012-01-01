@@ -1,6 +1,5 @@
 package edu.sabanciuniv.dataMining.data.factory;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -13,33 +12,21 @@ import edu.sabanciuniv.dataMining.data.IdentifiableObject;
  */
 public abstract class GenericSqlIdentifiableObjectFactory<T extends IdentifiableObject> extends SqlObjectFactory<T> {
 	private boolean suppressConsoleOutput;
-	private String tableName;
+	private String tableName = "reviews";
 
 	/**
 	 * Creates a new instance of {@link SqlAbstractIdentifiableObjectFactory}.
 	 */
 	public GenericSqlIdentifiableObjectFactory() {
-		this(null);
-	}
-
-	/**
-	 * Creates a new instance of {@link SqlAbstractIdentifiableObjectFactory}.
-	 * @param tableName Name of the table in the SQL database.
-	 */
-	public GenericSqlIdentifiableObjectFactory(String tableName) {
-		if (tableName == null) {
-			tableName = "reviews";
-		} else if (tableName.equals("")) {
-			throw new IllegalArgumentException("Must provide a valid table name.");
-		}
-		this.setTableName(tableName);
+		// Do nothing.
 	}
 
 	/**
 	 * Prepares the SQL statement that will be executed. 
 	 */
-	protected PreparedStatement prepareStatement(Connection sqlConnection) throws SQLException {
-		return sqlConnection.prepareStatement("SELECT [uuid] FROM [" + this.getTableName() + "];");
+	@Override
+	protected PreparedStatement prepareStatement() throws SQLException {
+		return this.getSqlConnection().prepareStatement("SELECT uuid FROM " + this.getTableName() + ";");
 	}
 	
 	/**
