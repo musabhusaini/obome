@@ -68,7 +68,6 @@ public class OntologyLearnerProgram {
 	}
 	
 	private static HashMap<String,Long> getFeatureMap(Iterable<UUID> clusterHeads) {
-//	private static HashMap<String,Long> getFeatureMap(ObjectFactory<TextDocument> factory) {
 		// Get features map.
 		HashMap<String,Long> features = new HashMap<String,Long>();
 		SqlReviewFactory factory = new SqlUuidListReviewFactory(clusterHeads);
