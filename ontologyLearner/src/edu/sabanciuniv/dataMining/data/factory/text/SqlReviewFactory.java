@@ -1,11 +1,11 @@
 package edu.sabanciuniv.dataMining.data.factory.text;
 
-import java.nio.ByteBuffer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 import edu.sabanciuniv.dataMining.data.factory.GenericSqlIdentifiableObjectFactory;
 import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
@@ -38,8 +38,7 @@ public class SqlReviewFactory extends GenericSqlIdentifiableObjectFactory<TextDo
 		Object uuidObj = sqlRs.getObject("uuid");
 		UUID uuid;
 		if (uuidObj instanceof byte[]) {
-			ByteBuffer bb = ByteBuffer.wrap((byte[])uuidObj);
-			uuid = new UUID(bb.getLong(), bb.getLong());
+			uuid = IdentifiableObject.createUuid((byte[])uuidObj);
 		} else {
 			uuid = UUID.fromString(uuidObj.toString());
 		}
@@ -48,6 +47,14 @@ public class SqlReviewFactory extends GenericSqlIdentifiableObjectFactory<TextDo
 		return doc;
 	}
 
+	public void setOptions(TextDocumentOptions options) {
+		if (!this.isPristine()) {
+			throw new IllegalStateException("Can only set options in pristine state.");
+		}
+		
+		this.options = options;
+	}
+	
 	@Override
 	protected String objToString(TextDocument obj) {
 		return ((TextDocument)obj).getSummary().toString();

@@ -30,6 +30,15 @@ public class TextDocumentFeaturesClusterer {
 		this.factory = factory;
 		this.clusterWorld = new FeaturesClusterWorld<LinguisticToken>();
 	}
+	
+	/**
+	 * Sets a list of initial clusters. This operation only works when the world is empty.
+	 * @param clusters Clusters to set.
+	 * @return A flag indicating whether this operation was successful or not.
+	 */
+	public boolean setInitialClusters(Iterable<FeaturesCluster<LinguisticToken>> clusters) {
+		return this.clusterWorld.setInitialClusters(clusters);
+	}
 
 	/**
 	 * Clusters all the documents in the factory.

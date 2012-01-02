@@ -1,6 +1,5 @@
 package edu.sabanciuniv.dataMining.data.factory.text;
 
-import java.nio.ByteBuffer;
 import java.security.InvalidParameterException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +8,8 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import com.google.common.collect.Iterables;
+
+import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 
 /**
  * A factory for reviews based in a SQL database where a list of UUID's is provided.
@@ -49,12 +50,7 @@ public class SqlUuidListReviewFactory extends SqlReviewFactory {
 			return null;
 		}
 		
-		byte[] uuidBytes = new byte[16];
-		ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
-		bb.putLong(uuid.getMostSignificantBits());
-		bb.putLong(uuid.getLeastSignificantBits());
-		sqlStatement.setBytes(1, uuidBytes);
-//		sqlStatement.setString(1, uuid);
+		sqlStatement.setBytes(1, IdentifiableObject.getUuidBytes(uuid));
 		return sqlStatement.executeQuery();
 	}
 	

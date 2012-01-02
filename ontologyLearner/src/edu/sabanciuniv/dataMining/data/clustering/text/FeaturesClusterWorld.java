@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import edu.stanford.nlp.ling.HasWord;
 
@@ -59,6 +60,20 @@ public class FeaturesClusterWorld<T extends HasWord> {
 		this.rejectTolerance = rejectTolerance;
 	}
 
+	/**
+	 * Sets a list of initial clusters. This operation only works when the world is empty.
+	 * @param clusters Clusters to set.
+	 * @return A flag indicating whether this operation was successful or not.
+	 */
+	public boolean setInitialClusters(Iterable<FeaturesCluster<T>> clusters) {
+		if (this.clusters.size() == 0) {
+			List<FeaturesCluster<T>> clusterList = Lists.newArrayList(clusters);
+			Collections.sort(clusterList, Collections.reverseOrder());
+			return this.clusters.addAll(clusterList);
+		}
+		return false;
+	}
+	
 	/**
 	 * Adds a feature set to this cluster world.
 	 * @param features Feature set to add.

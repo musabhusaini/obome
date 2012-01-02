@@ -3,6 +3,7 @@ package edu.sabanciuniv.dataMining.data.clustering.text;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import com.google.common.base.Function;
@@ -33,6 +34,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	
 	private IdentifiableWithFeatures<T> head;
 	private List<Identifiable> members;
+	private int dummyMembers;
 
 	private FeaturesCluster() {
 	}
@@ -144,7 +146,10 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	public FeaturesCluster<T> add(FeaturesCluster<T> other, double rejectTolerance) {
 		// Try to add the head of the other and get the rejected cluster.
 		FeaturesCluster<T> reject = this.add(other.head, rejectTolerance);
-
+		double rejectRatio = (reject == null ? 0 : reject.getFeatures().size()) /
+				(double)(other.getFeatures().size() == 0 ? 1 : other.getFeatures().size()); 
+		Random rand = new Random();
+		
 		if (reject == null || reject.head.getFeatures().size() == 0) {
 			// If nothing was rejected, then this is a perfect fit.
 			// Add all remaining members.
@@ -155,28 +160,43 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 			// Try to add all members to this cluster (ignore the head since it's already there).
 			for(Identifiable member : Iterables.filter(other.members, Predicates.not(MPredicates.identifierEquals(other.head)))) {
 				// If this member also has features, then we add figure out which part of this member should go where.
-				IdentifiableWithFeatures<T> idMembers = null;
+				IdentifiableWithFeatures<T> featuresMembers = null;
 				if (member instanceof IdentifiableWithFeatures<?>) {
 					try {
+						// For some reason this is how it works.
 						@SuppressWarnings("unchecked")
 						IdentifiableWithFeatures<T> temp = (IdentifiableWithFeatures<T>)member;
-						idMembers = temp;
+						featuresMembers = temp;
 						
-						FeaturesCluster<T> tempCluster = this.add(idMembers, rejectTolerance);
+						FeaturesCluster<T> tempCluster = this.add(featuresMembers, rejectTolerance);
 						// If some features were rejected, add member to the reject cluster.
 						if (tempCluster != null && tempCluster.head.getFeatures().size() != 0) {
 							reject.add(tempCluster.head);
 						}
 					} catch(ClassCastException ex) {
-						idMembers = null;
+						featuresMembers = null;
 					}
 				}
 				
-				if (idMembers == null) {
-					// Add to both old and new clusters (for now, at least) since membership cannot be determined.
-					// TODO: Perhaps later we can use a probabilistic model or something.
-					this.members.add(member);
-					reject.members.add(member);
+				if (featuresMembers == null) {
+					// Use a probabilistic model to determine where to put this one since exact membership information is lost.
+					// The reject ratio determines the probability of this member being in the reject cluster or this one.
+					if (rand.nextDouble() < rejectRatio) {
+						reject.members.add(member);
+					} else {
+						this.members.add(member);
+					}
+				}
+			}
+			
+			// Deal with dummy members (if there are any).
+			for (int i=0; i<other.dummyMembers; i++) {
+				// Use a probabilistic model to determine where to put this one since exact membership information is lost.
+				// The reject ratio determines the probability of this member being in the reject cluster or this one.
+				if (rand.nextDouble() < rejectRatio) {
+					reject.addDummyMembers(1);
+				} else {
+					this.addDummyMembers(1);
 				}
 			}
 		} else {
@@ -185,6 +205,20 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 		}
 		
 		return reject;
+	}
+	
+	/**
+	 * Adds a number of dummy members to this cluster.
+	 * @param count Number of dummy members to add.
+	 * @return The current cluster.
+	 */
+	public FeaturesCluster<T> addDummyMembers(int count) {
+		if (count < 0) {
+			throw new IllegalArgumentException("Count must be positive.");
+		}
+
+		this.dummyMembers += count;		
+		return this;
 	}
 	
 	/**
@@ -201,11 +235,19 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	}
 	
 	/**
+	 * Gets the number of total members in this cluster.
+	 * @return Number of members.
+	 */
+	public int getMemberCount() {
+		return this.members.size() + this.dummyMembers;
+	}
+	
+	/**
 	 * Gets the mass of data in this cluster.
 	 * @return Mass of data in this cluster.
 	 */
 	public double getDataMass() {
-		return this.members.size() * (double)this.head.getFeatures().size();
+		return this.getMemberCount() * (double)this.head.getFeatures().size();
 	}
 	
 	/**
@@ -213,7 +255,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	 * @return Weight of data in this cluster.
 	 */
 	public double getSignificance() {
-		return this.members.size() / (double)this.head.getFeatures().size();
+		return this.getMemberCount() / (double)this.head.getFeatures().size();
 	}
 	
 	/**
@@ -221,6 +263,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	 */
 	public void clear() {
 		this.members.clear();
+		this.dummyMembers = 0;
 	}
 	
 	@Override
@@ -235,7 +278,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	
 	@Override
 	public String toString() {
-		return this.members.size() + " x " + this.head.toString();
+		return this.getMemberCount() + " x " + this.head.toString();
 	}
 
 	@Override
@@ -251,9 +294,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 		}
 		
 		relativeWeight *= Math.pow(10, rlogWeight);
-		int val = (int)Math.round(relativeWeight);
-		return val;
-		//return (int)(this.getDataWeight() - other.getDataWeight());
+		return (int)Math.round(relativeWeight);
 	}
 	
 	@Override
@@ -261,6 +302,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 		FeaturesCluster<T> clonedCluster = new FeaturesCluster<T>();
 		clonedCluster.head = this.head;
 		clonedCluster.members = Lists.newArrayList(this.members);
+		clonedCluster.dummyMembers = this.dummyMembers;
 		
 		return clonedCluster;
 	}
