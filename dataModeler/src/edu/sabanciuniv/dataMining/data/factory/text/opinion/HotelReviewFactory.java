@@ -1,6 +1,5 @@
 package edu.sabanciuniv.dataMining.data.factory.text.opinion;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,7 +15,7 @@ public class HotelReviewFactory extends GenericSqlIdentifiableObjectFactory<Rate
 	}
 	
 	public HotelReviewFactory(String role) {
-		super("reviews");
+		super();
 		
 		if (role == null || role.equals("")) {
 			throw new IllegalArgumentException("Must provide a role.");
@@ -30,15 +29,15 @@ public class HotelReviewFactory extends GenericSqlIdentifiableObjectFactory<Rate
 	}
 	
 	@Override
-	protected PreparedStatement prepareStatement(Connection sqlConnection) throws SQLException {
-		int n = 5000;
+	protected PreparedStatement prepareStatement() throws SQLException {
+		int n = 10000;
 		if ("training".equals(this.role)) {
 			n *= 0.75;
 		} else if ("testing".equals(this.role)) {
 			n *= 0.25;
 		}
 		
-		PreparedStatement statement = sqlConnection.prepareStatement(
+		PreparedStatement statement = this.getSqlConnection().prepareStatement(
 				"SELECT TOP " + n + " [uuid], [hotel_id], [author], [content], [date], [rating], [role] FROM [" + this.getTableName() +
 				"] WHERE [role]=? AND [rating]>0;");
 		

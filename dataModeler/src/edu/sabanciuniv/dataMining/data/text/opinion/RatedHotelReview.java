@@ -15,8 +15,8 @@ public class RatedHotelReview extends UnratedHotelReview implements Classifiable
 
 	@Override
 	public Short getClassification() {
-//		return new Short((short)(this.getRating() < 3 ? 0 : 1));
-		return new Short(this.getRating());
+		return new Short((short)(this.getRating() < 3 ? 0 : 1));
+//		return new Short(this.getRating());
 //		return new Short((short)(this.getRating() <= 2 ? 1 : this.getRating() == 3 ? 2 : 3));
 	}
 

@@ -4,34 +4,7 @@
   <artifactId>dataModeler</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>Data Modeler</name>
-  <repositories>
-  	<repository>
-		<id>dev.davidsoergel.com releases</id>
-		<url>http://dev.davidsoergel.com/artifactory/repo</url>
-		<snapshots>
-			<enabled>false</enabled>
-		</snapshots>
-	</repository>
-	<repository>
-		<id>dev.davidsoergel.com snapshots</id>
-		<url>http://dev.davidsoergel.com/artifactory/repo</url>
-		<releases>
-			<enabled>false</enabled>
-		</releases>
-	</repository>
-  </repositories>
   <dependencies>
-  <dependency>
-	<groupId>edu.berkeley.compbio</groupId>
-	<artifactId>jlibsvm</artifactId>
-	<version>0.902</version>
-	<exclusions>
-		<exclusion>
-			<artifactId>google-collections</artifactId>
-			<groupId>com.google.collections</groupId>
-		</exclusion>
-	</exclusions>
-  </dependency>
   <dependency>
   	<groupId>edu.stanford.nlp</groupId>
   	<artifactId>stanford-corenlp</artifactId>
@@ -53,6 +26,16 @@
   	<groupId>com.google.guava</groupId>
   	<artifactId>guava</artifactId>
   	<version>10.0.1</version>
+  </dependency>
+  <dependency>
+  	<groupId>nz.ac.waikato.cs</groupId>
+  	<artifactId>weka</artifactId>
+  	<version>3.7</version>
+  </dependency>
+  <dependency>
+  	<groupId>mysql</groupId>
+  	<artifactId>mysql-connector-java</artifactId>
+  	<version>5.1.15</version>
   </dependency>
   </dependencies>
   <dependencyManagement>
