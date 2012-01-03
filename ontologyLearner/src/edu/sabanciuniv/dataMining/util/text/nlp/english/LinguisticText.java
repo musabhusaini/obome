@@ -6,6 +6,8 @@ import java.util.List;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -47,5 +49,15 @@ public class LinguisticText extends LinguisticEntity {
 			Iterables.addAll(tokens, sentence.getTokens());
 		}
 		return tokens;
+	}
+	
+	@Override
+	public int getAbsoluteBeginPosition() {
+		return Iterables.getFirst(this.sentences, null).get(CharacterOffsetBeginAnnotation.class);
+	}
+	
+	@Override
+	public int getAbsoluteEndPosition() {
+		return Iterables.getLast(this.sentences, null).get(CharacterOffsetEndAnnotation.class);
 	}
 }

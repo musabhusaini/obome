@@ -207,4 +207,9 @@ public class LinguisticPhrase extends LinguisticToken {
 	public String getText() {
 		return (this.getAuxString() + " " + super.getText()).trim();
 	}
+	
+	@Override
+	public int getAbsoluteBeginPosition() {
+		return Iterables.getFirst(this.getAllTokens(), null).beginPosition();
+	}
 }

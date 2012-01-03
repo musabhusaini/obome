@@ -36,6 +36,18 @@ public abstract class LinguisticEntity implements Comparable<LinguisticEntity> {
 		return this.text;
 	}
 	
+	/**
+	 * Gets the absolute begin position of this text in the document.
+	 * @return The absolute begin position of the text.
+	 */
+	public abstract int getAbsoluteBeginPosition();
+	
+	/**
+	 * Gets the absolute end position of this text in the document.
+	 * @return The absolute end position of the text.
+	 */
+	public abstract int getAbsoluteEndPosition();
+	
 	@Override
 	public String toString() {
 		return this.getText();

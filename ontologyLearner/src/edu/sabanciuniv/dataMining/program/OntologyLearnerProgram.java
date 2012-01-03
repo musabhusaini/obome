@@ -1,6 +1,5 @@
 package edu.sabanciuniv.dataMining.program;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,32 +10,36 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.UUID;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
-import net.didion.jwnl.JWNLException;
-
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
-import edu.sabanciuniv.dataMining.data.factory.text.SqlLimitedReviewFactory;
-import edu.sabanciuniv.dataMining.data.factory.text.SqlReviewFactory;
-import edu.sabanciuniv.dataMining.data.factory.text.SqlUuidListReviewFactory;
-import edu.sabanciuniv.dataMining.data.text.TextDocument;
-import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
-import edu.sabanciuniv.dataMining.data.text.TextDocumentSummary;
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesCluster;
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesClusterWorld;
 import edu.sabanciuniv.dataMining.data.clustering.text.TextDocumentFeaturesClusterer;
+import edu.sabanciuniv.dataMining.data.factory.text.SqlLimitedReviewFactory;
+import edu.sabanciuniv.dataMining.data.factory.text.SqlReviewFactory;
+import edu.sabanciuniv.dataMining.data.factory.text.SqlUuidListReviewFactory;
+import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
+import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions.FeatureType;
+import edu.sabanciuniv.dataMining.data.text.TextDocument;
+import edu.sabanciuniv.dataMining.data.text.TextDocumentSummary;
 import edu.sabanciuniv.dataMining.util.EntryValueComparator;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
+/**
+ * The main entry point for accessing ontology learner functionality.
+ * @author Mus'ab Husaini
+ */
 public class OntologyLearnerProgram {
 	
 	private static final String SQL_URL = "jdbc:mysql://localhost/trip_advisor";
@@ -45,6 +48,7 @@ public class OntologyLearnerProgram {
 	private static final String REVIEWS_TABLE = "reviews";
 	private static final String FEATURES_TABLE = "features";
 	private static final String REVIEW_CLUSTERS_TABLE = "review_clusters";
+	private static final String ASPECTS_TABLE = "aspects";
 	
 	private Connection sqlConnection;
 		
@@ -195,14 +199,6 @@ public class OntologyLearnerProgram {
 		return features;
 	}
 	
-	private void close() {
-		try {
-			this.sqlConnection.close();
-		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.WARNING, "Connection already closed or could not be closed.", e);
-		}
-	}
-
 	private void writeFeaturesToDB(HashMap<String,Long> features) throws SQLException {
 		// Sort features by frequency;
 		List<Entry<String,Long>> sortedFeatures = new ArrayList<Entry<String,Long>>(features.entrySet());
@@ -232,6 +228,9 @@ public class OntologyLearnerProgram {
 		System.out.println("Finished.");
 	}
 	
+	/**
+	 * Creates a new instance of {@link OntologyLearnerProgram}.
+	 */
 	public OntologyLearnerProgram() {
 		try {
 			this.sqlConnection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
@@ -240,7 +239,11 @@ public class OntologyLearnerProgram {
 		}
 	}
 	
-	public Iterable<UUID> getExistingClusterHeads() {
+	/**
+	 * Retrieve all the UUIDs for existing cluster from the database.
+	 * @return Cluster head UUIDs.
+	 */
+	public Iterable<UUID> retrieveExistingClusterHeads() {
 		try {
 			Map<UUID,Integer> clusterStubMap = this.retrieveExistingClusterStubs();
 			return clusterStubMap.keySet();
@@ -252,11 +255,176 @@ public class OntologyLearnerProgram {
 	}
 	
 	/**
-	 * @param args
-	 * @throws ClassNotFoundException 
-	 * @throws IOException 
-	 * @throws SQLException 
-	 * @throws JWNLException 
+	 * Retrieves a {@link TextDocument} instance for the document for the given UUID in the database. 
+	 * @param uuid The UUID of the document.
+	 * @param featureType The type of features to create.
+	 * @return The {@link TextDocument} instance.
+	 */
+	public TextDocument retrieveTextDocument(UUID uuid, FeatureType featureType) {
+		Iterable<UUID> uuids = ImmutableList.of(uuid);
+		SqlReviewFactory factory = new SqlUuidListReviewFactory(uuids);
+		this.prepareReviewFactory(factory);
+		TextDocumentOptions options = new TextDocumentOptions();
+		options.setFeatureType(featureType);
+		factory.setOptions(options);
+		TextDocument doc = factory.create();
+		factory.close();
+		return doc;
+	}
+
+	/**
+	 * Retrieves all existing aspects from the database.
+	 * @return All the aspects.
+	 */
+	public Iterable<String> retrieveExistingAspects() {
+		List<String> aspects = new ArrayList<>();
+		
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT DISTINCT aspect FROM " + ASPECTS_TABLE);
+			ResultSet rs = sqlStmt.executeQuery();
+			while (rs.next()) {
+				aspects.add(rs.getString("aspect"));
+			}
+		} catch (SQLException e) {
+			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Failed to retrieve aspects.", e);
+		}
+		
+		return aspects;
+	}
+
+	/**
+	 * Retrieves all the keywords for a given aspect from the database.
+	 * @param aspect The aspect to look for.
+	 * @return A list of keywords.
+	 */
+	public Iterable<String> retrieveKeywords(String aspect) {
+		if (aspect == null || aspect.equals("")) {
+			throw new IllegalArgumentException("Must provide an aspect to look for.");
+		}
+		
+		List<String> keywords = new ArrayList<>();
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT DISTINCT keyword FROM " + ASPECTS_TABLE +
+					" WHERE aspect=? AND keyword IS NOT NULL");
+			sqlStmt.setString(1, aspect);
+			ResultSet rs = sqlStmt.executeQuery();
+			while (rs.next()) {
+				keywords.add(rs.getString("keyword"));
+			}
+		} catch (SQLException e) {
+			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Failed to retrieve aspects.", e);
+		}
+		
+		return keywords;
+	}
+	
+	/**
+	 * Retrieves all the aspects from the database that the given keyword appears in.
+	 * @param keyword The keyword to look for.
+	 * @return A list of aspects.
+	 */
+	public Iterable<String> retrieveAspects(String keyword) {
+		if (keyword == null || keyword.equals("")) {
+			throw new IllegalArgumentException("Must provide a keyword to look for.");
+		}
+
+		List<String> aspects = new ArrayList<>();
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT DISTINCT aspect FROM " + ASPECTS_TABLE +
+					" WHERE keyword=?");
+			sqlStmt.setString(1, keyword);
+			ResultSet rs = sqlStmt.executeQuery();
+			while (rs.next()) {
+				aspects.add(rs.getString("aspect"));
+			}
+		} catch (SQLException e) {
+			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Failed to retrieve aspects.", e);
+		}
+		
+		return aspects;		
+	}
+	
+	/**
+	 * Adds an aspect to the database.
+	 * @param aspect The aspect to add.
+	 * @return A flag indicating whether the aspect was added or not.
+	 */
+	public boolean addAspect(String aspect) {
+		if (aspect == null || aspect.equals("")) {
+			throw new IllegalArgumentException("Must provide an aspect to add.");
+		}
+
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT uuid FROM " + ASPECTS_TABLE +
+					" WHERE aspect=?");
+			sqlStmt.setString(1, aspect);
+			ResultSet rs = sqlStmt.executeQuery();
+			if (rs.next()) {
+				return false;
+			}
+			
+			sqlStmt = this.sqlConnection.prepareStatement("INSERT INTO " + ASPECTS_TABLE + "(aspect) VALUES(?)");
+			sqlStmt.setString(1, aspect);
+			sqlStmt.executeUpdate();
+		} catch (SQLException e) {
+			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.WARNING, ".", e);
+			return false;
+		}
+		
+		return true;		
+	}
+	
+	/**
+	 * Adds a keyword to the database.
+	 * @param aspect The aspect this keyword belongs to.
+	 * @param keyword The keyword to add.
+	 * @return A flag indicating whether the keyword was added or not.
+	 */
+	public boolean addKeyword(String aspect, String keyword) {
+		if (aspect == null || aspect.equals("")) {
+			throw new IllegalArgumentException("Must provide an aspect to add.");
+		}
+		
+		if (keyword == null || keyword.equals("")) {
+			throw new IllegalArgumentException("Must provide a keyword to add.");
+		}
+
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT uuid FROM " + ASPECTS_TABLE +
+					" WHERE aspect=? AND keyword=?");
+			sqlStmt.setString(1, aspect);
+			sqlStmt.setString(2, keyword);
+			ResultSet rs = sqlStmt.executeQuery();
+			if (rs.next()) {
+				return false;
+			}
+			
+			sqlStmt = this.sqlConnection.prepareStatement("INSERT INTO " + ASPECTS_TABLE + "(aspect, keyword) VALUES(?,?)");
+			sqlStmt.setString(1, aspect);
+			sqlStmt.setString(2, keyword);
+			sqlStmt.executeUpdate();
+		} catch (SQLException e) {
+			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.WARNING, ".", e);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Closes all connections and releases resources used by this instance.
+	 */
+	public void close() {
+		try {
+			this.sqlConnection.close();
+		} catch (SQLException e) {
+			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.WARNING, "Connection already closed or could not be closed.", e);
+		}
+	}
+	
+	/**
+	 * Runs the ontology learner program.
+	 * @param args Arguments to run the program with.
 	 */
 	public static void main(String[] args) {
 		

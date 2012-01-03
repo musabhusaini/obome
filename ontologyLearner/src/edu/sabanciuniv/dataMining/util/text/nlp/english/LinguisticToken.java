@@ -104,7 +104,7 @@ public class LinguisticToken extends LinguisticEntity implements HasWord, HasTag
 	public void setIsLemmatized(boolean isLemmatized) {
 		this.isLemmatized = isLemmatized;
 	}
-
+	
 	/**
 	 * Tests to see if this token is a valid word.
 	 * @return A flag indicating the result.
@@ -213,5 +213,15 @@ public class LinguisticToken extends LinguisticEntity implements HasWord, HasTag
 		}
 		
 		return super.compareTo(other);
+	}
+	
+	@Override
+	public int getAbsoluteBeginPosition() {
+		return this.token.beginPosition();
+	}
+	
+	@Override
+	public int getAbsoluteEndPosition() {
+		return this.token.endPosition();
 	}
 }

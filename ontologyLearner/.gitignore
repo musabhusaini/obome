@@ -1,3 +1,5 @@
 /.settings
 /bin
 /target
+/createSourcesJar.jardesc
+/createJar.jardesc

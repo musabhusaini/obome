@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
@@ -109,5 +111,15 @@ public class LinguisticSentence extends LinguisticEntity {
 			return this.sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).typedDependencies();
 		}
 		return new ArrayList<TypedDependency>();
+	}
+	
+	@Override
+	public int getAbsoluteBeginPosition() {
+		return this.sentence.get(CharacterOffsetBeginAnnotation.class);
+	}
+	
+	@Override
+	public int getAbsoluteEndPosition() {
+		return this.sentence.get(CharacterOffsetEndAnnotation.class);
 	}
 }
