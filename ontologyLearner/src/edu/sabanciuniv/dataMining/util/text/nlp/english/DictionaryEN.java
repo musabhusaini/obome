@@ -1,9 +1,11 @@
 package edu.sabanciuniv.dataMining.util.text.nlp.english;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.stanford.nlp.ling.HasTag;
 import edu.stanford.nlp.ling.HasWord;
@@ -23,10 +25,17 @@ public final class DictionaryEN {
 	public static boolean ensureInitialized() {
 		if (!JWNL.isInitialized()) {
 			try {
-				JWNL.initialize(new FileInputStream("config//file_properties.xml"));
+				InputStream propsFile = DictionaryEN.class.getResourceAsStream("config/file_properties.xml");
+				if (propsFile == null) {
+					throw new FileNotFoundException();
+				}
+				
+				JWNL.initialize(propsFile);
 			} catch (FileNotFoundException e) {
+				Logger.getLogger(DictionaryEN.class.getName()).log(Level.WARNING, "Could not find config file for WordNet.", e);
 				return false;
 			} catch (JWNLException e) {
+				Logger.getLogger(DictionaryEN.class.getName()).log(Level.WARNING, "Could not initialize WordNet.", e);
 				return false;
 			}
 		}
@@ -93,7 +102,7 @@ public final class DictionaryEN {
 			}
 		}
 		
-		return false;
+		return true;
 	}
 	
 	public static <T extends HasWord & HasTag> List<String> getSynonyms(T wt) {

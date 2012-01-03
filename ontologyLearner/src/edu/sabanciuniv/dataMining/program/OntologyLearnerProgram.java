@@ -263,10 +263,8 @@ public class OntologyLearnerProgram {
 	public TextDocument retrieveTextDocument(UUID uuid, FeatureType featureType) {
 		Iterable<UUID> uuids = ImmutableList.of(uuid);
 		SqlReviewFactory factory = new SqlUuidListReviewFactory(uuids);
+		factory.getOptions().setFeatureType(featureType);
 		this.prepareReviewFactory(factory);
-		TextDocumentOptions options = new TextDocumentOptions();
-		options.setFeatureType(featureType);
-		factory.setOptions(options);
 		TextDocument doc = factory.create();
 		factory.close();
 		return doc;
@@ -469,7 +467,7 @@ public class OntologyLearnerProgram {
 			}
 			
 			if (argMap.containsKey("extractFeatures")) {
-				extractFeatures = Boolean.getBoolean(argMap.get("extractFeatures"));
+				extractFeatures = Boolean.parseBoolean(argMap.get("extractFeatures"));
 			}
 		} catch (NumberFormatException ex) {
 			System.err.println("Could not understand the numbers.");
