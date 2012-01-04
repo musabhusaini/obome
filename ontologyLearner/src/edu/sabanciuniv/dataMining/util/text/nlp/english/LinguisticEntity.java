@@ -8,6 +8,7 @@ import java.security.InvalidParameterException;
  */
 public abstract class LinguisticEntity implements Comparable<LinguisticEntity> {
 	protected String text;
+	protected int offset;
 
 	/**
 	 * Creates an instasnce of {@link LinguisticEntity}.
@@ -37,16 +38,52 @@ public abstract class LinguisticEntity implements Comparable<LinguisticEntity> {
 	}
 	
 	/**
+	 * Gets the offset of this text in the document.
+	 * @return The offset.
+	 */
+	public int getOffset() {
+		return this.offset;
+	}
+	
+	/**
+	 * Sets the offset of this text in the document.
+	 * @param offset The offset.
+	 */
+	public void setOffset(int offset) {
+		if (offset < 0) {
+			throw new IllegalArgumentException("Offset cannot be negative.");
+		}
+		
+		this.offset = offset;
+	}
+	
+	/**
 	 * Gets the absolute begin position of this text in the document.
 	 * @return The absolute begin position of the text.
 	 */
-	public abstract int getAbsoluteBeginPosition();
+	public int getAbsoluteBeginPosition() {
+		return this.offset + this.getRelativeBeginPosition();
+	}
 	
 	/**
 	 * Gets the absolute end position of this text in the document.
 	 * @return The absolute end position of the text.
 	 */
-	public abstract int getAbsoluteEndPosition();
+	public int getAbsoluteEndPosition() {
+		return this.offset + this.getRelativeEndPosition();
+	}
+
+	/**
+	 * Gets the relative begin position of this text in the document.
+	 * @return The relative begin position of the text.
+	 */
+	public abstract int getRelativeBeginPosition();
+	
+	/**
+	 * Gets the relative end position of this text in the document.
+	 * @return The relative end position of the text.
+	 */
+	public abstract int getRelativeEndPosition();
 	
 	@Override
 	public String toString() {

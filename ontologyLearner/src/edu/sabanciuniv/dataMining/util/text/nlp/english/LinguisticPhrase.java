@@ -162,7 +162,7 @@ public class LinguisticPhrase extends LinguisticToken {
 			this.tokens.add(token);
 		} else {
 			this.tokens.add(this.token);
-			this.token = token;
+			this.setToken(token);
 		}
 		
 		return true;
@@ -209,7 +209,7 @@ public class LinguisticPhrase extends LinguisticToken {
 	}
 	
 	@Override
-	public int getAbsoluteBeginPosition() {
+	public int getRelativeBeginPosition() {
 		return Iterables.getFirst(this.getAllTokens(), null).beginPosition();
 	}
 }

@@ -52,12 +52,12 @@ public class LinguisticText extends LinguisticEntity {
 	}
 	
 	@Override
-	public int getAbsoluteBeginPosition() {
+	public int getRelativeBeginPosition() {
 		return Iterables.getFirst(this.sentences, null).get(CharacterOffsetBeginAnnotation.class);
 	}
 	
 	@Override
-	public int getAbsoluteEndPosition() {
+	public int getRelativeEndPosition() {
 		return Iterables.getLast(this.sentences, null).get(CharacterOffsetEndAnnotation.class);
 	}
 }

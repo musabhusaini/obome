@@ -142,6 +142,7 @@ public class TextDocument extends IdentifiableWithFeatures<LinguisticToken> impl
 				token.setIsLemmatized(true);
 				if (Iterables.find(features, MPredicates.wordEquals(token.word()), null) == null &&
 						token.testWord(TextDocument.isAdmissableWordPredicate) && token.existsInDictionary()) {
+					token.setOffset(sentence.getOffset());
 					features.add(token);
 				}
 			}
@@ -183,6 +184,7 @@ public class TextDocument extends IdentifiableWithFeatures<LinguisticToken> impl
 				found = new LinguisticPhrase(ImmutableList.of((CoreLabel)dependency.dep().label()), true);
 				found.add(dependency.gov().label());
 				if (found.isImproperNoun() && found.testAllWords(TextDocument.isAdmissableWordPredicate) && found.existsInDictionary()) {
+					found.setOffset(sentence.getOffset());
 					featurePhrases.add(found);
 				}
 			}

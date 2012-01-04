@@ -51,9 +51,18 @@ public class LinguisticToken extends LinguisticEntity implements HasWord, HasTag
 		return MPredicates.tagMatches("^JJ(?:S?)$");
 	}
 
+	protected boolean isLemmatized;
 	protected CoreLabel token;
-	private boolean isLemmatized;
 	
+	/**
+	 * Sets the {@link CoreLabel} for this instance.
+	 * @param token The token to set.
+	 */
+	protected void setToken(CoreLabel token) {
+		this.token = token;
+		super.text = token.word();
+	}
+		
 	/**
 	 * Creates an instance of {@link LinguisticToken}.
 	 * @param token The {@link CoreLabel} representation of the token.
@@ -72,7 +81,7 @@ public class LinguisticToken extends LinguisticEntity implements HasWord, HasTag
 		this.token = token;
 		this.isLemmatized = isLemmatized;
 	}
-	
+		
 	/**
 	 * Gets the {@link WordTag} representation of this token.
 	 * @return The {@link WordTag} representation of this token.
@@ -216,12 +225,12 @@ public class LinguisticToken extends LinguisticEntity implements HasWord, HasTag
 	}
 	
 	@Override
-	public int getAbsoluteBeginPosition() {
+	public int getRelativeBeginPosition() {
 		return this.token.beginPosition();
 	}
 	
 	@Override
-	public int getAbsoluteEndPosition() {
+	public int getRelativeEndPosition() {
 		return this.token.endPosition();
 	}
 }

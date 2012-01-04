@@ -52,12 +52,22 @@ public class LinguisticSentence extends LinguisticEntity {
 	 * @return The tokens in this sentence.
 	 */
 	public Iterable<LinguisticToken> getTokens() {
-		return Iterables.transform(this.sentence.get(TokensAnnotation.class), new Function<CoreLabel, LinguisticToken>() {
+		class CreateTokenFunction implements Function<CoreLabel, LinguisticToken> {
+			private LinguisticSentence sentence;
+			
+			public CreateTokenFunction(LinguisticSentence sentence) {
+				this.sentence = sentence;
+			}
+			
 			@Override
 			public LinguisticToken apply(CoreLabel input) {
-				return new LinguisticToken(input, areTokensLemmatized);
+				LinguisticToken newToken = new LinguisticToken(input, areTokensLemmatized);
+				newToken.setOffset(sentence.getOffset());
+				return newToken;
 			}
-		});
+		}
+		
+		return Iterables.transform(this.sentence.get(TokensAnnotation.class), new CreateTokenFunction(this));
 	}
 	
 	/**
@@ -86,7 +96,9 @@ public class LinguisticSentence extends LinguisticEntity {
 			return this;
 		}
 		
-		return new LinguisticSentence(Iterables.getFirst(NlpWrapperEN.getTagger().getSentences(this.getText()), null));
+		LinguisticSentence newSentence = new LinguisticSentence(Iterables.getFirst(NlpWrapperEN.getTagger().getSentences(this.getText()), null));
+		newSentence.setOffset(this.getAbsoluteBeginPosition());
+		return newSentence;
 	}
 	
 	/**
@@ -99,7 +111,9 @@ public class LinguisticSentence extends LinguisticEntity {
 			return this;
 		}
 
-		return new LinguisticSentence(Iterables.getFirst(NlpWrapperEN.getParser().getSentences(this.getText()), null));
+		LinguisticSentence newSentence = new LinguisticSentence(Iterables.getFirst(NlpWrapperEN.getParser().getSentences(this.getText()), null));
+		newSentence.setOffset(this.getAbsoluteBeginPosition());
+		return newSentence;
 	}
 	
 	/**
@@ -114,12 +128,12 @@ public class LinguisticSentence extends LinguisticEntity {
 	}
 	
 	@Override
-	public int getAbsoluteBeginPosition() {
+	public int getRelativeBeginPosition() {
 		return this.sentence.get(CharacterOffsetBeginAnnotation.class);
 	}
 	
 	@Override
-	public int getAbsoluteEndPosition() {
+	public int getRelativeEndPosition() {
 		return this.sentence.get(CharacterOffsetEndAnnotation.class);
 	}
 }
