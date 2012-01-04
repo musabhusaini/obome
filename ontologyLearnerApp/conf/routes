@@ -5,6 +5,14 @@
 # Home page
 GET     /                                       Application.index
 
+GET     /documents                              Documents.list
+
+GET     /documents/{uuid}                       Documents.single
+
+GET     /aspects                                Aspects.list
+
+GET     /aspects/{aspect}                       Aspects.single
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 

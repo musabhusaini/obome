@@ -15,5 +15,6 @@
 		<nature>org.eclipse.jdt.core.javanature</nature>
 		<nature>org.playframework.playclipse.playNature</nature>
 	</natures>
-	
+	<linkedResources><link><name>maven-head</name><type>2</type><location>C:/Program Files/play-framework/modules/maven-head/app</location></link>
+</linkedResources>
 </projectDescription>
