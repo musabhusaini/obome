@@ -7,54 +7,34 @@
 
 <div id="mainContainer">
 	<table id="containerTable">
-		<tr>
+<!--		<tr>
 			<td class="columnLabel">Review:</td>
 			<td class="columnLabel">Aspects:</td>
 			<td class="columnLabel">Keywords:</td>
-		</tr>
+		</tr> -->
 		<tr>
 			<td>
-				<div id="documentContainer" class="document">
-				</div>
+				<div id="documentContainer"></div>
 			</td>
 			<td>
-				#{select "aspects.list", id:"aspectsList", size:"15", class:"wordList"}
-				#{/select}
+				<div id="aspectsContainer"></div>
 			</td>
-			<td>
-				#{select "keywords.List", id:"keywordsList", size:"15", class:"wordList"}
-				#{/select}
-			</td>
-		</tr>
-		<tr>
-			<td>
-				<button id="prevDoc">Previous</button>
-				<button id="nextDoc">Next</button>
-			</td>
-			<td></td>
-			<td></td>
 		</tr>
 	</table>
 </div>
 
-#{script "OntologyLearner.js" /}
-#{script "OntologyLearner.UrlStore.js" /}
-#{script "OntologyLearner.Util.js" /}
-#{script "OntologyLearner.Document.js" /}
+#{script "ontologyLearner.documents.js" /}
 #{script "OntologyLearner.Aspects.js" /}
 
 <script type="text/javascript">
 	(function(window, document, $, OntologyLearner, UrlStore) {
+		$(document).ready(function() {
+			$("#documentContainer").documentWidget({
+				header: "Review:"
+			});
+		});
 		
-		UrlStore.GetDocumentList = function() { return "@{Documents.list()}"; };
-		UrlStore.GetDocument = function(uuid) { return "@{Documents.single(':uuid:')}".replace(":uuid:", uuid); };
-		
-		UrlStore.GetAspectList = function() { return "@{Aspects.list()}"; };
-		UrlStore.GetAspect = function(aspect) { return "@{Aspects.single(':aspect:')}".replace(":aspect:", aspect); };
-		
-		UrlStore.GetSpinner = function() { return "@{'/public/images/spinner.gif'}"; };
-		
-		OntologyLearner.Document.initialize();
-		OntologyLearner.Aspects.initialize();
+//		OntologyLearner.Document.initialize();
+//		OntologyLearner.Aspects.initialize();
 	})(window, window.document, window.jQuery, window.OntologyLearner, window.OntologyLearner.UrlStore)
 </script>

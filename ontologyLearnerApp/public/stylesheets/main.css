@@ -8,3 +8,7 @@
 	width: 150px;
 	height: 100%;
 }
+
+.spinner {
+	background: url(/public/images/spinner.gif) 50% top;
+}
