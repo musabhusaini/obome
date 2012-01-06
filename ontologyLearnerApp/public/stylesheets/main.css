@@ -1,6 +1,6 @@
-.document {
+.ui-document-text {
 	width: 500px;
-	height: 400px;
+	height: 300px;
 	overflow: auto;
 }
 
@@ -9,6 +9,8 @@
 	height: 100%;
 }
 
-.spinner {
-	background: url(/public/images/spinner.gif) 50% top;
+.ui-spinner {
+	width: 36px;
+	height: 36px;
+	background-image: url(/public/images/spinner.gif);
 }

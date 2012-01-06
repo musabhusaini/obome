@@ -1,7 +1,7 @@
-(function(window, document, $, OntologyLearner, UrlStore, Util) {
-	OntologyLearner.Aspects = OntologyLearner.Aspects || {};
+(function(window, document, $, ontologyLearner, UrlStore, Util) {
+	ontologyLearner.Aspects = ontologyLearner.Aspects || {};
 	
-	OntologyLearner.Aspects.initialize = function() {
+	ontologyLearner.Aspects.initialize = function() {
 		var aspectsList = "#aspectsList";
 		var keywordsList = "#keywordsList";
 		
@@ -32,4 +32,4 @@
 			}
 		});
 	};
-})(window, window.document, window.jQuery, window.OntologyLearner, window.OntologyLearner.UrlStore, window.OntologyLearner.Util);
+})(window, window.document, window.jQuery, window.ontologyLearner, window.ontologyLearner.UrlStore, window.ontologyLearner.Util);

@@ -1,8 +1,6 @@
 #{extends 'main.html' /}
 #{set title:'Home' /}
 
-#{stylesheet 'main.css' /}
-
 <h2>Ontology Creation by Active Learning</h2>
 
 <div id="mainContainer">
@@ -23,18 +21,18 @@
 	</table>
 </div>
 
-#{script "ontologyLearner.documents.js" /}
+#{script "widgets.documents.js" /}
 #{script "OntologyLearner.Aspects.js" /}
 
 <script type="text/javascript">
-	(function(window, document, $, OntologyLearner, UrlStore) {
+	(function(window, document, $, ontologyLearner) {
 		$(document).ready(function() {
-			$("#documentContainer").documentWidget({
+			$("#documentContainer").documentDisplay({
 				header: "Review:"
 			});
 		});
 		
 //		OntologyLearner.Document.initialize();
 //		OntologyLearner.Aspects.initialize();
-	})(window, window.document, window.jQuery, window.OntologyLearner, window.OntologyLearner.UrlStore)
+	})(window, window.document, window.jQuery, window.ontologyLearner)
 </script>

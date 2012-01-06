@@ -3,7 +3,6 @@ package controllers;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import com.google.common.base.Function;
@@ -14,6 +13,7 @@ import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions.FeatureT
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
+import play.cache.Cache;
 import play.mvc.*;
 import models.*;
 
@@ -32,31 +32,38 @@ public class Documents extends Controller {
     	renderJSON(identifierList);
     }
 
-    public static void single(String uuid) {
-    	OntologyLearnerProgram program = new OntologyLearnerProgram();
-    	TextDocument doc = program.retrieveTextDocument(UUID.fromString(uuid), FeatureType.SMART_NOUNS);
-    	program.close();
+    public static void single(String uuid, boolean bypassCache) {
+    	Document doc = (!bypassCache ? Cache.get(uuid, Document.class) : null);
     	
-    	StringBuilder text = new StringBuilder(doc.getText());
-    	List<LinguisticToken> features = Lists.newArrayList(doc.getFeatures());
-    	Collections.sort(features, Collections.reverseOrder(new Comparator<LinguisticToken>() {
-			@Override
-			public int compare(LinguisticToken arg0, LinguisticToken arg1) {
-				return arg0.getAbsoluteEndPosition() - arg1.getAbsoluteBeginPosition();
-			}
-    	}));
-    	
-    	for (LinguisticToken feature : features) {
-    		String substring = text.substring(feature.getAbsoluteBeginPosition(), feature.getAbsoluteEndPosition());
-    		if (!substring.equals(feature.getText())) {
-    			System.err.println(feature.getText() + " != " + substring);
-    			continue;
-    		}
-    		
-    		text.insert(feature.getAbsoluteEndPosition(), "</a>");
-    		text.insert(feature.getAbsoluteBeginPosition(), "<a id='feature_" + feature.getText() + "' class='feature' href='#'>");
+    	if (doc == null) {
+	    	OntologyLearnerProgram program = new OntologyLearnerProgram();
+	    	TextDocument textDoc = program.retrieveTextDocument(UUID.fromString(uuid), FeatureType.SMART_NOUNS);
+	    	program.close();
+	    	
+	    	StringBuilder text = new StringBuilder(textDoc.getText());
+	    	List<LinguisticToken> features = Lists.newArrayList(textDoc.getFeatures());
+	    	Collections.sort(features, Collections.reverseOrder(new Comparator<LinguisticToken>() {
+				@Override
+				public int compare(LinguisticToken arg0, LinguisticToken arg1) {
+					return arg0.getAbsoluteEndPosition() - arg1.getAbsoluteBeginPosition();
+				}
+	    	}));
+	    	
+	    	for (LinguisticToken feature : features) {
+	    		String substring = text.substring(feature.getAbsoluteBeginPosition(), feature.getAbsoluteEndPosition());
+	    		if (!substring.equals(feature.getText())) {
+	    			System.err.println(feature.getText() + " != " + substring);
+	    			continue;
+	    		}
+	    		
+	    		text.insert(feature.getAbsoluteEndPosition(), "</a>");
+	    		text.insert(feature.getAbsoluteBeginPosition(), "<a id='feature_" + feature.getText() + "' class='feature' href='#'>");
+	    	}
+	    	
+	    	doc = new Document(text.toString());
+	    	Cache.set(textDoc.getIdentifier().toString(), doc, "30mn");
     	}
     	
-    	renderJSON(new Document(text.toString()));
+    	renderJSON(doc);
     }
 }

@@ -1,14 +1,17 @@
 package models;
 
-import play.*;
-import play.db.jpa.*;
+import javax.persistence.Entity;
 
-import javax.persistence.*;
-import java.util.*;
+import play.db.jpa.Model;
 
 @Entity
 public class Document extends Model {
-    public String text;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 6635638706289918437L;
+	
+	public String text;
     
     public Document(String text) {
     	this.text = text;
