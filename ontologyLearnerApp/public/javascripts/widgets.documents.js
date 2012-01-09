@@ -2,6 +2,7 @@
 
 	var headerLabel = "dw_header";
 	var textContainer = "dw_textContainer";
+	var countSpan = "dw_count";
 	var controlsContainer = "dw_controlsContainer";
 	var nextButton = "dw_nextButton";
 	var prevButton = "dw_prevButton";
@@ -19,7 +20,7 @@
 	
 	$.widget("widgets.documentDisplay", {
 		options: {
-			header: "Review:",
+			header: "Review",
 			uuids: null,
 			offset: 0,
 			bypassCache: false
@@ -47,6 +48,10 @@
 					.find($$(textContainer, id))
 					.empty()
 					.html(window.unescape(doc.text));
+				
+				$(me._container)
+					.find($$(countSpan, id))
+					.text((index+1).toString() + " of " + uuids.length.toString());
 			});
 
 			$(me._container).find($$(prevButton, id)).button("option", {
@@ -70,31 +75,45 @@
 				me.option({ offset: me.options.offset-1 });
 			};
 			
-			me._container = $(document.createElement("div"))
+			// Define the container that will keep everything else.
+			me._container = $("<ul>")
 				.addClass("ui-widget")
-
-			$(me.element)
-				.append(me._container);
-
+				.addClass("ui-controls-list")
+				.appendTo(me.element);
+			
 			// Define the header.
-			var headerElem = $(document.createElement("div"))
+			var headerElem = $("<div>")
 				.addClass("ui-widget-header")
 				.addClass("ui-corner-top")
+				.addClass("ol-header")
 				.attr("id", makeId(headerLabel, id))
-				.text(me.options.header);
-			
+				.text(me.options.header)
+				.appendTo($("<li>")
+						.appendTo(me._container));
+
+			$("<span>")
+				.attr("id", makeId(countSpan, id))
+				.appendTo(headerElem)
+				.css("float", "right");
+
 			// Define the text container.
-			var textContainerElem = $(document.createElement("div"))
+			var textContainerElem = $("<div>")
 				.addClass("ui-widget-content")
 				.attr("id", makeId(textContainer, id))
-				.addClass("ui-document-text");
-
+				.addClass("ol-document-text")
+				.appendTo($("<li>")
+						.appendTo(me._container));
+			
 			// Define the controls container.
-			var controlsContainerElem = $(document.createElement("div"))
-				.attr("id", makeId(controlsContainer, id));
+			var controlsContainerElem = $("<ul>")
+				.addClass("ui-sidebyside-controls-list")
+				.attr("id", makeId(controlsContainer, id))
+				.appendTo($("<li>")
+						.addClass("ui-controls-list-item-spaced")
+						.appendTo(me._container));
 
 			// Define the previous button.
-			var prevButtonElem = $(document.createElement("div"))
+			var prevButtonElem = $("<li>")
 				.attr("id", makeId(prevButton, id))
 				.addClass(navButtonsClass)
 				.button({
@@ -104,12 +123,14 @@
 						primary: "ui-icon-circle-triangle-w"
 					}
 				})
-				.click(goBack);
+				.click(goBack)
+				.appendTo(controlsContainerElem);
 			
 			// Define the next button.
-			var nextButtonElem = $(document.createElement("div"))
+			var nextButtonElem = $("<li>")
 				.attr("id", makeId(nextButton, id))
 				.addClass(navButtonsClass)
+				.addClass("ui-sidebyside-controls-list-item-spaced")
 				.button({
 					disabled: true,
 					label: "Next",
@@ -117,55 +138,19 @@
 						secondary: "ui-icon-circle-triangle-e"
 					}
 				})
-				.click(goForward);
+				.click(goForward)
+				.appendTo(controlsContainerElem);
 			
 			// Define the bypass cache checkbox area.
-			var bypassCacheToggleElem = $("<input type='checkbox' id='" + makeId(bypassCacheToggle, id) + "'/>")
-				.attr("checked", me.options.bypassCache);
-			var bypassCacheContainer = $(document.createElement("div"))
-				.append(bypassCacheToggleElem);
-			$(bypassCacheToggleElem).after("<label for='" + makeId(bypassCacheToggle, id) + "'>Bypass Cache</label>");
-			$(bypassCacheToggleElem)
-				.click(function() {
-					me.option({ bypassCache: !me.options.bypassCache });
-				});
-
-			// Attach all the controls to the control area.
-			$(controlsContainerElem)
-				.append(prevButtonElem)
-				.append(nextButtonElem)
-				.append(bypassCacheContainer);
-			
-			// Attach all controls to the main container.
-			$(me._container)
-				.append(headerElem)
-				.append(textContainerElem)
-				.append(controlsContainerElem);
-			
-			// Set positions of various controls.
-			$(controlsContainerElem).position({
-				my: "top",
-				at: "bottom",
-				of: $(textContainerElem),
-				offset: "0 10",
-				collision: "none"
-			});
-			
-			$(nextButtonElem).position({
-				my: "left",
-				at: "right",
-				of: $(prevButtonElem),
-				offset: "10 0",
-				collision: "none"
-			});
-			
-			$(bypassCacheContainer).position({
-				my: "left",
-				at: "right",
-				of: $(nextButtonElem),
-				offset: "10 0",
-				collision: "none"
-			});
+			$("<li>")
+				.addClass("ui-sidebyside-controls-list-item-spaced")
+				.append($("<input type='checkbox' id='" + makeId(bypassCacheToggle, id) + "'/>")
+					.attr("checked", me.options.bypassCache)
+					.click(function() {
+						me.option({ bypassCache: !me.options.bypassCache });
+					}))
+				.append("<label for='" + makeId(bypassCacheToggle, id) + "'>Bypass Cache</label>")
+				.appendTo(controlsContainerElem);
 			
 			$(me._container).hide();
 		},

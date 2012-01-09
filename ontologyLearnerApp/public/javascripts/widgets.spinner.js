@@ -15,8 +15,7 @@
 			$(this._spinner)
 				.removeClass()
 				.addClass(this.options.spinnerClass)
-				.addClass("ui-widget")
-				.addClass("ui-corner-all");
+				.addClass("ui-widget");
 		},
 	
 		_create: function() {
@@ -25,14 +24,14 @@
 
 			// Create spinner.
 			this._spinner = "spinner_" + window.Math.floor(window.Math.random() * 1000000).toString();
-			this._spinner = $(document.createElement("div"))
+			this._spinner = $("<div>")
 				.attr("id", this._spinner)
 				.addClass("ui-spinner")
 				.addClass("ui-widget")
-				.addClass("ui-corner-all");
+				.addClass("ui-corner-all")
+				.appendTo(this.element);
 			
-			// Append this and remove everything else.
-			$(this.element).append(this._spinner);
+			// Remove everything else.
 			$(this._theRest).remove();
 			
 			// Move to the center.

@@ -1,16 +1,69 @@
-.ui-document-text {
-	width: 500px;
-	height: 300px;
-	overflow: auto;
+html {
+	padding-top: .25em;
+	padding-left: .25em;
+	padding-right: .25em;
+	padding-bottom: 1em;
 }
 
-.wordList {
-	width: 150px;
-	height: 100%;
+body {
+	font-size: 70%;
+	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
+}
+
+ul.ui-sidebyside-controls-list, ul.ui-controls-list {
+	padding: 0em;
+}
+
+ul.ui-sidebyside-controls-list > li {
+	float: left;
+	list-style: none;
+	padding: 0em;
+}
+
+ul.ui-controls-list > li {
+	list-style: none;
+	padding: 0em;
+}
+
+.ui-controls-list-item-spaced {
+	margin-top: .5em;
+}
+
+.ui-sidebyside-controls-list-item-spaced {
+	margin-left: .5em;
 }
 
 .ui-spinner {
 	width: 36px;
 	height: 36px;
 	background-image: url(/public/images/spinner.gif);
+}
+
+.ui-fit-horizontal {
+	width: 100%;
+}
+
+.ui-fit-vertical {
+	height: 100%;
+}
+
+.ol-header {
+	padding: .25em;
+}
+
+.ol-document-text {
+	width: 35em;
+	height: 23.89em;
+	overflow: auto;
+	padding: .5em;
+}
+
+.ol-editable-list {
+	width: 13em;
+	height: 25em;
+	overflow: auto;
+}
+
+.ol-edit-textbox {
+	width: 95%;
 }

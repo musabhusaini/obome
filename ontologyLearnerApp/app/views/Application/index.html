@@ -4,25 +4,14 @@
 <h2>Ontology Creation by Active Learning</h2>
 
 <div id="mainContainer">
-	<table id="containerTable">
-<!--		<tr>
-			<td class="columnLabel">Review:</td>
-			<td class="columnLabel">Aspects:</td>
-			<td class="columnLabel">Keywords:</td>
-		</tr> -->
-		<tr>
-			<td>
-				<div id="documentContainer"></div>
-			</td>
-			<td>
-				<div id="aspectsContainer"></div>
-			</td>
-		</tr>
-	</table>
+	<ul class="ui-sidebyside-controls-list">
+		<li><div id="documentContainer"></div></li>
+		<li><div id="aspectsContainer"></div></li>
+	</ul>
 </div>
 
 #{script "widgets.documents.js" /}
-#{script "OntologyLearner.Aspects.js" /}
+#{script "widgets.aspectsBrowser.js" /}
 
 <script type="text/javascript">
 	(function(window, document, $, ontologyLearner) {
@@ -30,9 +19,19 @@
 			$("#documentContainer").documentDisplay({
 				header: "Review:"
 			});
+			
+			$("#aspectsContainer")
+				.aspectsBrowser({
+				})
+				.position({
+					my: "left top",
+					at: "right top",
+					of: $("#documentContainer"),
+					offset: "10 0",
+					collision: "none"
+				});
 		});
 		
-//		OntologyLearner.Document.initialize();
 //		OntologyLearner.Aspects.initialize();
 	})(window, window.document, window.jQuery, window.ontologyLearner)
 </script>
