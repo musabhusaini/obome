@@ -18,6 +18,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -51,6 +53,7 @@ public class OntologyLearnerProgram {
 	private static final String ASPECTS_TABLE = "aspects";
 	
 	private Connection sqlConnection;
+	private Logger logger;
 		
 	private SqlReviewFactory prepareReviewFactory(SqlReviewFactory factory) {
 		factory.setSqlUrl(SQL_URL);
@@ -232,10 +235,12 @@ public class OntologyLearnerProgram {
 	 * Creates a new instance of {@link OntologyLearnerProgram}.
 	 */
 	public OntologyLearnerProgram() {
+		this.logger = Logger.getLogger(OntologyLearnerProgram.class.getName());
+		
 		try {
 			this.sqlConnection = DriverManager.getConnection(SQL_URL, SQL_USERNAME, SQL_PASSWORD);
 		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Could not connect to database.", e);
+			logger.log(Level.SEVERE, "Could not connect to database.", e);
 		}
 	}
 	
@@ -248,7 +253,7 @@ public class OntologyLearnerProgram {
 			Map<UUID,Integer> clusterStubMap = this.retrieveExistingClusterStubs();
 			return clusterStubMap.keySet();
 		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Failed to retrieve cluster heads.", e);
+			logger.log(Level.SEVERE, "Failed to retrieve cluster heads.", e);
 		}
 		
 		return null;
@@ -284,7 +289,7 @@ public class OntologyLearnerProgram {
 				aspects.add(rs.getString("aspect"));
 			}
 		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Failed to retrieve aspects.", e);
+			logger.log(Level.SEVERE, "Failed to retrieve aspects.", e);
 		}
 		
 		return aspects;
@@ -296,7 +301,7 @@ public class OntologyLearnerProgram {
 	 * @return A list of keywords.
 	 */
 	public Iterable<String> retrieveKeywords(String aspect) {
-		if (aspect == null || aspect.equals("")) {
+		if (StringUtils.isEmpty(aspect)) {
 			throw new IllegalArgumentException("Must provide an aspect to look for.");
 		}
 		
@@ -310,7 +315,7 @@ public class OntologyLearnerProgram {
 				keywords.add(rs.getString("keyword"));
 			}
 		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Failed to retrieve aspects.", e);
+			logger.log(Level.SEVERE, "Failed to retrieve aspects.", e);
 		}
 		
 		return keywords;
@@ -322,7 +327,7 @@ public class OntologyLearnerProgram {
 	 * @return A list of aspects.
 	 */
 	public Iterable<String> retrieveAspects(String keyword) {
-		if (keyword == null || keyword.equals("")) {
+		if (StringUtils.isEmpty(keyword)) {
 			throw new IllegalArgumentException("Must provide a keyword to look for.");
 		}
 
@@ -336,7 +341,7 @@ public class OntologyLearnerProgram {
 				aspects.add(rs.getString("aspect"));
 			}
 		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Failed to retrieve aspects.", e);
+			logger.log(Level.SEVERE, "Failed to retrieve aspects.", e);
 		}
 		
 		return aspects;		
@@ -348,7 +353,7 @@ public class OntologyLearnerProgram {
 	 * @return A flag indicating whether the aspect was added or not.
 	 */
 	public boolean addAspect(String aspect) {
-		if (aspect == null || aspect.equals("")) {
+		if (StringUtils.isEmpty(aspect)) {
 			throw new IllegalArgumentException("Must provide an aspect to add.");
 		}
 
@@ -365,7 +370,7 @@ public class OntologyLearnerProgram {
 			sqlStmt.setString(1, aspect);
 			sqlStmt.executeUpdate();
 		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.WARNING, ".", e);
+			logger.log(Level.WARNING, "Failed to add aspect.", e);
 			return false;
 		}
 		
@@ -379,11 +384,11 @@ public class OntologyLearnerProgram {
 	 * @return A flag indicating whether the keyword was added or not.
 	 */
 	public boolean addKeyword(String aspect, String keyword) {
-		if (aspect == null || aspect.equals("")) {
-			throw new IllegalArgumentException("Must provide an aspect to add.");
+		if (StringUtils.isEmpty(aspect)) {
+			throw new IllegalArgumentException("Must provide an aspect to add to.");
 		}
 		
-		if (keyword == null || keyword.equals("")) {
+		if (StringUtils.isEmpty(keyword)) {
 			throw new IllegalArgumentException("Must provide a keyword to add.");
 		}
 
@@ -402,7 +407,166 @@ public class OntologyLearnerProgram {
 			sqlStmt.setString(2, keyword);
 			sqlStmt.executeUpdate();
 		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.WARNING, ".", e);
+			logger.log(Level.WARNING, "Failed to add keyword.", e);
+			return false;
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Deletes an aspect from the database.
+	 * @param aspect The aspect to delete.
+	 * @return A flag indicating whether the aspect was deleted or not.
+	 */
+	public boolean deleteAspect(String aspect) {
+		if (StringUtils.isEmpty(aspect)) {
+			throw new IllegalArgumentException("Must provide an aspect to delete.");
+		}
+
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT uuid FROM " + ASPECTS_TABLE +
+					" WHERE aspect=?");
+			sqlStmt.setString(1, aspect);
+			ResultSet rs = sqlStmt.executeQuery();
+			if (!rs.next()) {
+				return false;
+			}
+			
+			sqlStmt = this.sqlConnection.prepareStatement("DELETE FROM " + ASPECTS_TABLE + " WHERE aspect=?");
+			sqlStmt.setString(1, aspect);
+			sqlStmt.executeUpdate();
+		} catch (SQLException e) {
+			logger.log(Level.WARNING, "Failed to delete the aspect.", e);
+			return false;
+		}
+		
+		return true;		
+	}
+	
+	/**
+	 * Deletes a keyword from the database.
+	 * @param aspect The aspect this keyword belongs to.
+	 * @param keyword The keyword to delete.
+	 * @return A flag indicating whether the keyword was deleted or not.
+	 */
+	public boolean deleteKeyword(String aspect, String keyword) {
+		if (StringUtils.isEmpty(aspect)) {
+			throw new IllegalArgumentException("Must provide an aspect to add to.");
+		}
+		
+		if (StringUtils.isEmpty(keyword)) {
+			throw new IllegalArgumentException("Must provide a keyword to add.");
+		}
+
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT uuid FROM " + ASPECTS_TABLE +
+					" WHERE aspect=? AND keyword=?");
+			sqlStmt.setString(1, aspect);
+			sqlStmt.setString(2, keyword);
+			ResultSet rs = sqlStmt.executeQuery();
+			if (!rs.next()) {
+				return false;
+			}
+			
+			sqlStmt = this.sqlConnection.prepareStatement("DELETE FROM " + ASPECTS_TABLE + " WHERE aspect=? AND keyword=?");
+			sqlStmt.setString(1, aspect);
+			sqlStmt.setString(2, keyword);
+			sqlStmt.executeUpdate();
+		} catch (SQLException e) {
+			logger.log(Level.WARNING, "Failed to delete keyword.", e);
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Updates an existing aspect value in the database.
+	 * @param aspect The aspect to update.
+	 * @param newAspect The new value of the aspect.
+	 * @return A flag indicating whether the aspect was updated or not.
+	 */
+	public boolean updateAspect(String aspect, String newAspect) {
+		if (StringUtils.isEmpty(aspect) || StringUtils.isEmpty(newAspect)) {
+			throw new IllegalArgumentException("Must provide valid aspect values.");
+		}
+
+		try {
+			// Make sure the old aspect exists.
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT uuid FROM " + ASPECTS_TABLE +
+					" WHERE aspect=?");
+			sqlStmt.setString(1, aspect);
+			ResultSet rs = sqlStmt.executeQuery();
+			if (!rs.next()) {
+				return false;
+			}
+
+			// Make sure the new aspect does not exist.
+			sqlStmt = this.sqlConnection.prepareStatement("SELECT uuid FROM " + ASPECTS_TABLE +
+					" WHERE aspect=?");
+			sqlStmt.setString(1, newAspect);
+			rs = sqlStmt.executeQuery();
+			if (rs.next()) {
+				return false;
+			}
+			
+			sqlStmt = this.sqlConnection.prepareStatement("UPDATE " + ASPECTS_TABLE + " SET aspect=? WHERE aspect=?");
+			sqlStmt.setString(1, newAspect);
+			sqlStmt.setString(2, aspect);
+			sqlStmt.executeUpdate();
+		} catch (SQLException e) {
+			logger.log(Level.WARNING, "Failed to update aspect.", e);
+			return false;
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Updates an existing keyword value in the database.
+	 * @param aspect The aspect the keyword belongs to.
+	 * @param keyword The keyword to update.
+	 * @param newAspect The new value of the keyword.
+	 * @return A flag indicating whether the keyword was updated or not.
+	 */
+	public boolean updateKeyword(String aspect, String keyword, String newKeyword) {
+		if (StringUtils.isEmpty(aspect)) {
+			throw new IllegalArgumentException("Must provide an aspect to add to.");
+		}
+		
+		if (StringUtils.isEmpty(keyword)) {
+			throw new IllegalArgumentException("Must provide a keyword to add.");
+		}
+
+		try {
+			// Make sure the old keyword exists.
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT uuid FROM " + ASPECTS_TABLE +
+					" WHERE aspect=? AND keyword=?");
+			sqlStmt.setString(1, aspect);
+			sqlStmt.setString(2, keyword);
+			ResultSet rs = sqlStmt.executeQuery();
+			if (!rs.next()) {
+				return false;
+			}
+			
+			// Make sure the new keyword does not exist.
+			sqlStmt = this.sqlConnection.prepareStatement("SELECT uuid FROM " + ASPECTS_TABLE +
+					" WHERE aspect=? AND keyword=?");
+			sqlStmt.setString(1, aspect);
+			sqlStmt.setString(2, newKeyword);
+			rs = sqlStmt.executeQuery();
+			if (rs.next()) {
+				return false;
+			}
+			
+			sqlStmt = this.sqlConnection.prepareStatement("UPDATE " + ASPECTS_TABLE + " SET keyword=? WHERE aspect=? AND keyword=?");
+			sqlStmt.setString(1, newKeyword);
+			sqlStmt.setString(2, aspect);
+			sqlStmt.setString(3, keyword);
+			sqlStmt.executeUpdate();
+		} catch (SQLException e) {
+			logger.log(Level.WARNING, "Failed to update keyword.", e);
 			return false;
 		}
 		
@@ -416,7 +580,7 @@ public class OntologyLearnerProgram {
 		try {
 			this.sqlConnection.close();
 		} catch (SQLException e) {
-			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.WARNING, "Connection already closed or could not be closed.", e);
+			logger.log(Level.WARNING, "Connection already closed or could not be closed.", e);
 		}
 	}
 	
