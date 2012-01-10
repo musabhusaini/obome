@@ -8,17 +8,18 @@
         <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/ui-lightness/jquery-ui-1.8.16.css'}">
         #{get 'moreStyles' /}
         <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
-        <script src="@{'/public/javascripts/jquery-1.6.4.min.js'}" type="text/javascript" charset="${_response_encoding}"></script>
+        <script src="@{'/public/javascripts/jquery-1.7.1.min.js'}" type="text/javascript" charset="${_response_encoding}"></script>
 		<script src="@{'/public/javascripts/jquery-ui-1.8.16.min.js'}" type="text/javascript" charset="${_response_encoding}"></script>
 		#{script "ontologyLearner.js" /}
+		#{script "ontologyLearner.Util.js" /}
 		#{script "ontologyLearner.UrlStore.js" /}
 		#{script "widgets.spinner.js" /}
         #{get 'moreScripts' /}
         
         <script type="text/javascript">
         	(function(window, document, UrlStore) {
-				UrlStore.GetDocumentList = function() { return "@{Documents.list()}"; };
-				UrlStore.GetDocument = function(uuid, bypassCache) {
+				UrlStore.getDocumentList = function() { return "@{Documents.list()}"; };
+				UrlStore.getDocument = function(uuid, bypassCache) {
 					var url = "@{Documents.single(':uuid:')}".replace(":uuid:", uuid);
 					if (bypassCache) {
 						url += "?bypassCache=true";
@@ -26,10 +27,16 @@
 					return url;
 				};
 				
-				UrlStore.GetAspectList = function() { return "@{Aspects.list()}"; };
-				UrlStore.GetAspect = function(aspect) { return "@{Aspects.single(':aspect:')}".replace(":aspect:", aspect); };
-				
-				UrlStore.GetSpinner = function() { return "@{'/public/images/spinner.gif'}"; };
+				UrlStore.getAspectList = function() { return "@{Aspects.list()}"; };
+				UrlStore.getAspect = function(aspect) { return "@{Aspects.single(':aspect:')}".replace(":aspect:", aspect); };
+				UrlStore.postAspect = function(aspect) { return "@{Aspects.postAspect(':aspect:')}".replace(":aspect:", aspect); };
+				UrlStore.postKeyword = function(aspect, keyword) {
+					return "@{Aspects.postKeyword(':aspect:', ':keyword:')}".replace(":aspect:", aspect).replace(":keyword:", keyword);
+				};
+				UrlStore.deleteAspect = function(aspect) { return "@{Aspects.deleteAspect(':aspect:')}".replace(":aspect:", aspect); };
+				UrlStore.deleteKeyword = function(aspect, keyword) {
+					return "@{Aspects.deleteKeyword(':aspect:', ':keyword:')}".replace(":aspect:", aspect).replace(":keyword:", keyword);
+				};
 			})(window, window.document, window.ontologyLearner.UrlStore);
         </script>
     </head>

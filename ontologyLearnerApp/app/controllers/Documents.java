@@ -56,12 +56,12 @@ public class Documents extends Controller {
 	    			continue;
 	    		}
 	    		
-	    		text.insert(feature.getAbsoluteEndPosition(), "</a>");
-	    		text.insert(feature.getAbsoluteBeginPosition(), "<a id='feature_" + feature.getText() + "' class='feature' href='#'>");
+	    		text.insert(feature.getAbsoluteEndPosition(), "}");
+	    		text.insert(feature.getAbsoluteBeginPosition(), "\\feature{");
 	    	}
 	    	
 	    	doc = new Document(text.toString());
-	    	Cache.set(textDoc.getIdentifier().toString(), doc, "30mn");
+	    	Cache.set(textDoc.getIdentifier().toString(), doc, "1h");
     	}
     	
     	renderJSON(doc);

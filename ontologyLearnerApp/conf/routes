@@ -13,6 +13,14 @@ GET     /aspects                                Aspects.list
 
 GET     /aspects/{aspect}                       Aspects.single
 
+POST    /aspects/{aspect}                       Aspects.postAspect
+
+POST    /aspects/{aspect}/{keyword}             Aspects.postKeyword
+
+DELETE  /aspects/{aspect}						Aspects.deleteAspect
+
+DELETE  /aspects/{aspect}/{keyword}				Aspects.deleteKeyword
+
 # Ignore favicon requests
 GET     /favicon.ico                            404
 

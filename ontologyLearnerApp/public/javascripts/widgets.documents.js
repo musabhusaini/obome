@@ -42,16 +42,24 @@
 
 			//Util.displaySpinner($(me._container).find($$(textContainer, id)));
 			$(me._container).find($$(textContainer, id)).spinner();
-			$.getJSON(UrlStore.GetDocument(uuids[index], me.options.bypassCache), function(doc) {
+			$.getJSON(UrlStore.getDocument(uuids[index], me.options.bypassCache), function(doc) {
+				var pattern = /\\feature\{(.+?)\}/mg;
+				var text = doc.text;
+				var match = null;
+				text = text.replace(pattern, "<span class='ol-feature-element'>$1</span>");
+				
 				$(me._container).find($$(textContainer, id)).spinner("destroy");
 				$(me._container)
 					.find($$(textContainer, id))
 					.empty()
-					.html(window.unescape(doc.text));
+					.html(window.unescape(text));
 				
 				$(me._container)
 					.find($$(countSpan, id))
 					.text((index+1).toString() + " of " + uuids.length.toString());
+				
+				$(me._container).find(".ol-feature-element")
+					.button();
 			});
 
 			$(me._container).find($$(prevButton, id)).button("option", {
@@ -164,7 +172,7 @@
 			if (!me.options.uuids) {
 				//Util.displaySpinner($(me._container).find($$(textContainer, id)));
 				$(me._container).find($$(textContainer, id)).spinner();
-				$.getJSON(UrlStore.GetDocumentList(), function(uuids) {
+				$.getJSON(UrlStore.getDocumentList(), function(uuids) {
 					$(me._container).find($$(textContainer, id)).spinner("destroy");
 					me.options.offset = 0;
 					me.option({
