@@ -174,7 +174,7 @@
 						} else {
 							$($(list).data("deleteButton")).button("disable");
 						}
-					}))
+					})
 					.droppable({
 						hoverClass: "ui-state-highlight",
 						greedy: true,
@@ -184,7 +184,7 @@
 								message: "Could not add, possibly due to a conflict."
 							}, me);
 						}
-					})
+					}))
 			// add button.
 			.append($("<li>")
 				.addClass("ui-controls-list-item-spaced")
