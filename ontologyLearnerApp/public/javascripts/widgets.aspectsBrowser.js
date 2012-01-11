@@ -11,6 +11,25 @@
 	function $$(domIdPrefix, id) {
 		return $("#" + makeId(domIdPrefix, id));
 	}
+
+	function callAndDisplay(handlers, value, errorMessage, context) {
+		if (!value) {
+			Util.displayMessage({
+				title: "No Value",
+				message: "Nothing to do anything with."
+			});
+			return;
+		}
+		
+		context = context || this;
+		$.proxy(handlers.ajax, context)(value)
+			.success(function() {
+				$.proxy(handlers.display, context)(value);
+			})
+			.error(function() {
+				Util.displayMessage(error);
+			});
+	}
 	
 	// Creates the dialog div.
 	function createDialog(options) {
@@ -97,22 +116,24 @@
 			$(listItem).on(handlerInfo.event, handlerInfo.handler);
 		});
 		
-		$(listItem).on("dblclick", function(event) {
+		$(listItem).dblclick(function(event) {
 			showSingleFieldDialog({
 				operation: "Edit",
 				buttonTitle: "Update",
 				fieldName: options.typeName,
 				operate: function(newValue) {
-					options.updateHandler($(event.target).val(), newValue)
-						.success(function() {
-							$(event.target).text(newValue).val(newValue);
-						})
-						.error(function() {
-							Util.displayMessage({
-								title: 'Update Failed',
-								message: "Could not update, possibly due to a conflict."
-							});
-						})
+					callAndDisplay({
+						ajax: function(value) {
+							return options.updateHandler($(event.target).val(), value);
+						},
+						
+						display: function(value) {
+							$(event.target).text(value).val(value);
+						}
+					}, newValue, {
+						title: 'Update Failed',
+						message: "Could not update, possibly due to a conflict."
+					}, options.me);
 				}
 			});
 		});
@@ -150,6 +171,16 @@
 							$($(list).data("deleteButton")).button("disable");
 						}
 					}))
+					.droppable({
+						hoverClass: "ui-state-highlight",
+						greedy: true,
+						drop: function(event, ui) {
+							callAndDisplay(options.addHandlers, ui.draggable.text(), {
+								title: "Add Failed",
+								message: "Could not add, possibly due to a conflict."
+							}, me);
+						}
+					})
 			// add button.
 			.append($("<li>")
 				.addClass("ui-controls-list-item-spaced")
@@ -165,16 +196,10 @@
 								buttonTitle: "Add",
 								fieldName: options.typeName,
 								operate: function(value) {
-									options.addAjax(value)
-										.success(function() {
-											options.addDisplayItem(value);
-										})
-										.error(function() {
-											Util.displayMessage({
-												title: 'Add Failed',
-												message: "Could not add, possibly due to a conflict."
-											});
-										});
+									callAndDisplay(options.addHandlers, value, {
+										title: "Add Failed",
+										message: "Could not add, possibly due to a conflict."
+									}, me);
 								}
 							});
 						}))
@@ -186,16 +211,10 @@
 						})
 						.click(function() {
 							var value = $(list).val();
-							options.deleteAjax(value)
-								.success(function() {
-									options.deleteDisplayItem(value);
-								})
-								.error(function() {
-									Util.displayMessage({
-										title: 'Delete Failed',
-										message: "Could not delete, possibly due to a conflict."
-									});									
-								});
+							callAndDisplay(options.deleteHandlers, value, {
+								title: 'Delete Failed',
+								message: "Could not delete, possibly due to a conflict."
+							}, me);
 						}))));
 		
 		// Set some data for buttons that we can use later.
@@ -233,96 +252,150 @@
 		_id: null,
 		
 		_container: null,
-		
-		_deleteDisplayAspect: function(aspect) {
-			var aspectsList = $$(aspectsListId, this._id);
-			var toDelete = $(aspectsList).find("option[value='" + aspect + "']");
-			
-			// Find the next possible selection.
-			var next = $(toDelete).next();
-			if (!$(next).size()) {
-				next = $(toDelete).prev();
-			}
-			selectOption(next);
-			
-			$(toDelete).remove();
-			if (!$(next).size()) {
-				// If this was the last aspect, then clear keywords and disable the delete button.
-				$.each($$(keywordsListId, this._id).find("option").val(), function(i, keyword) {
-					this._deleteDisplayKeyword(keyword);
-				});
-				
-				$($(aspectsList).data("deleteButton")).button("disable");
-			}
-		},
-		
-		_deleteDisplayKeyword: function(keyword) {
-			var keywordsList = $$(keywordsListId, this._id);
-			var toDelete = keywordsList.find("option[value='" + keyword + "']");
-			var next = $(toDelete).next();
-			if (!$(next).size()) {
-				next = $(toDelete).prev();
-			}
-			
-			selectOption(next);
-			
-			$(toDelete).remove();
-			
-			if (!$(next).size()) {
-				$($(keywordsList).data("deleteButton")).button("disable");
-			}
-		},
-		
-		_addDisplayAspect: function(aspect) {
-			aspect = convertToAspects([aspect])[0];
-			
-			var me = this;
-			var aspectsList = $$(aspectsListId, me._id); 
-			var newAspect = $(createEditableListItem({
-				text: aspect.name,
-				value: aspect.name,
-				typeName: "Aspect",
-				updateHandler: function(aspect, newValue) {
-					return $.post(UrlStore.postAspect(aspect), {
-						value: newValue
-					});
-				}
-			})).appendTo(aspectsList);
-			
-			// If nothing is selected, then select this.
-			if (!$(aspectsList).find(":selected").size()) {
-				selectOption(newAspect);
-			}
-		},
-		
-		_addDisplayKeyword: function(keyword) {
-			var keywordsList = $$(keywordsListId, this._id);
-			var newKeyword = $(createEditableListItem({
-				text: keyword,
-				value: keyword,
-				typeName: "Keyword",
-				updateHandler: function(keyword, newValue) {
-					var aspect = $$(aspectsListId, this._id).val();
-					return $.post(UrlStore.postKeyword(aspect, keyword), {
-						value: newValue,
-					});
-				}
-			}))
-			.appendTo(keywordsList);
-			
-			if (!$(keywordsList).find(":selected").size()) {
-				selectOption(newKeyword);
-			}
-		},
 
+		_addAspectHandlers: {
+			ajax: function(value) {
+				return $.post(UrlStore.postAspect(value));
+			},
+			
+			display: function(aspect) {
+				aspect = convertToAspects([aspect])[0];
+				
+				var me = this;
+				var aspectsList = $$(aspectsListId, me._id); 
+				var newAspect = $(createEditableListItem({
+					me: me,
+					text: aspect.name,
+					value: aspect.name,
+					typeName: "Aspect",
+					updateHandler: function(aspect, newValue) {
+						return $.post(UrlStore.postAspect(aspect), {
+							value: newValue
+						});
+					}
+				})).appendTo(aspectsList);
+				
+				// If nothing is selected, then select this.
+				if (!$(aspectsList).find(":selected").size()) {
+					selectOption(newAspect);
+				}
+			}
+		},
+		
+		_deleteAspectHandlers: {
+			ajax: function(value) {
+				return $.ajax({
+					type: "DELETE",
+					url: UrlStore.deleteAspect(value)
+				});
+			},
+			
+			display: function(aspect) {
+				var me = this;
+				var aspectsList = $$(aspectsListId, me._id);
+				var toDelete = $(aspectsList).find("option[value='" + aspect + "']");
+				
+				// Find the next possible selection.
+				var next = $(toDelete).next();
+				if (!$(next).size()) {
+					next = $(toDelete).prev();
+				}
+				selectOption(next);
+				
+				$(toDelete).remove();
+				if (!$(next).size()) {
+					// If this was the last aspect, then clear keywords and disable the delete button.
+					$.each($$(keywordsListId, me._id).find("option").val() || [], function(i, keyword) {
+						$.proxy(me._deleteKeywordHandlers.display, me)(keyword);
+					});
+					
+					$($(aspectsList).data("deleteButton")).button("disable");
+				}
+			}
+		},
+		
+		_addKeywordHandlers: {
+			ajax: function(value) {
+				return $.post(UrlStore.postKeyword($$(aspectsListId, this._id).val() || null,
+						value));
+			},
+			
+			display: function(keyword) {
+				var me = this;
+				var keywordsList = $$(keywordsListId, me._id);
+				var newKeyword = $(createEditableListItem({
+					me: me,
+					text: keyword,
+					value: keyword,
+					typeName: "Keyword",
+					updateHandler: function(keyword, newValue) {
+						var aspect = $$(aspectsListId, me._id).val() || null;
+						return $.post(UrlStore.postKeyword(aspect, keyword), {
+							value: newValue,
+						});
+					}
+				}))
+				.appendTo(keywordsList);
+				
+				if (!$(keywordsList).find(":selected").size()) {
+					selectOption(newKeyword);
+				}
+			}
+		},
+		
+		_deleteKeywordHandlers: {
+			ajax: function(value) {
+				var aspect = $$(aspectsListId, this._id).val() || null;
+				return $.ajax({
+					type: "DELETE",
+					url: UrlStore.deleteKeyword(aspect, value)
+				});					
+			},
+			
+			display: function(keyword) {
+				var keywordsList = $$(keywordsListId, this._id);
+				var toDelete = keywordsList.find("option[value='" + keyword + "']");
+				var next = $(toDelete).next();
+				if (!$(next).size()) {
+					next = $(toDelete).prev();
+				}
+				
+				selectOption(next);
+				
+				$(toDelete).remove();
+				
+				if (!$(next).size()) {
+					$($(keywordsList).data("deleteButton")).button("disable");
+				}
+			}
+		},
+		
+		addAspect: function(aspect) {
+			var me = this;
+			callAndDisplay(me._addAspectHandlers, value, {
+				title: "Add Failed",
+				message: "Could not add, possibly due to a conflict."
+			}, me);
+		},
+		
+		addKeyword: function(keyword) {
+			var me = this;
+			var aspect = $$(aspectsListId, me._id).val() || null;
+			callAndDisplay(me._addKeywordHandlers, keyword, {
+				title: "Add Failed",
+				message: "Could not add, possibly due to a conflict."
+			}, me);
+		},
+		
 		refresh: function() {
 			var me = this;
 			
+			me.disable();
 			$$(aspectsListId, me._id).empty();
-			
 			$.each(me.options.aspects, function(i, aspect) {
-				me._addDisplayAspect(aspect);
-			});			
+				$.proxy(me._addAspectHandlers.display, me)(aspect);
+			});
+			me.enable();
 		},
 	
 		_create: function() {
@@ -336,14 +409,19 @@
 					return;
 				}
 				
-				$(event.target).attr("disabled", "disabled");
-				selected = $(event.target).val();
+				var target = event.target;
+				if ($(target).is("option")) {
+					target = $(target).parent("select");
+				}
+				
+				$(target).attr("disabled", true);
+				selected = $(target).val();
 				$$(keywordsListId, id).empty();
 				$.getJSON(UrlStore.getAspect(selected), function(keywords) {
 					$.each(keywords, function(i, keyword) {
-						me._addDisplayKeyword(keyword);
+						$.proxy(me._addKeywordHandlers.display, me)(keyword);
 					});
-					$(event.target).removeAttr("disabled");
+					$(target).removeAttr("disabled");
 				});
 			}
 			
@@ -360,21 +438,8 @@
 				listId: makeId(aspectsListId, id),
 				listSize: 20,
 				changeHandler: changeAspect,
-				addAjax: function(value) {
-					return $.post(UrlStore.postAspect(value));
-				},
-				addDisplayItem: function(value) {
-					me._addDisplayAspect(value);
-				},
-				deleteAjax: function(value) {
-					return $.ajax({
-						type: "DELETE",
-						url: UrlStore.deleteAspect(value)
-					});
-				},
-				deleteDisplayItem: function(value) {
-					me._deleteDisplayAspect(value);
-				}
+				addHandlers: me._addAspectHandlers,
+				deleteHandlers: me._deleteAspectHandlers
 			})
 			.appendTo($("<li>")
 					.appendTo(me._container)));
@@ -386,23 +451,8 @@
 				header: "Keywords",
 				listId: makeId(keywordsListId, id),
 				listSize: 20,
-				addAjax: function(value) {
-					return $.post(UrlStore.postKeyword($$(aspectsListId, id).val(),
-							value));
-				},
-				addDisplayItem: function(value) {
-					me._addDisplayKeyword(value);
-				},
-				deleteAjax: function(value) {
-					var aspect = $$(aspectsListId, me._id).val();
-					return $.ajax({
-						type: "DELETE",
-						url: UrlStore.deleteKeyword(aspect, value)
-					});					
-				},
-				deleteDisplayItem: function(value) {
-					me._deleteDisplayKeyword(value);
-				}
+				addHandlers: me._addKeywordHandlers,
+				deleteHandlers: me._deleteKeywordHandlers
 			})
 			.appendTo($("<li>")
 				.addClass("ui-sidebyside-controls-list-item-spaced")

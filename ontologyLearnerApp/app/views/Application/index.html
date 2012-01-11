@@ -16,11 +16,19 @@
 <script type="text/javascript">
 	(function(window, document, $, ontologyLearner) {
 		$(document).ready(function() {
-			$("#documentContainer").documentDisplay({
-				header: "Review:"
-			});
+			var docContainer = "#documentContainer";
+			var aspectsContainer = "#aspectsContainer"; 
+			$(docContainer)
+				.documentDisplay({
+					header: "Review:"
+				})
+				.documentDisplay({
+					featureClick: function(event, data) {
+						$(aspectsContainer).aspectsBrowser("addKeyword", data);
+					}
+				});
 			
-			$("#aspectsContainer")
+			$(aspectsContainer)
 				.aspectsBrowser({
 				})
 				.position({

@@ -59,7 +59,15 @@
 					.text((index+1).toString() + " of " + uuids.length.toString());
 				
 				$(me._container).find(".ol-feature-element")
-					.button();
+					.button()
+					.draggable({
+						helper: "clone",
+						revert: "invalid",
+						zIndex: 1000
+					})
+					.click(function(event) {
+						me._trigger("featureClick", event, $(event.target).text());
+					});
 			});
 
 			$(me._container).find($$(prevButton, id)).button("option", {
