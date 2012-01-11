@@ -63,6 +63,7 @@
 					.draggable({
 						helper: "clone",
 						revert: "invalid",
+						revertDuration: 400,
 						zIndex: 1000
 					})
 					.click(function(event) {

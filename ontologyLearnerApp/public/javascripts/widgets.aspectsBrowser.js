@@ -110,32 +110,36 @@
 		var listItem = $("<option>")
 			.addClass("ui-list-item")
 			.text(options.text)
-			.val(options.value);
-		
+			.val(options.value)
+			.hover(function(event) {
+				$(event.target).addClass("ui-state-highlight", "fast");
+			}, function(event) {
+				$(event.target).removeClass("ui-state-highlight", "fast");
+			})
+			.dblclick(function(event) {
+				showSingleFieldDialog({
+					operation: "Edit",
+					buttonTitle: "Update",
+					fieldName: options.typeName,
+					operate: function(newValue) {
+						callAndDisplay({
+							ajax: function(value) {
+								return options.updateHandler($(event.target).val(), value);
+							},
+							
+							display: function(value) {
+								$(event.target).text(value).val(value);
+							}
+						}, newValue, {
+							title: 'Update Failed',
+							message: "Could not update, possibly due to a conflict."
+						}, options.me);
+					}
+				});
+			});
+
 		$.each(options.handlers || [], function(i, handlerInfo) {
 			$(listItem).on(handlerInfo.event, handlerInfo.handler);
-		});
-		
-		$(listItem).dblclick(function(event) {
-			showSingleFieldDialog({
-				operation: "Edit",
-				buttonTitle: "Update",
-				fieldName: options.typeName,
-				operate: function(newValue) {
-					callAndDisplay({
-						ajax: function(value) {
-							return options.updateHandler($(event.target).val(), value);
-						},
-						
-						display: function(value) {
-							$(event.target).text(value).val(value);
-						}
-					}, newValue, {
-						title: 'Update Failed',
-						message: "Could not update, possibly due to a conflict."
-					}, options.me);
-				}
-			});
 		});
 		
 		return listItem;

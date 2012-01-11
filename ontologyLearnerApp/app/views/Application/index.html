@@ -3,10 +3,25 @@
 
 <h2>Ontology Creation by Active Learning</h2>
 
-<div id="mainContainer">
+<div id="mainContainer" class="ui-widget">
 	<ul class="ui-sidebyside-controls-list">
-		<li><div id="documentContainer"></div></li>
-		<li><div id="aspectsContainer"></div></li>
+		<li>
+			<ul class="ui-sidebyside-controls-list">
+				<li><div id="documentContainer"></div></li>
+				<li><div class="ui-sidebyside-controls-list-item-spaced" id="aspectsContainer"></div></li>
+			</ul>
+		</li>
+		<li class="ui-sidebyside-controls-list-item-spaced">
+			<div>
+				<h3>Usage:</h3>
+				<ul id="usageList">
+					<li>Suggested features are highlighted.</li>
+					<li>Click to add a suggested feature as a keyword.</li>
+					<li>Suggested features can also be dragged on to one of the lists.</li>
+					<li>Double click an item in either lists to edit.</li>
+				</ul>
+			</div>
+		</li>
 	</ul>
 </div>
 
@@ -29,15 +44,14 @@
 				});
 			
 			$(aspectsContainer)
-				.aspectsBrowser({
-				})
-				.position({
+				.aspectsBrowser({ });
+/*				.position({
 					my: "left top",
 					at: "right top",
 					of: $("#documentContainer"),
 					offset: "10 0",
 					collision: "none"
-				});
+				});*/
 		});
 		
 //		OntologyLearner.Aspects.initialize();

@@ -12,6 +12,7 @@ body {
 
 ul.ui-sidebyside-controls-list, ul.ui-controls-list {
 	padding: 0em;
+	display: inline;
 }
 
 ul.ui-sidebyside-controls-list > li {
@@ -66,4 +67,17 @@ ul.ui-controls-list > li {
 
 .ol-edit-textbox {
 	width: 95%;
+}
+
+ul#usageList {
+	padding: 0em;
+	display: inline;
+}
+
+#usageList > li {
+	list-style: none;
+	list-style-position: inside;
+	margin-left: 0em;
+	padding-left: .75em;
+	text-indent: .75em;
 }
