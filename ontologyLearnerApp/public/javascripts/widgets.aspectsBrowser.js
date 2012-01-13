@@ -32,7 +32,7 @@
 	}
 	
 	// Creates the dialog div.
-	function createDialog(options) {
+	function createDialogContainer(options) {
 		var field_id = options.fieldName.toLowerCase() + "-field";
 		var form = $("<div>")
 			.attr("title", options.title)
@@ -47,6 +47,7 @@
 						.attr("type", "text")
 						.attr("id", field_id)
 						.attr("name", field_id)
+						.val(options.initialValue || "")
 						))));
 		
 		return form;
@@ -56,9 +57,10 @@
 	function showSingleFieldDialog(options) {
 		var dialogOptions = options;
 		dialogOptions.buttonTitle = dialogOptions.buttonTitle || dialogOptions.operation;
-		var form = createDialog({
+		var form = createDialogContainer({
 			title: dialogOptions.operation + " " + dialogOptions.fieldName,
 			fieldName: dialogOptions.fieldName,
+			initialValue: dialogOptions.initialValue
 		});
 		
 		function closeDialog() {
@@ -121,6 +123,7 @@
 					operation: "Edit",
 					buttonTitle: "Update",
 					fieldName: options.typeName,
+					initialValue: $(event.target).val(),
 					operate: function(newValue) {
 						callAndDisplay({
 							ajax: function(value) {
