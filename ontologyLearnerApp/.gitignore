@@ -4,3 +4,6 @@
 /lib
 /test-result
 /eclipse
+/target
+
+/maven-head
