@@ -8,9 +8,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -23,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesCluster;
@@ -122,7 +125,7 @@ public class OntologyLearnerProgram {
 		this.prepareReviewFactory(factory);
 		TextDocumentFeaturesClusterer clusterer = new TextDocumentFeaturesClusterer(factory);
 		clusterer.setRejectTolerance(0.0);
-		clusterer.setMinDataCoverage(0.95);
+		clusterer.setMinDataCoverage(0.99);
 		clusterer.setInitialClusters(this.recreateClusters(existingPseudoCluster));
 		FeaturesClusterWorld<LinguisticToken> clusterWorld = clusterer.cluster();
 		factory.close();
@@ -175,14 +178,11 @@ public class OntologyLearnerProgram {
 		
 		return clusters;
 	}
-		
-	private HashMap<String,Long> getFeatureMap(Iterable<UUID> clusterHeads) {
-		// Get features map.
-		HashMap<String,Long> features = new HashMap<String,Long>();
-		SqlReviewFactory factory = new SqlUuidListReviewFactory(clusterHeads);
-		this.prepareReviewFactory(factory);
-		factory.getOptions().setFeatureType(TextDocumentOptions.FeatureType.SMART_NOUNS);
+
+	private HashMap<LinguisticToken,Long> getFeatureMap(SqlReviewFactory factory) {
+		HashMap<LinguisticToken,Long> features = new HashMap<>();
 		TextDocument doc;
+		
 		while ((doc = factory.create()) != null) {
 			for (LinguisticToken token : doc.getFeatures()) {
 				String feature = token.getLemma();
@@ -191,21 +191,30 @@ public class OntologyLearnerProgram {
 					continue;
 				}
 				
-				if (!features.containsKey(feature)) {
-					features.put(feature, new Long(0));
+				if (!features.containsKey(token)) {
+					features.put(token, new Long(0));
 				}
-				features.put(feature, new Long(features.get(feature) + 1));
+				features.put(token, new Long(features.get(token) + 1));
 			}
 		}
 		
+		return features;
+	}
+	
+	private HashMap<LinguisticToken,Long> getFeatureMap(Iterable<UUID> clusterHeads) {
+		SqlReviewFactory factory = new SqlUuidListReviewFactory(clusterHeads);
+		this.prepareReviewFactory(factory);
+		factory.getOptions().setFeatureType(TextDocumentOptions.FeatureType.SMART_NOUNS);
+		
+		HashMap<LinguisticToken,Long> features = this.getFeatureMap(factory);
 		factory.close();
 		return features;
 	}
 	
-	private void writeFeaturesToDB(HashMap<String,Long> features) throws SQLException {
+	private void writeFeaturesToDB(HashMap<LinguisticToken,Long> features) throws SQLException {
 		// Sort features by frequency;
-		List<Entry<String,Long>> sortedFeatures = new ArrayList<Entry<String,Long>>(features.entrySet());
-		Collections.sort(sortedFeatures, Collections.reverseOrder(new EntryValueComparator<String,Long>()));		
+		List<Entry<LinguisticToken,Long>> sortedFeatures = new ArrayList<>(features.entrySet());
+		Collections.sort(sortedFeatures, Collections.reverseOrder(new EntryValueComparator<LinguisticToken,Long>()));		
 		System.out.println(sortedFeatures);
 		
 		// Delete all existing records so we don't have duplicates.
@@ -216,8 +225,8 @@ public class OntologyLearnerProgram {
 		// Write all words to database.
 		System.out.println("Writing to database...");
 		sqlStmt = this.sqlConnection.prepareStatement("INSERT INTO " + FEATURES_TABLE + "(feature, count) VALUES(?, ?)");
-		for (Entry<String,Long> entry : sortedFeatures) {
-			String word = entry.getKey();
+		for (Entry<LinguisticToken,Long> entry : sortedFeatures) {
+			String word = entry.getKey().getLemma();
 			try {
 				sqlStmt.setString(1, word);
 				sqlStmt.setLong(2, entry.getValue());
@@ -229,6 +238,30 @@ public class OntologyLearnerProgram {
 		}
 		
 		System.out.println("Finished.");
+	}
+	
+	private double evaluateClusteringQuality(SqlReviewFactory testFactory) throws SQLException {
+		HashMap<LinguisticToken,Long> testNounsMap = this.getFeatureMap(testFactory);
+		
+		Set<LinguisticToken> clusterNouns = new HashSet<LinguisticToken>();
+		Map<TextDocumentSummary,Integer> clusters = getExistingPseudoClusters();
+		for (TextDocumentSummary docSummary : clusters.keySet()) {
+			clusterNouns = Sets.newHashSet(Sets.union(clusterNouns, docSummary.getFeatures()));
+		}
+		
+		Set<LinguisticToken> commonNouns = Sets.newHashSet(Sets.intersection(clusterNouns, testNounsMap.keySet()));
+		
+		double totalMass = 0.0;
+		for (long count : testNounsMap.values()) {
+			totalMass += count;
+		}
+		
+		double clusterMass = 0.0;
+		for (LinguisticToken token : commonNouns) {
+			clusterMass += testNounsMap.get(token);
+		}
+		
+		return clusterMass/totalMass;
 	}
 	
 	/**
@@ -615,7 +648,9 @@ public class OntologyLearnerProgram {
 		int offset = 0;
 		int count = 5000;
 		int increment = 1000;
+		boolean discoverNewClusters = true;
 		boolean extractFeatures = true;
+		boolean evaluateQuality = true;
 		
 		try {
 			if (argMap.containsKey("offset")) {
@@ -629,9 +664,17 @@ public class OntologyLearnerProgram {
 			if (argMap.containsKey("increment")) {
 				increment = Integer.parseInt(argMap.get("increment"));
 			}
+
+			if (argMap.containsKey("extractFeatures")) {
+				discoverNewClusters = Boolean.parseBoolean(argMap.get("discoverNewClusters"));
+			}
 			
 			if (argMap.containsKey("extractFeatures")) {
 				extractFeatures = Boolean.parseBoolean(argMap.get("extractFeatures"));
+			}
+			
+			if (argMap.containsKey("evaluateQuality")) {
+				evaluateQuality = Boolean.parseBoolean(argMap.get("evaluateQuality"));
 			}
 		} catch (NumberFormatException ex) {
 			System.err.println("Could not understand the numbers.");
@@ -642,11 +685,22 @@ public class OntologyLearnerProgram {
 			OntologyLearnerProgram program = new OntologyLearnerProgram();
 			
 			// Read data.
-			Iterable<UUID> clusterHeads = program.discoverClusterHeads(offset, count, increment);
+			Iterable<UUID> clusterHeads;
+			if (discoverNewClusters) {
+				clusterHeads = program.discoverClusterHeads(offset, count, increment);
+			} else {
+				clusterHeads = program.retrieveExistingClusterHeads();
+			}
 			
 			if (extractFeatures) {
-				HashMap<String,Long> features = program.getFeatureMap(clusterHeads);
+				HashMap<LinguisticToken,Long> features = program.getFeatureMap(clusterHeads);
 				program.writeFeaturesToDB(features);
+			}
+			
+			if (evaluateQuality) {
+				SqlReviewFactory testFactory = new SqlLimitedReviewFactory(offset, count);
+				program.prepareReviewFactory(testFactory);
+				System.out.println("Cluster quality = " + program.evaluateClusteringQuality(testFactory) * 100 + "%");
 			}
 			
 			program.close();

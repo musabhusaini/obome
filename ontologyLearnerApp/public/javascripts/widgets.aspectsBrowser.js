@@ -27,7 +27,7 @@
 				$.proxy(handlers.display, context)(value);
 			})
 			.error(function() {
-				Util.displayMessage(error);
+				Util.displayMessage(errorMessage);
 			});
 	}
 	
@@ -244,7 +244,7 @@
 	
 	// Selects a given option in a list properly.
 	function selectOption(option) {
-		$(option).attr("selected", "selected").change();
+		$(option).attr("selected", true).change();
 	}
 
 	// Create the widget.
