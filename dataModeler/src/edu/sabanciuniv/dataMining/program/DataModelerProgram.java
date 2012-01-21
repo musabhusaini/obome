@@ -1,10 +1,16 @@
 package edu.sabanciuniv.dataMining.program;
 
+import java.util.Random;
+
+import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.lazy.IBk;
+import weka.classifiers.meta.Bagging;
+import weka.classifiers.meta.Vote;
 import weka.classifiers.trees.J48;
 import weka.core.Instances;
+import weka.core.SelectedTag;
 import weka.core.converters.DatabaseLoader;
 import weka.filters.Filter;
 import weka.filters.MultiFilter;
@@ -24,6 +30,16 @@ import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
 public class DataModelerProgram {
 
+	private static void printEvaluationStats(Evaluation eval, String name) throws Exception {
+		System.out.println();
+		System.out.println(eval.toSummaryString(name + " Summary\n=============\n", false));
+		
+		System.out.println();
+		System.out.println(eval.toClassDetailsString(name + " Class Details\n=============\n"));
+		
+		//System.out.println(eval.toMatrixString("\n" + name + " Matrix\n==========\n"));
+	}
+	
 	/**
 	 * @param args
 	 * @throws Exception 
@@ -31,8 +47,18 @@ public class DataModelerProgram {
 	public static void main(String[] args) throws Exception {
 		
 		DatabaseLoader loader = new DatabaseLoader();
+		int n = 30000;
 		loader.setSource("jdbc:mysql://localhost/trip_advisor", "java_user", "java_user_pwd");
-		loader.setQuery("SELECT uuid, content, rating FROM reviews WHERE rating > 0 LIMIT 50000");
+
+//		loader.setQuery("(SELECT uuid, content, rating > 2 AS rating FROM reviews WHERE rating < 3 LIMIT " + n/2 + ") UNION " +
+//				"(SELECT uuid, content, rating > 2 AS rating FROM reviews WHERE rating > 2 LIMIT " + n/2 + ");");
+
+		loader.setQuery("(SELECT uuid, content, rating FROM reviews WHERE rating=1 LIMIT " + n/5 + ") UNION " +
+				"(SELECT uuid, content, rating FROM reviews WHERE rating=2 LIMIT " + n/5 + ") UNION " +
+				"(SELECT uuid, content, rating FROM reviews WHERE rating=3 LIMIT " + n/5 + ") UNION " +
+				"(SELECT uuid, content, rating FROM reviews WHERE rating=4 LIMIT " + n/5 + ") UNION " +
+				"(SELECT uuid, content, rating FROM reviews WHERE rating=5 LIMIT " + n/5 + ");");
+
 		loader.setKeys("uuid");
 		Instances dataset = loader.getDataSet();
 		
@@ -58,6 +84,9 @@ public class DataModelerProgram {
 		modifyTextFilter.setModifierFunction(new Function<String,String>() {
 			@Override
 			public String apply(String input) {
+//				System.out.println(input);
+//				return input;
+				
 				TextDocumentOptions options = new TextDocumentOptions();
 				options.setFeatureType(TextDocumentOptions.FeatureType.NOUNS_ADJECTIVES);
 				TextDocument doc = new TextDocument(options);
@@ -88,7 +117,8 @@ public class DataModelerProgram {
 		multiFilter.setInputFormat(dataset);
 		dataset = Filter.useFilter(dataset, multiFilter);
 
-		dataset.randomize(dataset.getRandomNumberGenerator(146));
+		Random rand = dataset.getRandomNumberGenerator(146);
+		dataset.randomize(rand);
 		
 		RemovePercentage rpf = new RemovePercentage();
 		rpf.setPercentage(25.0);
@@ -104,22 +134,27 @@ public class DataModelerProgram {
 		nb.buildClassifier(training);
 		eval = new Evaluation(training);
 		eval.evaluateModel(nb, testing);
-		System.out.println(eval.toSummaryString("\nNaive Bayes' Summary:\n==========\n", false));
-		System.out.println(eval.toMatrixString("\nNaive Bayes' Matrix:\n==========\n"));
-
-		IBk ibk = new IBk(3);
+		printEvaluationStats(eval, "Naive Bayes'");
+		
+		int k = 5;
+		IBk ibk = new IBk(k);
 		ibk.buildClassifier(training);
 		eval = new Evaluation(training);
 		eval.evaluateModel(ibk, testing);
-		System.out.println(eval.toSummaryString("\n3-NN Results:\n==========\n", false));
-		System.out.println(eval.toMatrixString("\n3-NN Matrix:\n==========\n"));
+		printEvaluationStats(eval, k + "-NN");
 		
 		J48 j48 = new J48();
 		j48.buildClassifier(training);
 		eval = new Evaluation(training);
 		eval.evaluateModel(j48, testing);
-		System.out.println(eval.toSummaryString("\nJ48 Results:\n==========\n", false));
-		System.out.println(eval.toMatrixString("\nJ48 Matrix:\n==========\n"));
+		printEvaluationStats(eval, "J48");
+
+//		Vote vote = new Vote();
+//		vote.setClassifiers(new Classifier[]{nb, ibk, j48});
+//		vote.buildClassifier(training);
+//		eval = new Evaluation(training);
+//		eval.evaluateModel(vote, testing);
+//		printEvaluationStats(eval, "Voted Classifier");
 		
 //		RiskFunction<Short> riskFunction = new RiskFunction<Short>() {
 //			@Override
