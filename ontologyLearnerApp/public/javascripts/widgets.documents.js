@@ -2,11 +2,13 @@
 
 	var headerLabel = "dw_header";
 	var textContainer = "dw_textContainer";
-	var countSpan = "dw_count";
+	var countContainer = "dw_countContainer";
+	var countSpan = "dw_countSpan";
 	var controlsContainer = "dw_controlsContainer";
 	var nextButton = "dw_nextButton";
 	var prevButton = "dw_prevButton";
 	var bypassCacheToggle = "dw_bypassCacheToggle";
+	var smartNounsToggle = "dw_smartNounsToggle";
 	
 	var navButtonsClass = "navButton";
 
@@ -23,12 +25,54 @@
 			header: "Review",
 			uuids: null,
 			offset: 0,
-			bypassCache: false
+			bypassCache: false,
+			featureType: "nouns"
 		},
 		
 		_id: null,
 		
 		_container: null,
+		
+		_refreshCountDisplay: function() {
+			var me = this;
+			$(me._container)
+				.find($$(countContainer, me._id))
+				.empty()
+				.append($("<span>")
+					.attr("id", makeId(countSpan, me._id))
+					.text(me.options.offset+1)
+					.hover(function(event) {
+						$(event.target).addClass("ui-state-highlight", "fast");
+					}, function(event) {
+						$(event.target).removeClass("ui-state-highlight", "fast");
+					})
+					.click(function(event) {
+						$(event.target)
+							.empty()
+							.append($("<input type='text'>")
+								.addClass("ol-counter-textbox")
+								.focusout(function() {
+									me._refreshCountDisplay();
+								})
+								.keyup(function(event) {
+									if (event.keyCode === $.ui.keyCode.ESCAPE) {
+										me._refreshCountDisplay();
+									}
+								})
+								.keypress(function(event) {
+									if (event.which === $.ui.keyCode.ENTER) {
+										var index = $(event.target).val();
+										if (index >= 1 && index <= me.options.uuids.length) {
+											me.option({ offset: index-1 });
+										}
+									} else if (window.isNaN(String.fromCharCode(event.which))) {
+										return false;
+									}
+								}));
+						$(".ol-counter-textbox").focus();
+					}))
+				.append(" of " + me.options.uuids.length.toString());
+		},
 		
 		refresh: function() {
 			var me = this;
@@ -40,9 +84,8 @@
 				return;
 			}
 
-			//Util.displaySpinner($(me._container).find($$(textContainer, id)));
 			$(me._container).find($$(textContainer, id)).spinner();
-			$.getJSON(UrlStore.getDocument(uuids[index], me.options.bypassCache), function(doc) {
+			$.getJSON(UrlStore.getDocument(uuids[index], me.options.featureType, me.options.bypassCache), function(doc) {
 				var pattern = /\\feature\{(.+?)\}/mg;
 				var text = doc.text;
 				var match = null;
@@ -54,9 +97,7 @@
 					.empty()
 					.html(window.unescape(text));
 				
-				$(me._container)
-					.find($$(countSpan, id))
-					.text((index+1).toString() + " of " + uuids.length.toString());
+				me._refreshCountDisplay();
 				
 				$(me._container).find(".ol-feature-element")
 					.button()
@@ -64,6 +105,7 @@
 						helper: "clone",
 						revert: "invalid",
 						revertDuration: 400,
+						scope: "features",
 						zIndex: 1000
 					})
 					.click(function(event) {
@@ -96,80 +138,74 @@
 			me._container = $("<ul>")
 				.addClass("ui-widget")
 				.addClass("ui-controls-list")
-				.appendTo(me.element);
-			
-			// Define the header.
-			var headerElem = $("<div>")
-				.addClass("ui-widget-header")
-				.addClass("ui-corner-top")
-				.addClass("ol-header")
-				.attr("id", makeId(headerLabel, id))
-				.text(me.options.header)
-				.appendTo($("<li>")
-						.appendTo(me._container));
-
-			$("<span>")
-				.attr("id", makeId(countSpan, id))
-				.appendTo(headerElem)
-				.css("float", "right");
-
-			// Define the text container.
-			var textContainerElem = $("<div>")
-				.addClass("ui-widget-content")
-				.attr("id", makeId(textContainer, id))
-				.addClass("ol-document-text")
-				.appendTo($("<li>")
-						.appendTo(me._container));
-			
-			// Define the controls container.
-			var controlsContainerElem = $("<ul>")
-				.addClass("ui-sidebyside-controls-list")
-				.attr("id", makeId(controlsContainer, id))
-				.appendTo($("<li>")
-						.addClass("ui-controls-list-item-spaced")
-						.appendTo(me._container));
-
-			// Define the previous button.
-			var prevButtonElem = $("<li>")
-				.attr("id", makeId(prevButton, id))
-				.addClass(navButtonsClass)
-				.button({
-					disabled: true,
-					label: "Previous",
-					icons: {
-						primary: "ui-icon-circle-triangle-w"
-					}
-				})
-				.click(goBack)
-				.appendTo(controlsContainerElem);
-			
-			// Define the next button.
-			var nextButtonElem = $("<li>")
-				.attr("id", makeId(nextButton, id))
-				.addClass(navButtonsClass)
-				.addClass("ui-sidebyside-controls-list-item-spaced")
-				.button({
-					disabled: true,
-					label: "Next",
-					icons: {
-						secondary: "ui-icon-circle-triangle-e"
-					}
-				})
-				.click(goForward)
-				.appendTo(controlsContainerElem);
-			
-			// Define the bypass cache checkbox area.
-			$("<li>")
-				.addClass("ui-sidebyside-controls-list-item-spaced")
-				.append($("<input type='checkbox' id='" + makeId(bypassCacheToggle, id) + "'/>")
-					.attr("checked", me.options.bypassCache)
-					.click(function() {
-						me.option({ bypassCache: !me.options.bypassCache });
-					}))
-				.append("<label for='" + makeId(bypassCacheToggle, id) + "'>Bypass Cache</label>")
-				.appendTo(controlsContainerElem);
-			
-			$(me._container).hide();
+				.appendTo(me.element)
+				// The header
+				.append($("<li>")
+					.append($("<div>")
+						.addClass("ui-widget-header")
+						.addClass("ui-corner-top")
+						.addClass("ol-header")
+						.attr("id", makeId(headerLabel, id))
+						.text(me.options.header)
+						.append($("<div>")
+							.attr("id", makeId(countContainer, id))
+							.css("float", "right"))))
+				// The text container.
+				.append($("<li>")
+					.append($("<div>")
+						.addClass("ui-widget-content")
+						.attr("id", makeId(textContainer, id))
+						.addClass("ol-document-text")))
+				// Controls container.
+				.append($("<li>")
+					.addClass("ui-controls-list-item-spaced")
+					.append($("<ul>")
+						.addClass("ui-sidebyside-controls-list")
+						.attr("id", makeId(controlsContainer, id))
+						// Previous button.
+						.append($("<li>")
+							.attr("id", makeId(prevButton, id))
+							.addClass(navButtonsClass)
+							.button({
+								disabled: true,
+								label: "Previous",
+								icons: {
+									primary: "ui-icon-circle-triangle-w"
+								}
+							})
+							.click(goBack))
+						// Next button.
+						.append($("<li>")
+							.attr("id", makeId(nextButton, id))
+							.addClass(navButtonsClass)
+							.addClass("ui-sidebyside-controls-list-item-spaced")
+							.button({
+								disabled: true,
+								label: "Next",
+								icons: {
+									secondary: "ui-icon-circle-triangle-e"
+								}
+							})
+							.click(goForward))
+						// Toggle cache control.
+						.append($("<li>")
+							.addClass("ui-sidebyside-controls-list-item-spaced")
+							.append($("<input type='checkbox' id='" + makeId(bypassCacheToggle, id) + "'/>")
+								.attr("checked", me.options.bypassCache)
+								.click(function() {
+									me.option({ bypassCache: !me.options.bypassCache });
+								}))
+							.append("<label for='" + makeId(bypassCacheToggle, id) + "'>Bypass Cache</label>"))
+						// Smart nouns toggle.
+						.append($("<li>")
+								.addClass("ui-sidebyside-controls-list-item-spaced")
+								.append($("<input type='checkbox' id='" + makeId(smartNounsToggle, id) + "'/>")
+									.attr("checked", me.options.featureType.toLowerCase() === "smart_nouns")
+									.click(function() {
+										me.option({ featureType: me.options.featureType.toLowerCase() === "smart_nouns" ? "nouns" : "smart_nouns" });
+									}))
+								.append("<label for='" + makeId(smartNounsToggle, id) + "'>Use Smart Nouns</label>"))))
+				.hide();
 		},
 		
 		_init: function() {
@@ -179,7 +215,6 @@
 			$(me._container).show()
 			
 			if (!me.options.uuids) {
-				//Util.displaySpinner($(me._container).find($$(textContainer, id)));
 				$(me._container).find($$(textContainer, id)).spinner();
 				$.getJSON(UrlStore.getDocumentList(), function(uuids) {
 					$(me._container).find($$(textContainer, id)).spinner("destroy");
@@ -202,6 +237,8 @@
 				this.refresh();
 			} else if (key === "bypassCache") {
 				// Nothing to do for now.
+			} else if (key === "featureType") {
+				this.refresh();
 			}
 		},
 		

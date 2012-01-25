@@ -181,6 +181,7 @@
 					.droppable({
 						hoverClass: "ui-state-highlight",
 						greedy: true,
+						scope: "features",
 						drop: function(event, ui) {
 							callAndDisplay(options.addHandlers, ui.draggable.text(), {
 								title: "Add Failed",
@@ -270,17 +271,20 @@
 				
 				var me = this;
 				var aspectsList = $$(aspectsListId, me._id); 
-				var newAspect = $(createEditableListItem({
-					me: me,
-					text: aspect.name,
-					value: aspect.name,
-					typeName: "Aspect",
-					updateHandler: function(aspect, newValue) {
-						return $.post(UrlStore.postAspect(aspect), {
-							value: newValue
-						});
-					}
-				})).appendTo(aspectsList);
+				var newAspect;
+				
+				$(aspectsList)
+					.append(newAspect = $(createEditableListItem({
+						me: me,
+						text: aspect.name,
+						value: aspect.name,
+						typeName: "Aspect",
+						updateHandler: function(aspect, newValue) {
+							return $.post(UrlStore.postAspect(aspect), {
+								value: newValue
+							});
+						}
+					})));
 				
 				// If nothing is selected, then select this.
 				if (!$(aspectsList).find(":selected").size()) {
@@ -432,38 +436,37 @@
 				});
 			}
 			
+			var aspectsContainer;
+			var keywordContainer;
+			
 			// Define the container that will keep everything else.
 			me._container = $("<ul>")
 				.addClass("ui-widget")
-				.addClass("ui-sidebyside-controls-list");
-			
-			var aspectsContainer = $(createEditableList({
-				me: me,
-				id: id,
-				typeName: "Aspect",
-				header: "Aspects",
-				listId: makeId(aspectsListId, id),
-				listSize: 20,
-				changeHandler: changeAspect,
-				addHandlers: me._addAspectHandlers,
-				deleteHandlers: me._deleteAspectHandlers
-			})
-			.appendTo($("<li>")
-					.appendTo(me._container)));
-			
-			var keywordContainer = $(createEditableList({
-				me: me,
-				id: id,
-				typeName: "Keyword",
-				header: "Keywords",
-				listId: makeId(keywordsListId, id),
-				listSize: 20,
-				addHandlers: me._addKeywordHandlers,
-				deleteHandlers: me._deleteKeywordHandlers
-			})
-			.appendTo($("<li>")
-				.addClass("ui-sidebyside-controls-list-item-spaced")
-				.appendTo(me._container)));
+				.addClass("ui-sidebyside-controls-list")
+				.append($("<li>")
+					.append(aspectsContainer = $(createEditableList({
+						me: me,
+						id: id,
+						typeName: "Aspect",
+						header: "Aspects",
+						listId: makeId(aspectsListId, id),
+						listSize: 20,
+						changeHandler: changeAspect,
+						addHandlers: me._addAspectHandlers,
+						deleteHandlers: me._deleteAspectHandlers
+					}))))
+				.append($("<li>")
+					.addClass("ui-sidebyside-controls-list-item-spaced")
+					.append(keywordContainer = $(createEditableList({
+						me: me,
+						id: id,
+						typeName: "Keyword",
+						header: "Keywords",
+						listId: makeId(keywordsListId, id),
+						listSize: 20,
+						addHandlers: me._addKeywordHandlers,
+						deleteHandlers: me._deleteKeywordHandlers
+					}))));
 		},
 		
 		_init: function() {

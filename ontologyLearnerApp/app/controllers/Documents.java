@@ -19,6 +19,10 @@ import models.*;
 
 public class Documents extends Controller {
 
+	private static String makeCacheId(String uuid, FeatureType ft) {
+		return (uuid + "-" + ft.toString());
+	}
+	
     public static void list() {
     	OntologyLearnerProgram program = new OntologyLearnerProgram();
     	Iterable<String> identifierList = Lists.newArrayList(Iterables.transform(program.retrieveExistingClusterHeads(), new Function<UUID,String>() {
@@ -32,12 +36,20 @@ public class Documents extends Controller {
     	renderJSON(identifierList);
     }
 
-    public static void single(String uuid, boolean bypassCache) {
-    	Document doc = (!bypassCache ? Cache.get(uuid, Document.class) : null);
+    public static void single(String uuid, String featureType, boolean bypassCache) {
+    	FeatureType ft;
+    	try {
+    		ft = FeatureType.valueOf(featureType);
+    	} catch(Exception e) {
+    		System.out.println("No feature type called " + featureType);
+    		ft = FeatureType.NONE;
+    	}
     	
+    	Document doc = (!bypassCache ? Cache.get(makeCacheId(uuid, ft), Document.class) : null);
+
     	if (doc == null) {
 	    	OntologyLearnerProgram program = new OntologyLearnerProgram();
-	    	TextDocument textDoc = program.retrieveTextDocument(UUID.fromString(uuid), FeatureType.SMART_NOUNS);
+	    	TextDocument textDoc = program.retrieveTextDocument(UUID.fromString(uuid), ft);
 	    	program.close();
 	    	
 	    	StringBuilder text = new StringBuilder(textDoc.getText());
@@ -61,7 +73,9 @@ public class Documents extends Controller {
 	    	}
 	    	
 	    	doc = new Document(text.toString());
-	    	Cache.set(textDoc.getIdentifier().toString(), doc, "1h");
+	    	Cache.set(makeCacheId(textDoc.getIdentifier().toString(), ft), doc, "1h");
+    	} else {
+    		System.out.println("Found it! Loading from cache...");
     	}
     	
     	renderJSON(doc);

@@ -69,6 +69,11 @@ ul.ui-controls-list > li {
 	width: 95%;
 }
 
+.ol-counter-textbox {
+	width: 2em;
+	height: 1em;
+}
+
 ul#usageList {
 	padding: 0em;
 	display: inline;

@@ -40,7 +40,7 @@ public class RemoveInvariant
 				} else if (toFilter.attribute(i).isNominal()) {
 					Arrays.sort(stats.nominalCounts);
 					
-					// remove nominal attributes that vary too much
+					// remove nominal attributes that are close to being constant
 					double variancePercent = (double) stats.nominalCounts[stats.nominalCounts.length-1]
 							/ (double) (stats.totalCount - stats.missingCount)
 							* 100.0;
