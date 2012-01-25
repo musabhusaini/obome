@@ -692,17 +692,17 @@ public class OntologyLearnerProgram {
 				clusterHeads = program.retrieveExistingClusterHeads();
 			}
 			
-			if (extractFeatures) {
-				HashMap<LinguisticToken,Long> features = program.getFeatureMap(clusterHeads);
-				program.writeFeaturesToDB(features);
-			}
-			
 			if (evaluateQuality) {
 				SqlReviewFactory testFactory = new SqlLimitedReviewFactory(offset, count);
 				program.prepareReviewFactory(testFactory);
 				System.out.println("Cluster quality = " + program.evaluateClusteringQuality(testFactory) * 100 + "%");
 			}
-			
+
+			if (extractFeatures) {
+				HashMap<LinguisticToken,Long> features = program.getFeatureMap(clusterHeads);
+				program.writeFeaturesToDB(features);
+			}
+						
 			program.close();
 		} catch(SQLException ex) {
 			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Error talking to database.", ex);
