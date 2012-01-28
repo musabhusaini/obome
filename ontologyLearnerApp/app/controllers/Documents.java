@@ -15,6 +15,7 @@ import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 import play.cache.Cache;
 import play.mvc.*;
+import play.mvc.results.Redirect;
 import models.*;
 
 public class Documents extends Controller {
@@ -24,18 +25,29 @@ public class Documents extends Controller {
 	}
 	
     public static void list() {
-    	OntologyLearnerProgram program = new OntologyLearnerProgram();
-    	Iterable<String> identifierList = Lists.newArrayList(Iterables.transform(program.retrieveExistingClusterHeads(), new Function<UUID,String>() {
+    	Function<UUID,String> uuidToString = new Function<UUID,String>() {
 			@Override
 			public String apply(UUID arg0) {
 				return arg0.toString();
 			}
     		
-    	}));
+    	};
+    	
+    	OntologyLearnerProgram program = new OntologyLearnerProgram();
+    	ClusterHeads clusterHeads = new ClusterHeads(Lists.newArrayList(Iterables.transform(program.retrieveSeenClusterHeads(), uuidToString)),
+    			Lists.newArrayList(Iterables.transform(program.retrieveUnseenClusterHeads(), uuidToString)));
     	program.close();
-    	renderJSON(identifierList);
+    	renderJSON(clusterHeads);
     }
 
+    public static void nextBest(String featureType, boolean bypassCache) {
+    	OntologyLearnerProgram program = new OntologyLearnerProgram();
+    	UUID uuid = program.getNextBestUnseenDocumentIdentifier();
+    	program.close();
+    	
+    	redirect("Documents.single", uuid.toString(), featureType, bypassCache);
+    }
+    
     public static void single(String uuid, String featureType, boolean bypassCache) {
     	FeatureType ft;
     	try {
@@ -44,7 +56,7 @@ public class Documents extends Controller {
     		System.out.println("No feature type called " + featureType);
     		ft = FeatureType.NONE;
     	}
-    	
+
     	Document doc = (!bypassCache ? Cache.get(makeCacheId(uuid, ft), Document.class) : null);
 
     	if (doc == null) {
@@ -72,12 +84,24 @@ public class Documents extends Controller {
 	    		text.insert(feature.getAbsoluteBeginPosition(), "\\feature{");
 	    	}
 	    	
-	    	doc = new Document(text.toString());
+	    	doc = new Document(textDoc.getIdentifier().toString(), text.toString());
 	    	Cache.set(makeCacheId(textDoc.getIdentifier().toString(), ft), doc, "1h");
     	} else {
     		System.out.println("Found it! Loading from cache...");
     	}
     	
     	renderJSON(doc);
+    }
+    
+    public static void see(String uuid) {
+    	OntologyLearnerProgram program = new OntologyLearnerProgram();
+    	boolean success = program.seeCluster(UUID.fromString(uuid));
+    	program.close();
+    	
+    	if (!success) {
+    		throw new IllegalStateException("Could not update cluster status.");
+    	}
+    	
+    	renderText("Success");
     }
 }

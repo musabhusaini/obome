@@ -7,7 +7,11 @@ GET     /                                       Application.index
 
 GET     /documents                              Documents.list
 
+GET		/documents/next							Documents.nextBest
+
 GET     /documents/{uuid}                       Documents.single
+
+POST	/documents/{uuid}						Documents.see
 
 GET     /aspects                                Aspects.list
 

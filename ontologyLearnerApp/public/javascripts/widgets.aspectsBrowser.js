@@ -12,7 +12,7 @@
 		return $("#" + makeId(domIdPrefix, id));
 	}
 
-	function callAndDisplay(handlers, value, errorMessage, context) {
+	function callAndDisplay(handlers, value, errorMessage, context, list) {
 		if (!value) {
 			Util.displayMessage({
 				title: "No Value",
@@ -25,6 +25,10 @@
 		$.proxy(handlers.ajax, context)(value)
 			.success(function() {
 				$.proxy(handlers.display, context)(value);
+				
+				if (list) {
+					$(list).effect("highlight", {}, 1000);
+				}
 			})
 			.error(function() {
 				Util.displayMessage(errorMessage);
@@ -186,7 +190,7 @@
 							callAndDisplay(options.addHandlers, ui.draggable.text(), {
 								title: "Add Failed",
 								message: "Could not add, possibly due to a conflict."
-							}, me);
+							}, me, list);
 						}
 					}))
 			// add button.
@@ -207,7 +211,7 @@
 									callAndDisplay(options.addHandlers, value, {
 										title: "Add Failed",
 										message: "Could not add, possibly due to a conflict."
-									}, me);
+									}, me, list);
 								}
 							});
 						}))
@@ -222,7 +226,7 @@
 							callAndDisplay(options.deleteHandlers, value, {
 								title: 'Delete Failed',
 								message: "Could not delete, possibly due to a conflict."
-							}, me);
+							}, me, list);
 						}))));
 		
 		// Set some data for buttons that we can use later.
@@ -386,7 +390,7 @@
 			callAndDisplay(me._addAspectHandlers, value, {
 				title: "Add Failed",
 				message: "Could not add, possibly due to a conflict."
-			}, me);
+			}, me, $$(aspectsListId, me._id));
 		},
 		
 		addKeyword: function(keyword) {
@@ -395,7 +399,7 @@
 			callAndDisplay(me._addKeywordHandlers, keyword, {
 				title: "Add Failed",
 				message: "Could not add, possibly due to a conflict."
-			}, me);
+			}, me, $$(keywordsListId, me._id));
 		},
 		
 		refresh: function() {

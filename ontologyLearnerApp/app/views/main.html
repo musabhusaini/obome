@@ -22,23 +22,50 @@
         			return window.encodeURIComponent(uri);
         		}
         		
-				UrlStore.getDocumentList = function() { return "@{Documents.list()}"; };
-				UrlStore.getDocument = function(uuid, featureType, bypassCache) {
-					uuid = encode(uuid);
+        		function addUrlParams(url, params) {
+        			if (!params || params=={}) {
+        				return url;
+        			}
+        			
+        			var paramString = "";
+        			for (var param in params) {
+        				if (paramString) {
+        					paramString += "&";
+        				}
+        				
+        				paramString += encode(param) + "=" + encode(params[param]);
+        			}
+        			
+        			return url + "?" + paramString;
+        		}
+
+				function addDocumentParams(url, featureType, bypassCache) {
 					featureType = encode(featureType);
 					bypassCache = encode(bypassCache);
 					
-					var url = "@{Documents.single(':uuid:')}".replace(":uuid:", uuid);
 					if (!featureType) {
 						featureType = "smart_nouns";
 					}
 					
-					url += "?featureType=" + featureType.toUpperCase();
-					
-					if (bypassCache) {
-						url += "&bypassCache=true";
-					}
-					return url;
+					return addUrlParams(url, {
+						featureType: featureType.toUpperCase(),
+						bypassCache: bypassCache.toString()
+					});
+				}
+				        		
+				UrlStore.getDocumentList = function() {
+					return "@{Documents.list()}";
+				};
+				UrlStore.getNextBestDocument = function(featureType, bypassCache) {
+					return addDocumentParams("@{Documents.nextBest()}", featureType, bypassCache)
+				};
+				UrlStore.getDocument = function(uuid, featureType, bypassCache) {
+					uuid = encode(uuid);
+					return addDocumentParams("@{Documents.single(':uuid:')}".replace(":uuid:", uuid), featureType, bypassCache)
+				};
+				UrlStore.seeDocument = function(uuid) {
+					uuid = encode(uuid);
+					return "@{Documents.see(':uuid:')}".replace(":uuid:", uuid);
 				};
 				
 				UrlStore.getAspectList = function() { return "@{Aspects.list()}"; };

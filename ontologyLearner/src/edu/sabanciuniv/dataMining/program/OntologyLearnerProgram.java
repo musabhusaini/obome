@@ -67,20 +67,35 @@ public class OntologyLearnerProgram {
 		return factory;
 	}
 
-	private Map<UUID,Integer> retrieveExistingClusterStubs() throws SQLException {
+	private Map<UUID,Integer> retrieveClusterStubs(String sql) throws SQLException {
 		Map<UUID,Integer> clusters = new HashMap<>();
 		
 		PreparedStatement selectClustersStmt =
-				this.sqlConnection.prepareStatement("SELECT cluster_head_uuid AS uuid, member_count AS count FROM " + REVIEW_CLUSTERS_TABLE);
+				this.sqlConnection.prepareStatement(sql);
 		ResultSet clustersRs = selectClustersStmt.executeQuery();
 		
 		while (clustersRs.next()) {
 			clusters.put(IdentifiableObject.createUuid(clustersRs.getBytes("uuid")), clustersRs.getInt("count"));
 		}
 		
-		return clusters;
+		return clusters;		
 	}
 	
+	private Map<UUID,Integer> retrieveExistingClusterStubs() throws SQLException {
+		return this.retrieveClusterStubs("SELECT cluster_head_uuid AS uuid, member_count AS count FROM " + REVIEW_CLUSTERS_TABLE +
+						" ORDER BY uuid");
+	}
+	
+	private Map<UUID,Integer> retrieveUnseenClusterStubs() throws SQLException {
+		return this.retrieveClusterStubs("SELECT cluster_head_uuid AS uuid, member_count AS count FROM " + REVIEW_CLUSTERS_TABLE +
+						" WHERE seen=0 ORDER BY uuid");
+	}
+
+	private Map<UUID,Integer> retrieveSeenClusterStubs() throws SQLException {
+		return this.retrieveClusterStubs("SELECT cluster_head_uuid AS uuid, member_count AS count FROM " + REVIEW_CLUSTERS_TABLE +
+						" WHERE seen=1 ORDER BY uuid");
+	}
+
 	private Map<TextDocumentSummary,Integer> getExistingPseudoClusters() throws SQLException {
 		return this.retrievePseudoClusters(this.retrieveExistingClusterStubs());
 	}
@@ -278,7 +293,7 @@ public class OntologyLearnerProgram {
 	}
 	
 	/**
-	 * Retrieve all the UUIDs for existing cluster from the database.
+	 * Retrieves all the UUIDs for existing cluster from the database.
 	 * @return Cluster head UUIDs.
 	 */
 	public Iterable<UUID> retrieveExistingClusterHeads() {
@@ -290,6 +305,107 @@ public class OntologyLearnerProgram {
 		}
 		
 		return null;
+	}
+
+	/**
+	 * Retrieves all seen cluster head UUIDs.
+	 * @return Seen cluster head UUIDs.
+	 */
+	public Iterable<UUID> retrieveSeenClusterHeads() {
+		try {
+			Map<UUID,Integer> seenClusterStubMap = this.retrieveSeenClusterStubs();
+			return seenClusterStubMap.keySet();
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "Failed to retrieve cluster heads.", e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Retrieves all unseen cluster head UUIDs.
+	 * @return Unseen cluster head UUIDs.
+	 */
+	public Iterable<UUID> retrieveUnseenClusterHeads() {
+		try {
+			Map<UUID,Integer> unseenClusterStubMap = this.retrieveUnseenClusterStubs();
+			return unseenClusterStubMap.keySet();
+		} catch (SQLException e) {
+			logger.log(Level.SEVERE, "Failed to retrieve cluster heads.", e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Gets the next best unseen document UUID.
+	 * @return The next best unseen document UUID.
+	 */
+	public UUID getNextBestUnseenDocumentIdentifier() {
+		try {
+			Iterable<TextDocumentSummary> unseenClusterHeads = this.retrievePseudoClusters(this.retrieveUnseenClusterStubs()).keySet();
+			Iterable<TextDocumentSummary> seenClusterHeads = this.retrievePseudoClusters(this.retrieveSeenClusterStubs()).keySet();
+			
+			Set<LinguisticToken> seenTokens = new HashSet<>();
+			for(TextDocumentSummary seen : seenClusterHeads) {
+				for (LinguisticToken token : seen.getFeatures()) {
+					seenTokens.add(token);
+				}
+			}
+			
+			TextDocumentSummary bestUnseen = null;
+			double bestRatio = 0;
+			for (TextDocumentSummary unseen : unseenClusterHeads) {
+				double tmpRatio = Sets.difference(unseen.getFeatures(), seenTokens).size() / (double)unseen.getFeatures().size();
+				if (tmpRatio > bestRatio) {
+					bestRatio = tmpRatio;
+					bestUnseen = unseen;
+				}
+			}
+			
+			return bestUnseen.getIdentifier();
+		} catch(SQLException e) {
+			logger.log(Level.SEVERE, "Failed to retrieve cluster head.", e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Marks all clusters as unseen.
+	 * @return Flag indicating whether the operation was successful or not.
+	 */
+	public boolean unseeAllClusters() {
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("UPDATE " + REVIEW_CLUSTERS_TABLE +
+					" SET seen=0");
+			sqlStmt.executeUpdate();
+			
+			return true;
+		} catch(SQLException e) {
+			logger.log(Level.SEVERE, "Failed to unsee cluster heads.", e);
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Marks provided cluster as seen.
+	 * @param uuid The ID of the cluster head.
+	 * @return Flag indicating whether the operation was successful or not.
+	 */
+	public boolean seeCluster(UUID uuid) {
+		try {
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("UPDATE " + REVIEW_CLUSTERS_TABLE +
+					" SET seen=1 WHERE cluster_head_uuid=?");
+			sqlStmt.setBytes(1, IdentifiableObject.getUuidBytes(uuid));
+			sqlStmt.executeUpdate();
+		} catch(SQLException e) {
+			logger.log(Level.SEVERE, "Failed to update cluster seen value.", e);
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -316,7 +432,7 @@ public class OntologyLearnerProgram {
 		List<String> aspects = new ArrayList<>();
 		
 		try {
-			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT DISTINCT aspect FROM " + ASPECTS_TABLE);
+			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT DISTINCT aspect FROM " + ASPECTS_TABLE + " ORDER BY aspect");
 			ResultSet rs = sqlStmt.executeQuery();
 			while (rs.next()) {
 				aspects.add(rs.getString("aspect"));
@@ -341,7 +457,7 @@ public class OntologyLearnerProgram {
 		List<String> keywords = new ArrayList<>();
 		try {
 			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT DISTINCT keyword FROM " + ASPECTS_TABLE +
-					" WHERE aspect=? AND keyword IS NOT NULL");
+					" WHERE aspect=? AND keyword IS NOT NULL ORDER BY keyword");
 			sqlStmt.setString(1, aspect);
 			ResultSet rs = sqlStmt.executeQuery();
 			while (rs.next()) {
@@ -367,7 +483,7 @@ public class OntologyLearnerProgram {
 		List<String> aspects = new ArrayList<>();
 		try {
 			PreparedStatement sqlStmt = this.sqlConnection.prepareStatement("SELECT DISTINCT aspect FROM " + ASPECTS_TABLE +
-					" WHERE keyword=?");
+					" WHERE keyword=? ORDER BY aspect");
 			sqlStmt.setString(1, keyword);
 			ResultSet rs = sqlStmt.executeQuery();
 			while (rs.next()) {

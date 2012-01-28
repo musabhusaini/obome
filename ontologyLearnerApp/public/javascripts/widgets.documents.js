@@ -24,6 +24,7 @@
 		options: {
 			header: "Review",
 			uuids: null,
+			totalDocuments: -1,
 			offset: 0,
 			bypassCache: false,
 			featureType: "nouns"
@@ -65,13 +66,13 @@
 										if (index >= 1 && index <= me.options.uuids.length) {
 											me.option({ offset: index-1 });
 										}
-									} else if (window.isNaN(String.fromCharCode(event.which))) {
-										return false;
+									} else {
+										return !window.isNaN(String.fromCharCode(event.which));
 									}
 								}));
-						$(".ol-counter-textbox").focus();
+						$(event.target).find(".ol-counter-textbox").focus();
 					}))
-				.append(" of " + me.options.uuids.length.toString());
+				.append(" of " + me.options.totalDocuments.toString());
 		},
 		
 		refresh: function() {
@@ -80,12 +81,15 @@
 			var uuids = me.options.uuids;
 			var index = me.options.offset;
 			
-			if (index < 0 || index >= uuids.length) {
+			if (index < 0) {
 				return;
 			}
-
+			
+			var url = index >= uuids.length ? UrlStore.getNextBestDocument(me.options.featureType, me.options.bypassCache) :
+				UrlStore.getDocument(uuids[index], me.options.featureType, me.options.bypassCache);
+			
 			$(me._container).find($$(textContainer, id)).spinner();
-			$.getJSON(UrlStore.getDocument(uuids[index], me.options.featureType, me.options.bypassCache), function(doc) {
+			$.getJSON(url, function(doc) {
 				var pattern = /\\feature\{(.+?)\}/mg;
 				var text = doc.text;
 				var match = null;
@@ -96,9 +100,7 @@
 					.find($$(textContainer, id))
 					.empty()
 					.html(window.unescape(text));
-				
-				me._refreshCountDisplay();
-				
+								
 				$(me._container).find(".ol-feature-element")
 					.button()
 					.draggable({
@@ -111,6 +113,13 @@
 					.click(function(event) {
 						me._trigger("featureClick", event, $(event.target).text());
 					});
+				
+				if (index >= uuids.length) {
+					me.options.offset = uuids.length;
+					uuids.push(doc.uuid);
+				}
+				
+				me._refreshCountDisplay();
 			});
 
 			$(me._container).find($$(prevButton, id)).button("option", {
@@ -118,7 +127,7 @@
 			});
 
 			$(me._container).find($$(nextButton, id)).button("option", {
-				disabled: (index === uuids.length-1)
+				disabled: (index === me.options.totalDocuments-1)
 			});
 		},
 	
@@ -126,13 +135,21 @@
 			var me = this;
 			var id = me._id = window.Math.floor(window.Math.random() * 1000000).toString();
 			
-			var goForward = function() {
-				me.option({ offset: me.options.offset+1 });
-			};
+			function leaveDocument(callback) {
+				return function() {
+					var uuid = me.options.uuids[me.options.offset];
+					$.post(UrlStore.seeDocument(uuid));
+					callback();
+				}
+			}
 			
-			var goBack = function() {
+			function goForward() {
+				me.option({ offset: me.options.offset+1 });
+			}
+			
+			function goBack() {
 				me.option({ offset: me.options.offset-1 });
-			};
+			}
 			
 			// Define the container that will keep everything else.
 			me._container = $("<ul>")
@@ -173,7 +190,7 @@
 									primary: "ui-icon-circle-triangle-w"
 								}
 							})
-							.click(goBack))
+							.click(leaveDocument(goBack)))
 						// Next button.
 						.append($("<li>")
 							.attr("id", makeId(nextButton, id))
@@ -186,7 +203,7 @@
 									secondary: "ui-icon-circle-triangle-e"
 								}
 							})
-							.click(goForward))
+							.click(leaveDocument(goForward)))
 						// Toggle cache control.
 						.append($("<li>")
 							.addClass("ui-sidebyside-controls-list-item-spaced")
@@ -213,15 +230,17 @@
 			var id = me._id;
 			
 			$(me._container).show()
+			me.options.offset = 0;
 			
-			if (!me.options.uuids) {
+			if (me.options.totalDocuments < 0 || !me.options.uuids || me.options.totalDocuments < me.options.uuids.length) {
 				$(me._container).find($$(textContainer, id)).spinner();
-				$.getJSON(UrlStore.getDocumentList(), function(uuids) {
+				$.getJSON(UrlStore.getDocumentList(), function(clusterHeads) {
 					$(me._container).find($$(textContainer, id)).spinner("destroy");
-					me.options.offset = 0;
-					me.option({
-						uuids: uuids
-					});
+					
+					me.options.totalDocuments = clusterHeads.seen.length + clusterHeads.unseen.length;
+					me.options.uuids = clusterHeads.seen;
+					me.options.offset = clusterHeads.seen.length;
+					me.refresh();
 				});
 			} else {
 				me.refresh();
@@ -233,7 +252,7 @@
 			
 			if (key === "header") {
 				$(this._container).find($$(headerLabel, this._id)).text(value);
-			} else if (key === "uuids" || key === "offset") {
+			} else if (key === "uuids" || key === "offset" || key === "totalDocuments") {
 				this.refresh();
 			} else if (key === "bypassCache") {
 				// Nothing to do for now.

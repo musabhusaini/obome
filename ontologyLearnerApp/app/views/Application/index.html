@@ -35,9 +35,7 @@
 			var aspectsContainer = "#aspectsContainer"; 
 			$(docContainer)
 				.documentDisplay({
-					header: "Review:"
-				})
-				.documentDisplay({
+					header: "Review",
 					featureClick: function(event, data) {
 						$(aspectsContainer).aspectsBrowser("addKeyword", data);
 					}
@@ -45,13 +43,6 @@
 			
 			$(aspectsContainer)
 				.aspectsBrowser({ });
-/*				.position({
-					my: "left top",
-					at: "right top",
-					of: $("#documentContainer"),
-					offset: "10 0",
-					collision: "none"
-				});*/
 		});
 		
 //		OntologyLearner.Aspects.initialize();
