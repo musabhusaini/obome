@@ -45,6 +45,9 @@ public class SqlLimitedReviewFactory extends SqlReviewFactory {
 	
 	@Override
 	protected PreparedStatement prepareStatement() throws SQLException {
-		return this.getSqlConnection().prepareStatement("SELECT uuid, content FROM reviews LIMIT " + this.offset + ", " + this.rowCount);
+		return this.getSqlConnection().prepareStatement("SELECT uuid, content FROM reviews LIMIT " +
+				this.offset + ", " + this.rowCount);
+//		return this.getSqlConnection().prepareStatement("SELECT uuid, content FROM (SELECT * FROM reviews LIMIT " +
+//				this.offset + ", " + this.rowCount + ") AS reviews ORDER BY LENGTH(content) DESC");
 	}
 }

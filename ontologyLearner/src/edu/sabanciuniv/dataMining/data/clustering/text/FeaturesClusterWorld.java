@@ -16,7 +16,7 @@ import edu.sabanciuniv.dataMining.data.text.IdentifiableWithFeatures;
  * @author Mus'ab Husaini
  * @param <T> Type of features; must extend {@link HasWord}.
  */
-public class FeaturesClusterWorld<T extends HasWord> {
+public class FeaturesClusterWorld<T extends HasWord> implements Cloneable {
 	private List<FeaturesCluster<T>> clusters;
 	private double rejectTolerance;
 
@@ -128,7 +128,6 @@ public class FeaturesClusterWorld<T extends HasWord> {
 				 break;
 			 }
 			 
-			 cluster.stripMemberFeatures();
 			 newClusters.add(cluster);
 			 coverageSize += cluster.getDataMass();
 		}
@@ -210,6 +209,14 @@ public class FeaturesClusterWorld<T extends HasWord> {
 	}
 	
 	/**
+	 * Gets the size of the cluster world.
+	 * @return The size of the world.
+	 */
+	public int size() {
+		return this.clusters.size();
+	}
+	
+	/**
 	 * Clears this cluster world.
 	 */
 	public void clear() {
@@ -222,5 +229,13 @@ public class FeaturesClusterWorld<T extends HasWord> {
 	@Override
 	public String toString() {
 		return this.clusters.size() + " clusters";
+	}
+	
+	@Override
+	public FeaturesClusterWorld<T> clone() {
+		FeaturesClusterWorld<T> clonedWorld = new FeaturesClusterWorld<>();
+		clonedWorld.rejectTolerance = this.rejectTolerance;
+		clonedWorld.clusters = Lists.newArrayList(this.clusters);
+		return clonedWorld;
 	}
 }

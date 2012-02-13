@@ -1,23 +1,18 @@
 package edu.sabanciuniv.dataMining.data.clustering.text;
 
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.data.text.HasFeatures;
 import edu.sabanciuniv.dataMining.data.text.IdentifiableWithFeatures;
-import edu.sabanciuniv.dataMining.data.Identifiable;
-import edu.sabanciuniv.dataMining.data.IdentifiableObject;
-import edu.sabanciuniv.dataMining.util.MPredicates;
-
 import edu.stanford.nlp.ling.HasWord;
 
 /**
@@ -27,37 +22,162 @@ import edu.stanford.nlp.ling.HasWord;
  */
 public class FeaturesCluster<T extends HasWord> extends IdentifiableObject implements HasFeatures<T>, Comparable<FeaturesCluster<T>>, Cloneable {
 
-	private static class SplitTuple<K extends HasWord> {
-		IdentifiableWithFeatures<K> accept;
-		IdentifiableWithFeatures<K> reject;
+	static class ClusterHead<T extends HasWord> extends IdentifiableWithFeatures<T> implements Cloneable {
+		protected Map<T,Integer> headMap;
+		protected int dummyMembers;
+
+		private Map<T,Integer> makeMap(Iterable<T> features) {
+			Map<T,Integer> newHeadMap = Maps.newHashMap();
+			for (T feature : features) {
+				newHeadMap.put(feature, 1);
+			}		
+			return newHeadMap;
+		}
+		
+		private ClusterHead() {
+		}
+		
+		public ClusterHead(IdentifiableWithFeatures<T> features) {
+			this(features.getIdentifier(), features.getFeatures());
+		}
+		
+		public ClusterHead(UUID uuid, Iterable<T> features) {
+			super(uuid, features);
+		}
+		
+		public ClusterHead(UUID uuid, Map<T,Integer> headMap) {
+			super(uuid);
+			this.setMap(headMap);
+		}
+		
+		public Map<T,Integer> getMap() {
+			return Collections.unmodifiableMap(this.headMap);
+		}
+		
+		public Map<T,Integer> setMap(Map<T,Integer> headMap) {
+			return this.headMap = Maps.newHashMap(headMap);
+		}
+		
+		public Map<T,Integer> subsede(IdentifiableWithFeatures<T> features) {
+			return this.subsede(new ClusterHead<T>(features));
+		}
+		
+		public Map<T,Integer> subsede(ClusterHead<T> features) {
+			this.setIdentifier(features.getIdentifier());
+			
+			Map<T,Integer> newHeadMap = Maps.newHashMap(features.headMap);
+			for (T feature : this.headMap.keySet()) {
+				if (newHeadMap.containsKey(feature)) {
+					newHeadMap.put(feature, newHeadMap.get(feature) + this.headMap.get(feature));
+				}
+			}
+			return this.headMap = newHeadMap;
+		}
+		
+		public Map<T,Integer> add(ClusterHead<T> other) {
+			Set<T> intersect = Sets.intersection(this.headMap.keySet(), other.headMap.keySet());
+			for (T feature : intersect) {
+				this.headMap.put(feature, this.headMap.get(feature) + other.headMap.get(feature));
+			}
+			return this.headMap;			
+		}
+		
+		public Map<T,Integer> add(Iterable<T> features) {
+			return this.add(new ClusterHead<T>(UUID.randomUUID(), features));
+		}
+		
+		public int getDummyMembers() {
+			return this.dummyMembers;
+		}
+		
+		public int setDummyMembers(int dummyMembers) {
+			return this.dummyMembers = dummyMembers;
+		}
+		
+		public int addDummyMembers(int dummyMembers) {
+			return this.dummyMembers += dummyMembers;
+		}
+		
+		public int getMemberCount() {
+			int total = 0;
+			for (int count : this.headMap.values()) {
+				total += count;
+			}
+			return total + this.getDummyMembers();
+		}
+		
+		public void clearMembers() {
+			for (Map.Entry<T,Integer> kvp : this.headMap.entrySet()) {
+				kvp.setValue(0);
+			}
+			this.dummyMembers = 0;
+		}
+
+		@Override
+		public Set<T> getFeatures() {
+			return this.headMap.keySet();
+		}
+		
+		@Override
+		public Set<T> setFeatures(Iterable<T> features) {
+			this.headMap = makeMap(features);
+			return this.getFeatures();
+		}
+
+		@Override
+		public ClusterHead<T> cloneOut(Iterable<T> otherFeatures) {
+			Map<T,Integer> newHeadMap = Maps.newHashMap(Maps.filterKeys(this.headMap, Predicates.in(Lists.newArrayList(otherFeatures))));
+			return new ClusterHead<T>(this.getIdentifier(), newHeadMap);
+		}
+		
+		@Override
+		public ClusterHead<T> clone() {
+			ClusterHead<T> clusterHead = new ClusterHead<>();
+			clusterHead.setIdentifier(this.getIdentifier());
+			clusterHead.setDummyMembers(this.dummyMembers);
+			clusterHead.setMap(this.headMap);
+			return clusterHead;
+		}
+		
+		@Override
+		public int compareTo(IdentifiableWithFeatures<T> other) {
+			if (other instanceof FeaturesCluster.ClusterHead) {
+				ClusterHead<T> otherHead = (ClusterHead<T>)other;
+				return super.compareTo(other) * (this.getMemberCount() - otherHead.getMemberCount());
+			}
+			
+			return super.compareTo(other);
+		}
 	}
 	
-	private IdentifiableWithFeatures<T> head;
-	private List<Identifiable> members;
-	private int dummyMembers;
+	static class SplitTuple<T extends HasWord> {
+		ClusterHead<T> accept;
+		ClusterHead<T> reject;
+	}
+	
+	private ClusterHead<T> head;
 
 	private FeaturesCluster() {
 	}
 	
 	private boolean isSubsetOf(HasFeatures<T> features) {
-		return Sets.difference(this.head.getFeatures(), features.getFeatures()).size() == 0;
+		return Sets.difference(this.head.getFeatures(), features.getFeatures()).size() == 0 &&
+				this.head.getFeatures().size() != features.getFeatures().size();
 	}
 
+	private FeaturesCluster(ClusterHead<T> head) {
+		this();
+		
+		this.setIdentifier(head.getIdentifier());
+		this.head = head;
+	}
+	
 	/**
 	 * Creates a new instance of {@link FeaturesCluster}
 	 * @param features
 	 */
 	public FeaturesCluster(IdentifiableWithFeatures<T> features) {
-		this();
-		
-		if (features == null) {
-			throw new InvalidParameterException("Must supply a list of features.");
-		}
-		
-		this.head = features;
-		this.members = new ArrayList<Identifiable>();
-		this.members.add(features);
-		this.setIdentifier(this.head.getIdentifier());
+		this(new ClusterHead<T>(features));
 	}
 	
 	/**
@@ -68,19 +188,15 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 		return this.head;
 	}
 	
-	/**
-	 * Gets all the members of this cluster.
-	 * @return All the members of this cluster.
-	 */
-	public Iterable<Identifiable> getMembers() {
-		return Iterables.unmodifiableIterable(this.members);
-	}
-
-	private SplitTuple<T> getSplit(IdentifiableWithFeatures<T> features) {
-		SplitTuple<T> tuple = new SplitTuple<T>();
+	private SplitTuple<T> getSplit(ClusterHead<T> features) {
+		SplitTuple<T> tuple = new SplitTuple<>();
 		tuple.reject = features.cloneOut(Sets.difference(features.getFeatures(), this.head.getFeatures()));
 		tuple.accept = features.cloneOut(Sets.intersection(features.getFeatures(), this.head.getFeatures()));
 		return tuple;
+	}
+	
+	private ClusterHead<T> getReject(ClusterHead<T> features) {
+		return this.getSplit(features).reject;
 	}
 	
 	/**
@@ -89,7 +205,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	 * @return An object that contains all the features from the provided object that are not in this cluster.
 	 */
 	public IdentifiableWithFeatures<T> getReject(IdentifiableWithFeatures<T> features) {
-		return this.getSplit(features).reject;
+		return this.getReject(new ClusterHead<T>(features));
 	}
 
 	/**
@@ -100,6 +216,35 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	public FeaturesCluster<T> add(IdentifiableWithFeatures<T> features) {
 		return this.add(features, 0);
 	}
+
+	/**
+	 * Add the given cluster to this cluster with some tolerance.
+	 * @param other The cluster to add.
+	 * @param rejectTolerance The fraction of features that can be allowed in even when rejected [0, 1].
+	 * @return A feature set which contains all the features from the other cluster that are not in this cluster.
+	 */
+	public FeaturesCluster<T> add(FeaturesCluster<T> features, double rejectTolerance) {
+		// Get all the rejected features.
+		SplitTuple<T> splitTuple = this.getSplit(features.head);
+		
+		if (this.isSubsetOf(features)) {
+			// If the new set is a super set, then it supersedes the current cluster head.
+			this.head.subsede(features.head);
+		} else {
+			if (splitTuple.reject.getFeatures().size() < features.getFeatures().size()) {
+				// If not everything was rejected, then this set can be added here.
+				this.head.add(splitTuple.accept.getFeatures());
+			}
+			
+			if (splitTuple.reject.getFeatures().size()/(double)features.getFeatures().size() > rejectTolerance) {
+				// Return a new cluster for all rejected ones.
+				return new FeaturesCluster<T>(splitTuple.reject);
+			}
+		}
+				
+		// This would be the case where we have found a perfect match (nothing to reject). 
+		return null;
+	}
 	
 	/**
 	 * Add the given feature set to this cluster with some tolerance.
@@ -108,24 +253,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	 * @return A feature set which contains all the features from the argument not in this cluster.
 	 */
 	public FeaturesCluster<T> add(IdentifiableWithFeatures<T> features, double rejectTolerance) {
-		// Get all the rejected features.
-		SplitTuple<T> splitTuple = this.getSplit(features);
-		
-		// If not everything was rejected, then this set can be added here.
-		if (splitTuple.reject.getFeatures().size() < features.getFeatures().size()) {
-			this.members.add(splitTuple.accept);
-		}
-
-		if (this.isSubsetOf(features)) {
-			// If the new set is a power set, then it becomes the cluster head.
-			this.head = features;
-		} else if (splitTuple.reject.getFeatures().size()/(double)features.getFeatures().size() > rejectTolerance) {
-			// Return a new cluster for all rejected ones.
-			return new FeaturesCluster<T>(splitTuple.reject);
-		}
-		
-		// This would be the case where we have found a perfect match (nothing to reject). 
-		return null;
+		return this.add(new FeaturesCluster<T>(features), rejectTolerance);
 	}
 
 	/**
@@ -138,76 +266,6 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	}
 	
 	/**
-	 * Add the given cluster to this cluster with some tolerance.
-	 * @param other The cluster to add.
-	 * @param rejectTolerance The fraction of features that can be allowed in even when rejected [0, 1].
-	 * @return A feature set which contains all the features from the other cluster that are not in this cluster.
-	 */	
-	public FeaturesCluster<T> add(FeaturesCluster<T> other, double rejectTolerance) {
-		// Try to add the head of the other and get the rejected cluster.
-		FeaturesCluster<T> reject = this.add(other.head, rejectTolerance);
-		double rejectRatio = (reject == null ? 0 : reject.getFeatures().size()) /
-				(double)(other.getFeatures().size() == 0 ? 1 : other.getFeatures().size()); 
-		Random rand = new Random();
-		
-		if (reject == null || reject.head.getFeatures().size() == 0) {
-			// If nothing was rejected, then this is a perfect fit.
-			// Add all remaining members.
-			this.members.addAll(Lists.newArrayList(Iterables.filter(other.members, Predicates.not(MPredicates.identifierEquals(other.head)))));
-			return null;
-		} else if (reject.head.getFeatures().size() != other.head.getFeatures().size()) {
-			// If only some were rejected, then we can partially add this cluster in.
-			// Try to add all members to this cluster (ignore the head since it's already there).
-			for(Identifiable member : Iterables.filter(other.members, Predicates.not(MPredicates.identifierEquals(other.head)))) {
-				// If this member also has features, then we add figure out which part of this member should go where.
-				IdentifiableWithFeatures<T> featuresMembers = null;
-				if (member instanceof IdentifiableWithFeatures<?>) {
-					try {
-						// For some reason this is how it works.
-						@SuppressWarnings("unchecked")
-						IdentifiableWithFeatures<T> temp = (IdentifiableWithFeatures<T>)member;
-						featuresMembers = temp;
-						
-						FeaturesCluster<T> tempCluster = this.add(featuresMembers, rejectTolerance);
-						// If some features were rejected, add member to the reject cluster.
-						if (tempCluster != null && tempCluster.head.getFeatures().size() != 0) {
-							reject.add(tempCluster.head);
-						}
-					} catch(ClassCastException ex) {
-						featuresMembers = null;
-					}
-				}
-				
-				if (featuresMembers == null) {
-					// Use a probabilistic model to determine where to put this one since exact membership information is lost.
-					// The reject ratio determines the probability of this member being in the reject cluster or this one.
-					if (rand.nextDouble() < rejectRatio) {
-						reject.members.add(member);
-					} else {
-						this.members.add(member);
-					}
-				}
-			}
-			
-			// Deal with dummy members (if there are any).
-			for (int i=0; i<other.dummyMembers; i++) {
-				// Use a probabilistic model to determine where to put this one since exact membership information is lost.
-				// The reject ratio determines the probability of this member being in the reject cluster or this one.
-				if (rand.nextDouble() < rejectRatio) {
-					reject.addDummyMembers(1);
-				} else {
-					this.addDummyMembers(1);
-				}
-			}
-		} else {
-			// Everything was rejected, so no change needed.
-			reject = other;
-		}
-		
-		return reject;
-	}
-	
-	/**
 	 * Adds a number of dummy members to this cluster.
 	 * @param count Number of dummy members to add.
 	 * @return The current cluster.
@@ -217,21 +275,8 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 			throw new IllegalArgumentException("Count must be positive.");
 		}
 
-		this.dummyMembers += count;		
+		this.head.addDummyMembers(count);
 		return this;
-	}
-	
-	/**
-	 * Strips the members down to just identification information.
-	 * This can potentially help with reduction in memory usage.
-	 */
-	public void stripMemberFeatures() {
-		this.members = Lists.newArrayList(Iterables.transform(this.members, new Function<Identifiable, Identifiable>() {
-			@Override
-			public Identifiable apply(Identifiable member) {
-				return new IdentifiableObject(member.getIdentifier());
-			}
-		}));
 	}
 	
 	/**
@@ -239,7 +284,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	 * @return Number of members.
 	 */
 	public int getMemberCount() {
-		return this.members.size() + this.dummyMembers;
+		return this.head.getMemberCount();
 	}
 	
 	/**
@@ -247,7 +292,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	 * @return Mass of data in this cluster.
 	 */
 	public double getDataMass() {
-		return this.getMemberCount() * (double)this.head.getFeatures().size();
+		return this.getMemberCount();
 	}
 	
 	/**
@@ -262,8 +307,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	 * Clears the membership of this cluster.
 	 */
 	public void clear() {
-		this.members.clear();
-		this.dummyMembers = 0;
+		this.head.clearMembers();
 	}
 	
 	@Override
@@ -278,7 +322,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	
 	@Override
 	public String toString() {
-		return this.getMemberCount() + " x " + this.head.toString();
+		return this.getSignificance() + " x " + this.head.toString();
 	}
 
 	@Override
@@ -300,9 +344,7 @@ public class FeaturesCluster<T extends HasWord> extends IdentifiableObject imple
 	@Override
 	public FeaturesCluster<T> clone() {
 		FeaturesCluster<T> clonedCluster = new FeaturesCluster<T>();
-		clonedCluster.head = this.head;
-		clonedCluster.members = Lists.newArrayList(this.members);
-		clonedCluster.dummyMembers = this.dummyMembers;
+		clonedCluster.head = this.head.clone();
 		
 		return clonedCluster;
 	}
