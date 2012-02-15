@@ -27,95 +27,17 @@ import edu.sabanciuniv.dataMining.util.LargeTypedQuery;
  * @author Mus'ab Husaini
  */
 public class OntologyLearnerProgram {
+
+	private static EntityManager entityManager;
 	
-//	private HashMap<LinguisticToken,Long> getFeatureMap(SqlReviewFactory factory) {
-//		HashMap<LinguisticToken,Long> features = new HashMap<>();
-//		TextDocument doc;
-//		
-//		while ((doc = factory.create()) != null) {
-//			for (LinguisticToken token : doc.getFeatures()) {
-//				String feature = token.getLemma();
-//
-//				if (feature.length() < 3 || !feature.matches("^[\\sa-z]+$")) {
-//					continue;
-//				}
-//				
-//				if (!features.containsKey(token)) {
-//					features.put(token, new Long(0));
-//				}
-//				features.put(token, new Long(features.get(token) + 1));
-//			}
-//		}
-//		
-//		return features;
-//	}
-//	
-//	private HashMap<LinguisticToken,Long> getFeatureMap(Iterable<UUID> clusterHeads) {
-//		SqlReviewFactory factory = new SqlUuidListReviewFactory(clusterHeads);
-//		this.prepareReviewFactory(factory);
-//		factory.getOptions().setFeatureType(TextDocumentOptions.FeatureType.SMART_NOUNS);
-//		
-//		HashMap<LinguisticToken,Long> features = this.getFeatureMap(factory);
-//		factory.close();
-//		return features;
-//	}
-//	
-//	private void writeFeaturesToDB(HashMap<LinguisticToken,Long> features) throws SQLException {
-//		// Sort features by frequency;
-//		List<Entry<LinguisticToken,Long>> sortedFeatures = new ArrayList<>(features.entrySet());
-//		Collections.sort(sortedFeatures, Collections.reverseOrder(new EntryValueComparator<LinguisticToken,Long>()));		
-//		System.out.println(sortedFeatures);
-//		
-//		// Delete all existing records so we don't have duplicates.
-//		PreparedStatement sqlStmt;
-//		sqlStmt = this.sqlConnection.prepareStatement("TRUNCATE TABLE " + FEATURES_TABLE);
-//		sqlStmt.executeUpdate();
-//		
-//		// Write all words to database.
-//		System.out.println("Writing to database...");
-//		sqlStmt = this.sqlConnection.prepareStatement("INSERT INTO " + FEATURES_TABLE + "(feature, count) VALUES(?, ?)");
-//		for (Entry<LinguisticToken,Long> entry : sortedFeatures) {
-//			String word = entry.getKey().getLemma();
-//			try {
-//				sqlStmt.setString(1, word);
-//				sqlStmt.setLong(2, entry.getValue());
-//				sqlStmt.executeUpdate();
-//			} catch(SQLException ex) {
-//				System.err.println("Problem writing word: \"" + word + "\" to database");
-//				throw ex;
-//			}
-//		}
-//		
-//		System.out.println("Finished.");
-//	}
-//	
-//	private double evaluateClusteringQuality(SqlReviewFactory testFactory) throws SQLException {
-//		HashMap<LinguisticToken,Long> testNounsMap = this.getFeatureMap(testFactory);
-//		
-//		Set<LinguisticToken> clusterNouns = new HashSet<LinguisticToken>();
-//		//Map<TextDocumentSummary,Integer> clusters = getExistingPseudoClusters();
-//		SetCover setCover = null; // SetCover.createFromSql("Clustering-99", this.sqlConnection);
-////		setCover.populateReviewsFromSql(this.sqlConnection);
-//		//for (TextDocumentSummary docSummary : clusters.keySet()) {
-//		for (SetCoverReview scReview : setCover.getReviews()) {
-//			//clusterNouns = Sets.newHashSet(Sets.union(clusterNouns, docSummary.getFeatures()));
-//			//clusterNouns = Sets.newHashSet(Sets.union(clusterNouns, scReview.getReview(this.sqlConnection).getTaggedContent().getFeatures()));
-//		}
-//		
-//		Set<LinguisticToken> commonNouns = Sets.newHashSet(Sets.intersection(clusterNouns, testNounsMap.keySet()));
-//		
-//		double totalMass = 0.0;
-//		for (long count : testNounsMap.values()) {
-//			totalMass += count;
-//		}
-//		
-//		double clusterMass = 0.0;
-//		for (LinguisticToken token : commonNouns) {
-//			clusterMass += testNounsMap.get(token);
-//		}
-//		
-//		return clusterMass/totalMass;
-//	}
+	public static EntityManager em() {
+		if (entityManager == null) {
+			EntityManagerFactory emFactory = Persistence.createEntityManagerFactory("edu.sabanciuniv.dataMining.experiment");
+			entityManager = emFactory.createEntityManager();
+		}
+		
+		return entityManager;
+	}
 		
 	/**
 	 * Runs the ontology learner program.
