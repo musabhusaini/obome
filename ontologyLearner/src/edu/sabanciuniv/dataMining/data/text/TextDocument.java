@@ -29,6 +29,11 @@ import edu.stanford.nlp.trees.TypedDependency;
  * @author Mus'ab Husaini
  */
 public class TextDocument extends IdentifiableWithFeatures<LinguisticToken> implements Summarizable<TextDocument>, HasOptions<TextDocumentOptions> {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private static List<String> depRels = ImmutableList.of("nsubj", "nsubjpass");
 	private static List<String> govRels = ImmutableList.of("amod");
 	private static String compoundNounRel = "nn";

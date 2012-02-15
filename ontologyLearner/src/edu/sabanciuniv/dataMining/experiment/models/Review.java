@@ -1,26 +1,34 @@
 package edu.sabanciuniv.dataMining.experiment.models;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.UUID;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 
+@Entity
+@Table(name="reviews")
 public class Review extends IdentifiableObject {
-	public static final String REVIEWS_TABLE_NAME = "reviews";
-	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private String hotelId;
 	private String author;
 	private String content;
 	private Date date;
 	private short rating;
-	
+
+	@Column(name="hotel_id", columnDefinition="VARCHAR(10)", length=10)
 	public String getHotelId() {
 		return hotelId;
 	}
@@ -29,6 +37,7 @@ public class Review extends IdentifiableObject {
 		return this.hotelId = hotelId;
 	}
 
+	@Column
 	public String getAuthor() {
 		return author;
 	}
@@ -37,6 +46,7 @@ public class Review extends IdentifiableObject {
 		return this.author = author;
 	}
 
+	@Column(columnDefinition="LONGTEXT")
 	public String getContent() {
 		return content;
 	}
@@ -45,10 +55,12 @@ public class Review extends IdentifiableObject {
 		return this.content = content;
 	}
 
+	@Transient
 	public TextDocument getTaggedContent() {
 		return this.getTaggedContent(new TextDocumentOptions());
 	}
 	
+	@Transient
 	public TextDocument getTaggedContent(TextDocumentOptions options) {
 		TextDocument doc = new TextDocument(options);
 		doc.setIdentifier(this.getIdentifier());
@@ -56,6 +68,7 @@ public class Review extends IdentifiableObject {
 		return doc;
 	}
 
+	@Temporal(TemporalType.DATE)
 	public Date getDate() {
 		return date;
 	}
@@ -64,6 +77,7 @@ public class Review extends IdentifiableObject {
 		return this.date = date;
 	}
 
+	@Column
 	public short getRating() {
 		return rating;
 	}
@@ -71,41 +85,10 @@ public class Review extends IdentifiableObject {
 	public short setRating(short rating) {
 		return this.rating = rating;
 	}
-		
+	
 	@Override
 	public String toString() {
 		return String.format("%s (for %s on %s): %s",
 				this.getAuthor(), this.getHotelId().trim(), DateFormat.getInstance().format(this.getDate()), this.getContent());
-	}
-	
-	public static Review createFromSql(UUID uuid, Connection sqlConnection) throws SQLException {
-		if (sqlConnection == null) {
-			throw new IllegalArgumentException("Must provide a sql connection.");
-		}
-		if (uuid == null) {
-			throw new IllegalArgumentException("Must provide a uuid.");
-		}
-
-		PreparedStatement sqlStmt = sqlConnection.prepareStatement("SELECT * FROM " + REVIEWS_TABLE_NAME + " WHERE uuid=?");
-		sqlStmt.setBytes(1, IdentifiableObject.getUuidBytes(uuid));
-		ResultSet sqlResultSet = sqlStmt.executeQuery();
-		if (!sqlResultSet.next()) {
-			return null;
-		}
-		return createFromSql(sqlResultSet);
-	}
-	
-	public static Review createFromSql(ResultSet sqlResultSet) throws SQLException {
-		if (sqlResultSet == null) {
-			throw new IllegalArgumentException("Must provide a sql result set.");
-		}
-
-		Review review = new Review();
-		review.setHotelId(sqlResultSet.getString("hotel_id"));
-		review.setAuthor(sqlResultSet.getString("author"));
-		review.setContent(sqlResultSet.getString("content"));
-		review.setDate(sqlResultSet.getDate("date"));
-		review.setRating(sqlResultSet.getShort("rating"));
-		return review;
 	}
 }

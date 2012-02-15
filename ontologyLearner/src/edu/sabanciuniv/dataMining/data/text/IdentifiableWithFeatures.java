@@ -15,6 +15,11 @@ import edu.stanford.nlp.ling.HasWord;
  * @param <T> Type of features; must extend {@link HasWord}.
  */
 public abstract class IdentifiableWithFeatures<T extends HasWord> extends IdentifiableObject implements HasFeatures<T>, Comparable<IdentifiableWithFeatures<T>> {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private Set<T> features;
 	
 	/**

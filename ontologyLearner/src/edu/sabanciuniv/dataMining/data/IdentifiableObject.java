@@ -1,15 +1,27 @@
 package edu.sabanciuniv.dataMining.data;
 
+import java.io.Serializable;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.UUID;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 
 /**
  * An object that has an identifier.
  * @author Mus'ab Husaini
  */
-public class IdentifiableObject implements Identifiable {
+@MappedSuperclass
+public class IdentifiableObject implements Identifiable, Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Create UUID from a byte array.
 	 * @param uuidBytes Byte representation of the UUID.
@@ -81,10 +93,20 @@ public class IdentifiableObject implements Identifiable {
 		
 		this.id = id;
 	}
-	
-	@Override
+
+	@Transient
 	public UUID getIdentifier() {
 		return this.id;
+	}
+
+	@Id
+	@Column(name="uuid", columnDefinition="VARBINARY(16)", length=16, updatable=false, nullable=false)
+	public byte[] getId() {
+		return IdentifiableObject.getUuidBytes(this.id);
+	}
+
+	public void setId(byte[] id) {
+		this.id = createUuid(id);
 	}
 	
 	@Override

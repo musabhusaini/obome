@@ -1,19 +1,24 @@
 package edu.sabanciuniv.dataMining.experiment.models.setcover.builder;
 
+import javax.persistence.EntityManager;
+
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesCluster;
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesClusterWorld;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
+import edu.sabanciuniv.dataMining.experiment.models.Review;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverReview;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
-public class ClustererSetCoverBuilder implements SetCoverBuilder {
+public class ClustererSetCoverBuilder extends SetCoverBuilderBase {
 
 	private FeaturesClusterWorld<LinguisticToken> clusterWorld;
 	private double minDataCoverage;
 	private boolean isClosed;
 	
-	public ClustererSetCoverBuilder() {
+	public ClustererSetCoverBuilder(EntityManager entityManager) {
+		super(entityManager);
+		
 		this.clusterWorld = new FeaturesClusterWorld<>();
 		this.minDataCoverage = 1.0;
 		this.isClosed = false;
@@ -70,8 +75,8 @@ public class ClustererSetCoverBuilder implements SetCoverBuilder {
 		Iterable<FeaturesCluster<LinguisticToken>> clusters = clusterWorld.getClusters();
 		for (FeaturesCluster<LinguisticToken> cluster : clusters) {
 			SetCoverReview scReview = new SetCoverReview(setCover);
-			scReview.setReviewUuid(cluster.getHead().getIdentifier());
-			scReview.setMemberCount(cluster.getMemberCount());
+			scReview.setReview(this.entityManager.find(Review.class, cluster.getHead().getId()));
+			scReview.setUtilityScore(cluster.getMemberCount());
 			scReview.setSeen(false);
 			setCover.getReviews().add(scReview);
 		}

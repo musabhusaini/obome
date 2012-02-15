@@ -6,21 +6,26 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 import edu.sabanciuniv.dataMining.data.text.TextDocumentSummary;
+import edu.sabanciuniv.dataMining.experiment.models.Review;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverReview;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
-public class RandomSetCoverBuilder implements SetCoverBuilder {
+public class RandomSetCoverBuilder extends SetCoverBuilderBase {
 
 	protected List<TextDocumentSummary> examples;
 	protected Set<LinguisticToken> remainingNouns;
 
-	public RandomSetCoverBuilder() {
+	public RandomSetCoverBuilder(EntityManager entityManager) {
+		super(entityManager);
+		
 		this.examples = new ArrayList<>();
 		this.remainingNouns = new HashSet<>();
 	}
@@ -51,8 +56,8 @@ public class RandomSetCoverBuilder implements SetCoverBuilder {
 			TextDocumentSummary docSummary = examples.get(index);			
 			examples.remove(index);
 			SetCoverReview scReview = new SetCoverReview(setCover);
-			scReview.setReviewUuid(docSummary.getIdentifier());
-			scReview.setMemberCount(1);
+			scReview.setReview(this.entityManager.find(Review.class, docSummary.getId()));
+			scReview.setUtilityScore(1);
 			scReview.setSeen(false);
 			setCover.getReviews().add(scReview);
 			

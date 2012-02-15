@@ -1,56 +1,66 @@
 package edu.sabanciuniv.dataMining.experiment.models.setcover;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Review;
 
+@Entity
+@Table(name="setcover_reviews")
 public class SetCoverReview extends IdentifiableObject {
-	public static final String SETCOVER_REVIEWS_TABLE_NAME = "setcover_reviews";
-	
-	private UUID reviewUuid;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	private SetCover setCover;
-	private int memberCount;
+	private int utilityScore;
 	private boolean seen;
+	private Review review;
 	
 	public SetCoverReview() {
 		this(new SetCover());
 	}
 	
 	public SetCoverReview(SetCover setCover) {
+		this(setCover, new Review());
+	}
+	
+	public SetCoverReview(SetCover setCover, Review review) {
 		this.setSetCover(setCover);
+		this.setReview(review);
 	}
 	
-	public UUID getReviewUuid() {
-		return reviewUuid;
-	}
-	
-	public UUID setReviewUuid(UUID reviewUuid) {
-		return this.reviewUuid = reviewUuid;
-	}
-	
+	@ManyToOne
+	@JoinColumn(name="setcover_uuid")
+	@Basic(fetch=FetchType.LAZY)
 	public SetCover getSetCover() {
 		return setCover;
 	}
 
 	public SetCover setSetCover(SetCover setCover) {
+		if (setCover == null) {
+			throw new IllegalArgumentException("Must provide a set cover.");
+		}
 		return this.setCover = setCover;
 	}
 
-	public int getMemberCount() {
-		return memberCount;
+	@Column(name="utility_score")
+	public int getUtilityScore() {
+		return this.utilityScore;
 	}
 	
-	public int setMemberCount(int memberCount) {
-		return this.memberCount = memberCount;
+	public int setUtilityScore(int utilityScore) {
+		return this.utilityScore = utilityScore;
 	}
 	
+	@Column
 	public boolean isSeen() {
 		return seen;
 	}
@@ -59,111 +69,17 @@ public class SetCoverReview extends IdentifiableObject {
 		return this.seen = seen;
 	}
 	
-	public Review getReview(Connection sqlConnection) throws SQLException {
-		return Review.createFromSql(this.getReviewUuid(), sqlConnection);
-	}
-
-	public boolean insertToSql(Connection sqlConnection) throws SQLException {
-		int paramIndex=1;
-		PreparedStatement sqlStmt = sqlConnection.prepareStatement("INSERT INTO " + SETCOVER_REVIEWS_TABLE_NAME +
-				"(uuid, review_uuid, setcover_uuid, member_count, seen) VALUE(?,?,?,?,?)");
-		sqlStmt.setBytes(paramIndex++, IdentifiableObject.getUuidBytes(this.getIdentifier()));
-		sqlStmt.setBytes(paramIndex++, IdentifiableObject.getUuidBytes(this.getReviewUuid()));
-		sqlStmt.setBytes(paramIndex++, IdentifiableObject.getUuidBytes(this.getSetCover().getIdentifier()));
-		sqlStmt.setInt(paramIndex++, this.getMemberCount());
-		sqlStmt.setBoolean(paramIndex++, this.isSeen());
-		sqlStmt.executeUpdate();
-		sqlStmt.close();
-		
-		return true;
+	@ManyToOne
+	@JoinColumn(name="review_uuid")
+	@Basic(fetch=FetchType.LAZY)
+	public Review getReview() {
+		return this.review;
 	}
 	
-	public static Iterable<SetCoverReview> getSetCoverReviews(Connection sqlConnection) throws SQLException {
-		return getSetCoverReviews(sqlConnection, null, null);
-	}
-	
-	public static Iterable<SetCoverReview> getSetCoverReviews(Connection sqlConnection, Boolean seen) throws SQLException {
-		return getSetCoverReviews(sqlConnection, null, seen);
-	}
-	
-	public static Iterable<SetCoverReview> getSetCoverReviews(Connection sqlConnection, SetCover setCover) throws SQLException {
-		return getSetCoverReviews(sqlConnection, setCover, null);
-	}
-	
-	public static Iterable<SetCoverReview> getSetCoverReviews(Connection sqlConnection, SetCover setCover, Boolean seen) throws SQLException {
-		if (sqlConnection == null) {
-			throw new IllegalArgumentException("Must provide a sql connection.");
+	public void setReview(Review review) {
+		if (setCover == null) {
+			throw new IllegalArgumentException("Must provide a set cover.");
 		}
-		
-		PreparedStatement sqlStmt;
-		String sql = "SELECT * FROM " + SETCOVER_REVIEWS_TABLE_NAME;
-		if (setCover != null && setCover.getIdentifier() != null) {
-			sql += " WHERE setcover_uuid=?";
-			
-			if (seen != null) {
-				sql += " AND seen=?";
-				sqlStmt = sqlConnection.prepareStatement(sql);
-				sqlStmt.setBoolean(2, seen);
-			} else {
-				sqlStmt = sqlConnection.prepareStatement(sql);
-			}
-			
-			sqlStmt.setBytes(1, IdentifiableObject.getUuidBytes(setCover.getIdentifier()));
-		} else if (seen != null) {
-			sql += " WHERE seen=?";
-			sqlStmt = sqlConnection.prepareStatement(sql);
-			sqlStmt.setBoolean(1, seen);
-		} else {
-			sqlStmt = sqlConnection.prepareStatement(sql);
-		}
-
-		List<SetCoverReview> setCoverReviews = new ArrayList<>();
-		ResultSet sqlResultSet = sqlStmt.executeQuery();
-		while (sqlResultSet.next()) {
-			SetCoverReview scReview = createFromSql(sqlResultSet);
-			
-			if (setCover != null && setCover.getIdentifier() != null) {
-				scReview.setSetCover(setCover);
-			}
-			setCoverReviews.add(scReview);
-		}
-		
-		sqlStmt.close();
-		return setCoverReviews;
-	}
-	
-	public static SetCoverReview createFromSql(UUID uuid, Connection sqlConnection) throws SQLException {
-		if (sqlConnection == null) {
-			throw new IllegalArgumentException("Must provide a sql connection.");
-		}
-		if (uuid == null) {
-			throw new IllegalArgumentException("Must provide a uuid.");
-		}
-
-		PreparedStatement sqlStmt = sqlConnection.prepareStatement("SELECT * FROM " + SETCOVER_REVIEWS_TABLE_NAME + " WHERE uuid=?");
-		sqlStmt.setBytes(1, IdentifiableObject.getUuidBytes(uuid));
-		ResultSet sqlResultSet = sqlStmt.executeQuery();
-		if (!sqlResultSet.next()) {
-			sqlStmt.close();
-			return null;
-		}
-		
-		SetCoverReview scReview = createFromSql(sqlResultSet);
-		sqlStmt.close();
-		return scReview;
-	}
-	
-	public static SetCoverReview createFromSql(ResultSet sqlResultSet) throws SQLException {
-		if (sqlResultSet == null) {
-			throw new IllegalArgumentException("Must provide a sql result set.");
-		}
-
-		SetCoverReview setCoverReview = new SetCoverReview();
-		setCoverReview.setIdentifier(IdentifiableObject.createUuid(sqlResultSet.getBytes("uuid")));
-		setCoverReview.setReviewUuid(IdentifiableObject.createUuid(sqlResultSet.getBytes("review_uuid")));
-		setCoverReview.setMemberCount(sqlResultSet.getInt("member_count"));
-		setCoverReview.setSeen(sqlResultSet.getBoolean("seen"));
-		
-		return setCoverReview;
+		this.review = review;
 	}
 }

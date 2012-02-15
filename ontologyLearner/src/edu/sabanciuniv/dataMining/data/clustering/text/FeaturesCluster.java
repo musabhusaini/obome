@@ -22,7 +22,17 @@ import edu.stanford.nlp.ling.HasWord;
  */
 public class FeaturesCluster<T extends HasWord> extends IdentifiableObject implements HasFeatures<T>, Comparable<FeaturesCluster<T>>, Cloneable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	static class ClusterHead<T extends HasWord> extends IdentifiableWithFeatures<T> implements Cloneable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		
 		protected Map<T,Integer> headMap;
 		protected int dummyMembers;
 

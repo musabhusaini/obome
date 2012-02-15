@@ -16,6 +16,11 @@ import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
  */
 public class TextDocumentSummary extends IdentifiableWithFeatures<LinguisticToken> implements Summary<TextDocument> {
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * Creates a new instance of {@link TextDocumentSummary}.
 	 * @param uuid UUID of the original document.
 	 * @param features Features that have been mined from the original document.

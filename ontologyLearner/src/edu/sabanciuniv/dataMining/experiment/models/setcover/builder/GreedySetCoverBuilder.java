@@ -3,16 +3,23 @@ package edu.sabanciuniv.dataMining.experiment.models.setcover.builder;
 import java.util.List;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import edu.sabanciuniv.dataMining.data.text.TextDocumentSummary;
+import edu.sabanciuniv.dataMining.experiment.models.Review;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverReview;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
 public class GreedySetCoverBuilder extends RandomSetCoverBuilder {
 
+	public GreedySetCoverBuilder(EntityManager entityManager) {
+		super(entityManager);
+	}
+	
 	public SetCover buildRandom() {
 		return super.build();
 	}
@@ -78,8 +85,8 @@ public class GreedySetCoverBuilder extends RandomSetCoverBuilder {
 			TextDocumentSummary docSummary = examples.get(bestIndex);
 			examples.remove(bestIndex);
 			SetCoverReview scReview = new SetCoverReview(setCover);
-			scReview.setReviewUuid(docSummary.getIdentifier());
-			scReview.setMemberCount(1);
+			scReview.setReview(this.entityManager.find(Review.class, docSummary.getId()));
+			scReview.setUtilityScore(1);
 			scReview.setSeen(false);
 			setCover.getReviews().add(scReview);
 			
