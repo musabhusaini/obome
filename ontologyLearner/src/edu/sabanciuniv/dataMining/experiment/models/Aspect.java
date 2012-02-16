@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -39,12 +38,12 @@ public class Aspect extends IdentifiableObject {
 		this(setCover, "");
 	}
 	
-	public Aspect(SetCover setCover, String name) {
+	public Aspect(SetCover setCover, String label) {
 		this.setSetCover(setCover);
-		this.setLabel(name);
+		this.setLabel(label);
 	}
 
-	@Column
+	@Column(nullable=false)
 	public String getLabel() {
 		return label;
 	}
@@ -67,7 +66,7 @@ public class Aspect extends IdentifiableObject {
 		return this.setCover = setCover;
 	}
 
-	@OneToMany(mappedBy="aspect", cascade={CascadeType.REMOVE, CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REFRESH}, orphanRemoval=true)
+	@OneToMany(mappedBy="aspect")
 	public List<Keyword> getKeywords() {
 		return keywords;
 	}

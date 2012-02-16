@@ -44,7 +44,7 @@ public class Keyword extends IdentifiableObject {
 		this.aspect = aspect;
 	}
 
-	@Column
+	@Column(nullable=false)
 	public String getLabel() {
 		return label;
 	}

@@ -24,6 +24,7 @@ ul.ui-sidebyside-controls-list > li {
 ul.ui-controls-list > li {
 	list-style: none;
 	padding: 0em;
+	clear: left;
 }
 
 .ui-controls-list-item-spaced {
@@ -73,6 +74,15 @@ ul.ui-controls-list > li {
 	width: 2em;
 	height: 1em;
 	text-align: right;
+}
+
+.ol-button {
+	width: 7em;
+	height: 2em;
+}
+
+.ol-options-button {
+	float: right;
 }
 
 ul#usageList {

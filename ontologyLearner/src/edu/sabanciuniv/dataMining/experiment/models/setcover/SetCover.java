@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -71,7 +70,7 @@ public class SetCover extends IdentifiableObject {
 		this.timestamp = timestamp;
 	}
 
-	@OneToMany(mappedBy="setCover", cascade=CascadeType.ALL, orphanRemoval=true)
+	@OneToMany(mappedBy="setCover")
 	public List<SetCoverReview> getReviews() {
 		if (this.reviews == null) {
 			this.setReviews(null);
@@ -87,7 +86,7 @@ public class SetCover extends IdentifiableObject {
 		return this.reviews = Lists.newArrayList(reviews);
 	}
 	
-	@OneToMany(mappedBy="setCover", cascade={CascadeType.DETACH, CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.REFRESH}, orphanRemoval=true)
+	@OneToMany(mappedBy="setCover")
 	public List<Aspect> getAspects() {
 		if (aspects == null) {
 			this.setAspects(null);

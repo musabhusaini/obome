@@ -13,7 +13,7 @@ import edu.sabanciuniv.dataMining.experiment.models.Review;
 
 @Entity
 @Table(name="setcover_reviews")
-public class SetCoverReview extends IdentifiableObject {
+public class SetCoverReview extends IdentifiableObject implements Comparable<SetCoverReview> {
 	/**
 	 * 
 	 */
@@ -81,5 +81,10 @@ public class SetCoverReview extends IdentifiableObject {
 			throw new IllegalArgumentException("Must provide a set cover.");
 		}
 		this.review = review;
+	}
+
+	@Override
+	public int compareTo(SetCoverReview other) {
+		return this.getUtilityScore() - other.getUtilityScore();
 	}
 }

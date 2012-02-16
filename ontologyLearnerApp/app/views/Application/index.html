@@ -13,6 +13,7 @@
 		</li>
 		<li class="ui-sidebyside-controls-list-item-spaced">
 			<div>
+				<div id="optionsButton"></div>
 				<h3>Usage:</h3>
 				<ul id="usageList">
 					<li>Suggested features are highlighted.</li>
@@ -23,6 +24,9 @@
 			</div>
 		</li>
 	</ul>
+	
+	<div id="optionsDialogContainer" display="none">
+	</div>
 </div>
 
 #{script "widgets.documents.js" /}
@@ -45,6 +49,14 @@
 				.aspectsBrowser({ });
 		});
 		
-//		OntologyLearner.Aspects.initialize();
+		$("#optionsButton")
+			.addClass("ol-button")
+			.addClass("ol-options-button")
+			.button({
+				text: false,
+				icons: {
+					primary: "ui-icon-wrench"
+				}
+			});
 	})(window, window.document, window.jQuery, window.ontologyLearner)
 </script>

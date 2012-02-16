@@ -1,75 +1,105 @@
 package controllers;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+
+import models.AspectViewModel;
+import models.KeywordViewModel;
+
 import org.apache.commons.lang.StringUtils;
 
+import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import edu.sabanciuniv.dataMining.experiment.models.Aspect;
+import edu.sabanciuniv.dataMining.experiment.models.Keyword;
+import edu.sabanciuniv.dataMining.experiment.models.Review;
+import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 import play.mvc.*;
 
-public class Aspects extends Controller {
+public class Aspects extends Application {
 
-	public static void list() {
-		OntologyLearnerProgram program = new OntologyLearnerProgram();
-		Iterable<String> aspects = program.retrieveExistingAspects();
+	public static void list(String collection) {
+		SetCover sc = fetch(SetCover.class, collection);
 		
-		program.close();
-		renderJSON(aspects);
+		List<String> uuids = Lists.newArrayList();
+		for (Aspect aspect : sc.getAspects()) {
+			uuids.add(aspect.getIdentifier().toString());
+		}
+		
+		renderJSON(uuids);
 	}
-
+	
 	public static void single(String aspect) {
-		OntologyLearnerProgram program = new OntologyLearnerProgram();
-		Iterable<String> keywords = program.retrieveKeywords(aspect);
-		
-		program.close();
-		renderJSON(keywords);
+		Aspect a = fetch(Aspect.class, aspect);
+		renderJSON(new AspectViewModel(a));
 	}
 	
-	public static void postAspect(String aspect) {
-		OntologyLearnerProgram program = new OntologyLearnerProgram();
-		
-		String value = params.get("value");
-		boolean success = StringUtils.isNotEmpty(value) ? program.updateAspect(aspect, value) : program.addAspect(aspect);   
-		
-		program.close();
-		if (!success) {
-			throw new IllegalStateException("Aspect could not be added or updated, possibly due to a conflict.");
-		}
-		renderText("Success");
-	}
-	
-	public static void postKeyword(String aspect, String keyword) {
-		OntologyLearnerProgram program = new OntologyLearnerProgram();
+	public static void postAspect(String collection, String aspect, JsonObject body) {
+		AspectViewModel aspectView = new Gson().fromJson(body, AspectViewModel.class);
 
-		String value = params.get("value");
-		boolean success = StringUtils.isNotEmpty(value) ? program.updateKeyword(aspect, keyword, value) : program.addKeyword(aspect, keyword); 
-		
-		program.close();
-		if (!success) {
-			throw new IllegalStateException("Keyword could not be added or updated, possibly due to a conflict.");
+		Aspect a;
+		EntityManager em = OntologyLearnerProgram.em();
+		if (aspect.equals(aspectView.uuid)) {
+			a = fetch(Aspect.class, aspectView.uuid);
+			
+			if (StringUtils.isNotEmpty(collection)) {
+				if (!a.getSetCover().getIdentifier().toString().equals(collection)) {
+					throw new IllegalArgumentException("Aspect being accessed from the wrong collection.");
+				}
+			}
+			
+			a.setLabel(aspectView.label);
+			
+			em.getTransaction().begin();
+			a = em.merge(a);
+			em.getTransaction().commit();
+		} else {
+			if (StringUtils.isEmpty(collection)) {
+				throw new IllegalArgumentException("Must provide a collection to add to.");
+			}
+			
+			SetCover sc = fetch(SetCover.class, collection);
+			a = new Aspect(sc, aspectView.label);
+			a.setIdentifier(aspectView.uuid);
+			
+			em.getTransaction().begin();
+			em.persist(a);
+			em.getTransaction().commit();
 		}
-		renderText("Success");
+
+		if (a != null) {
+			em.refresh(a);
+			decache(a.getSetCover());
+			encache(a);
+		}
+
+		renderJSON(aspectView);
 	}
 	
-	public static void deleteAspect(String aspect) {
-		OntologyLearnerProgram program = new OntologyLearnerProgram();
+	public static void deleteAspect(String collection, String aspect) {
+		EntityManager em = OntologyLearnerProgram.em();
+		Aspect a = fetch(Aspect.class, aspect);
+		em.refresh(a);
 		
-		boolean success = program.deleteAspect(aspect);
-		
-		program.close();
-		if (!success) {
-			throw new IllegalStateException("Aspect could not be deleted, possibly due to a conflict.");
+		if (StringUtils.isNotEmpty(collection)) {
+			if (!a.getSetCover().getIdentifier().toString().equals(collection)) {
+				throw new IllegalArgumentException("Aspect being accessed from the wrong collection.");
+			}
 		}
-		renderText("Success");
-	}
-	
-	public static void deleteKeyword(String aspect, String keyword) {
-		OntologyLearnerProgram program = new OntologyLearnerProgram();
+
+		em.getTransaction().begin();
+		em.remove(a);
+		em.getTransaction().commit();
 		
-		boolean success = program.deleteKeyword(aspect, keyword);
+		decache(a.getSetCover());
+		decache(a);
 		
-		program.close();
-		if (!success) {
-			throw new IllegalStateException("Keyword could not be deleted, possibly due to a conflict.");
-		}
-		renderText("Success");
+		renderJSON(new AspectViewModel(a));
 	}
 }
