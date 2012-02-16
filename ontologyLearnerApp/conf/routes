@@ -17,13 +17,13 @@ POST    /collections/{collection}/aspects/{aspect}						Aspects.postAspect
 
 DELETE  /collections/{collection}/aspects/{aspect}						Aspects.deleteAspect
 
-GET		/collections/{collections}/aspects/{aspect}/keywords			Keywords.list
+GET		/collections/{collection}/aspects/{aspect}/keywords				Keywords.list
 
-GET		/collections/{collections}/aspects{aspect}/keywords/{keyword}	Keywords.single
+GET		/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.single
 
-POST	/collections/{collections}/aspects{aspect}/keywords/{keyword}	Keywords.postKeyword
+POST	/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.postKeyword
 
-DELETE	/collections/{collections}/aspects{aspect}/keywords/{keyword}	Keywords.deleteKeyword
+DELETE	/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.deleteKeyword
 
 GET		/collections/{collection}/items									ReviewCollections.items
 
