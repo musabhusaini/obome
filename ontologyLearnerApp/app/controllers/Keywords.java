@@ -19,7 +19,7 @@ import play.mvc.*;
 
 public class Keywords extends Application {
 
-	public static void list(String aspect) {
+	public static void list(String collection, String aspect) {
 		Aspect a = fetch(Aspect.class, aspect);
 		List<KeywordViewModel> keywords = Lists.newArrayList();
 		for (Keyword keyword : a.getKeywords()) {
@@ -29,11 +29,11 @@ public class Keywords extends Application {
 		renderJSON(keywords);
 	}
 	
-	public static void single(String aspect, String keyword) {
+	public static void single(String collection, String aspect, String keyword) {
 		renderJSON(new KeywordViewModel(fetch(Keyword.class, keyword)));
 	}
 	
-	public static void postKeyword(String aspect, String keyword, JsonObject body) {
+	public static void postSingle(String collection, String aspect, String keyword, JsonObject body) {
 		KeywordViewModel keywordView = new Gson().fromJson(body, KeywordViewModel.class);
 		
 		Keyword k;
@@ -75,7 +75,7 @@ public class Keywords extends Application {
 		renderJSON(keywordView);
 	}
 	
-	public static void deleteKeyword(String aspect, String keyword) {
+	public static void deleteSingle(String collection, String aspect, String keyword) {
 		EntityManager em = OntologyLearnerProgram.em();
 		Keyword k = fetch(Keyword.class, keyword);
 		em.refresh(k);

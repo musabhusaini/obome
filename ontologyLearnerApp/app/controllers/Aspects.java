@@ -35,12 +35,12 @@ public class Aspects extends Application {
 		renderJSON(uuids);
 	}
 	
-	public static void single(String aspect) {
+	public static void single(String collection, String aspect) {
 		Aspect a = fetch(Aspect.class, aspect);
 		renderJSON(new AspectViewModel(a));
 	}
 	
-	public static void postAspect(String collection, String aspect, JsonObject body) {
+	public static void postSingle(String collection, String aspect, JsonObject body) {
 		AspectViewModel aspectView = new Gson().fromJson(body, AspectViewModel.class);
 
 		Aspect a;
@@ -82,7 +82,7 @@ public class Aspects extends Application {
 		renderJSON(aspectView);
 	}
 	
-	public static void deleteAspect(String collection, String aspect) {
+	public static void deleteSingle(String collection, String aspect) {
 		EntityManager em = OntologyLearnerProgram.em();
 		Aspect a = fetch(Aspect.class, aspect);
 		em.refresh(a);

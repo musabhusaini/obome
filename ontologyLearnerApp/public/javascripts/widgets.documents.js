@@ -1,6 +1,7 @@
-(function(window, document, $, UrlStore, Util) {
+(function(window, document, $, routes, Util) {
 
-	var headerLabel = "dw_header";
+	var headerContainer = "dw_headerContainer";
+	var headerLabel = "dw_headerLabel";
 	var textContainer = "dw_textContainer";
 	var countContainer = "dw_countContainer";
 	var countSpan = "dw_countSpan";
@@ -10,7 +11,7 @@
 	var bypassCacheToggle = "dw_bypassCacheToggle";
 	var smartNounsToggle = "dw_smartNounsToggle";
 	
-	var navButtonsClass = "navButton";
+	var olButtonClass = "ol-button";
 
 	// Helpers to make things easier.
 	var makeId = function(domIdPrefix, id) {
@@ -23,8 +24,7 @@
 	$.widget("widgets.documentDisplay", {
 		options: {
 			header: "Review",
-			uuids: null,
-			totalDocuments: -1,
+			collection: null,
 			offset: 0,
 			bypassCache: false,
 			featureType: "nouns"
@@ -72,73 +72,110 @@
 								}));
 						$(event.target).find(".ol-counter-textbox").focus();
 					}))
-				.append(" of " + me.options.totalDocuments.toString());
+				.append(" of " + me.options.collection.size.toString());
 		},
 		
 		refresh: function() {
 			var me = this;
 			var id = me._id;
-			var uuids = me.options.uuids;
+			var collection = me.options.collection;
+			var uuids = collection.seenItems;
 			var index = me.options.offset;
+
+			// If no seen items available, get them.
+			if (!collection.seenItems) {
+				$(me._container).find($$(textContainer, id)).spinner();
+				$.getJSON(routes.ReviewCollections.Items.seen({ collection: collection.uuid }), { bypassCache: me.options.bypassCache })
+					.success(function(uuids) {
+						collection.seenItems = uuids;
+						$(me._container).find($$(textContainer, id)).spinner("destroy");
+						me.option({ offset: uuids.length });
+					});
+				
+				return true;
+			}
 			
+			var params = {
+				featureType: me.options.featureType,
+				bypassCache: me.options.bypassCache
+			};
+
 			if (index < 0) {
 				return;
 			}
 			
-			var url = index >= uuids.length ? UrlStore.getNextBestDocument(me.options.featureType, me.options.bypassCache) :
-				UrlStore.getDocument(uuids[index], me.options.featureType, me.options.bypassCache);
+			// Decide whether we need the next best document or a document by uuid.
+			var url = index >= uuids.length ? routes.ReviewCollections.Items.nextBest({ collection: collection.uuid }) :
+				routes.ReviewCollections.Items.single({ collection: collection.uuid, item: uuids[index] });
 			
+			// Get the document and display it.
 			$(me._container).find($$(textContainer, id)).spinner();
-			$.getJSON(url, function(doc) {
-				var pattern = /\\feature\{(.+?)\}/mg;
-				var text = doc.text;
-				var match = null;
-				text = text.replace(pattern, "<span class='ol-feature-element'>$1</span>");
-				
-				$(me._container).find($$(textContainer, id)).spinner("destroy");
-				$(me._container)
-					.find($$(textContainer, id))
-					.empty()
-					.html(window.unescape(text));
-								
-				$(me._container).find(".ol-feature-element")
-					.button()
-					.draggable({
-						helper: "clone",
-						revert: "invalid",
-						revertDuration: 400,
-						scope: "features",
-						zIndex: 1000
-					})
-					.click(function(event) {
-						me._trigger("featureClick", event, $(event.target).text());
-					});
-				
-				if (index >= uuids.length) {
-					me.options.offset = uuids.length;
-					uuids.push(doc.uuid);
-				}
-				
-				me._refreshCountDisplay();
-			});
+			$.getJSON(url, params)
+				.success(function(item) {
+					$.getJSON(routes.Documents.single({ document: item.review }), params)
+						.success(function(document) {
+							var pattern = /\\feature\{(.+?)\}/mg;
+							var text = document.text;
+							var match = null;
+							text = text.replace(pattern, "<span class='ol-feature-element'>$1</span>");
+							
+							$(me._container).find($$(textContainer, id)).spinner("destroy");
+							$(me._container)
+								.find($$(textContainer, id))
+								.empty()
+								.html(window.unescape(text));
+											
+							$(me._container).find(".ol-feature-element")
+								.button()
+								.draggable({
+									helper: "clone",
+									revert: "invalid",
+									revertDuration: 400,
+									scope: "features",
+									zIndex: 1000
+								})
+								.click(function(event) {
+									me._trigger("featureClick", event, $(event.target).text());
+								});
+							
+							if (index >= uuids.length) {
+								me.options.offset = index = uuids.length;
+								uuids.push(item.uuid);
+							}
+							
+							me._refreshCountDisplay();
+							
+							// The back or forward buttons might need to be disabled.
+							$(me._container).find($$(prevButton, id)).button("option", {
+								disabled: (index === 0)
+							});
 
-			$(me._container).find($$(prevButton, id)).button("option", {
-				disabled: (index === 0)
-			});
-
-			$(me._container).find($$(nextButton, id)).button("option", {
-				disabled: (index === me.options.totalDocuments-1)
-			});
+							$(me._container).find($$(nextButton, id)).button("option", {
+								disabled: (index === me.options.collection.size-1)
+							});
+						});
+				});
 		},
 	
 		_create: function() {
 			var me = this;
 			var id = me._id = window.Math.floor(window.Math.random() * 1000000).toString();
 			
+			// What to do before we leave a document.
 			function leaveDocument(callback) {
 				return function() {
-					var uuid = me.options.uuids[me.options.offset];
-					$.post(UrlStore.seeDocument(uuid));
+					var uuid = me.options.collection.seenItems[me.options.offset];
+					var params = {
+						bypassCache: me.options.bypassCache	
+					};
+					
+					if (me.options.offset >= me.options.collection.seenItems.length-1) {
+						$.post(routes.ReviewCollections.Items.single({
+								collection: me.options.collection.uuid,
+								item: uuid
+							}), params);
+					}
+					
 					callback();
 				}
 			}
@@ -162,9 +199,11 @@
 						.addClass("ui-widget-header")
 						.addClass("ui-corner-top")
 						.addClass("ol-header")
-						.attr("id", makeId(headerLabel, id))
-						.text(me.options.header)
-						.append($("<div>")
+						.attr("id", makeId(headerContainer, id))
+						.append($("<span>")
+							.attr("id", makeId(headerLabel, id))
+							.text(me.options.header))
+						.append($("<span>")
 							.attr("id", makeId(countContainer, id))
 							.css("float", "right"))))
 				// The text container.
@@ -182,46 +221,28 @@
 						// Previous button.
 						.append($("<li>")
 							.attr("id", makeId(prevButton, id))
-							.addClass(navButtonsClass)
+							.addClass(olButtonClass)
 							.button({
 								disabled: true,
-								label: "Previous",
+								text: false,
 								icons: {
-									primary: "ui-icon-circle-triangle-w"
+									primary: "ui-icon-triangle-1-w"
 								}
 							})
 							.click(leaveDocument(goBack)))
 						// Next button.
 						.append($("<li>")
 							.attr("id", makeId(nextButton, id))
-							.addClass(navButtonsClass)
+							.addClass(olButtonClass)
 							.addClass("ui-sidebyside-controls-list-item-spaced")
 							.button({
 								disabled: true,
-								label: "Next",
+								text: false,
 								icons: {
-									secondary: "ui-icon-circle-triangle-e"
+									primary: "ui-icon-triangle-1-e"
 								}
 							})
-							.click(leaveDocument(goForward)))
-						// Toggle cache control.
-						.append($("<li>")
-							.addClass("ui-sidebyside-controls-list-item-spaced")
-							.append($("<input type='checkbox' id='" + makeId(bypassCacheToggle, id) + "'/>")
-								.attr("checked", me.options.bypassCache)
-								.click(function() {
-									me.option({ bypassCache: !me.options.bypassCache });
-								}))
-							.append("<label for='" + makeId(bypassCacheToggle, id) + "'>Bypass Cache</label>"))
-						// Smart nouns toggle.
-						.append($("<li>")
-								.addClass("ui-sidebyside-controls-list-item-spaced")
-								.append($("<input type='checkbox' id='" + makeId(smartNounsToggle, id) + "'/>")
-									.attr("checked", me.options.featureType.toLowerCase() === "smart_nouns")
-									.click(function() {
-										me.option({ featureType: me.options.featureType.toLowerCase() === "smart_nouns" ? "nouns" : "smart_nouns" });
-									}))
-								.append("<label for='" + makeId(smartNounsToggle, id) + "'>Use Smart Nouns</label>"))))
+							.click(leaveDocument(goForward)))))
 				.hide();
 		},
 		
@@ -229,35 +250,51 @@
 			var me = this;
 			var id = me._id;
 			
+			var params = {
+				featureType: me.options.featureType,
+				bypassCache: me.options.bypassCache
+			};
+			
 			$(me._container).show()
 			me.options.offset = 0;
-			
-			if (me.options.totalDocuments < 0 || !me.options.uuids || me.options.totalDocuments < me.options.uuids.length) {
+
+			// If no collection set, then we try to get the first collection.
+			if (!me.options.collection) {
 				$(me._container).find($$(textContainer, id)).spinner();
-				$.getJSON(UrlStore.getDocumentList(), function(clusterHeads) {
-					$(me._container).find($$(textContainer, id)).spinner("destroy");
-					
-					me.options.totalDocuments = clusterHeads.seen.length + clusterHeads.unseen.length;
-					me.options.uuids = clusterHeads.seen;
-					me.options.offset = clusterHeads.seen.length;
-					me.refresh();
-				});
+				
+				$.getJSON(routes.ReviewCollections.list(), params)
+					.success(function(collections) {
+						$(me._container).find($$(textContainer, id)).spinner("destroy");
+						if (collections.length) {
+							me.option({ collection: collections[0] });
+						}
+					});
 			} else {
-				me.refresh();
+				me.option({ collection: me.options.collection });
 			}
 		},
 		
 		_setOption: function(key, value) {
 			$.Widget.prototype._setOption.apply(this, arguments);
 			
+			var me = this;
+			var id = this._id;
+			
 			if (key === "header") {
-				$(this._container).find($$(headerLabel, this._id)).text(value);
-			} else if (key === "uuids" || key === "offset" || key === "totalDocuments") {
-				this.refresh();
+				$(me._container).find($$(headerLabel, id)).text(value);
+			} else if (key == "collection") {
+				// If the collection object has a list of seen items, we move to the end of the list, otherwise, refresh will get the list.
+				if (!me.options.collection.seenItems) {
+					me.refresh();
+				} else {
+					me.option({ offset: me.options.collection.seenItems.length });
+				}
+			} else if (key === "offset") {
+				me.refresh();
 			} else if (key === "bypassCache") {
-				// Nothing to do for now.
+				me.refresh();
 			} else if (key === "featureType") {
-				this.refresh();
+				me.refresh();
 			}
 		},
 		
@@ -269,4 +306,4 @@
 		}
 	});
 	
-})(window, window.document, window.jQuery, window.ontologyLearner.UrlStore, window.ontologyLearner.Util);
+})(window, window.document, window.jQuery, window.ontologyLearner.routes, window.ontologyLearner.Util);

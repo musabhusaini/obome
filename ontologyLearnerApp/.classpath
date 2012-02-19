@@ -3,10 +3,12 @@
 	<classpathentry excluding="views/**" kind="src" path="app"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="maven-head"/>
+	<classpathentry kind="src" path="press-1.0.25"/>
 	
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="C:\Program Files\play-framework\framework\play-1.2.4.jar" sourcepath="C:/program files/play-framework/framework/src" />
 	<classpathentry kind="lib" path="C:\Users\SUUSER\Dropbox\Projects\git\sabanci\ontologyLearnerApp\lib\guava-10.0.1.jar"/>
+	<classpathentry kind="lib" path="C:\Users\SUUSER\Dropbox\Projects\git\sabanci\ontologyLearnerApp\lib\guava-bootstrap-10.0.1.jar"/>
 	<classpathentry kind="lib" path="C:\Users\SUUSER\Dropbox\Projects\git\sabanci\ontologyLearnerApp\lib\jsr305-1.3.9.jar"/>
 	<classpathentry kind="lib" path="C:\Users\SUUSER\Dropbox\Projects\git\sabanci\ontologyLearnerApp\lib\jwnl-1.4_rc3.jar"/>
 	<classpathentry kind="lib" path="C:\Users\SUUSER\Dropbox\Projects\git\sabanci\ontologyLearnerApp\lib\ontologyLearner-0.0.1.jar"/>
@@ -19,6 +21,9 @@
 	<classpathentry kind="lib" path="C:\Users\SUUSER\Dropbox\Projects\git\sabanci\ontologyLearnerApp\lib\xercesImpl-2.8.0.jar"/>
 	<classpathentry kind="lib" path="C:\Users\SUUSER\Dropbox\Projects\git\sabanci\ontologyLearnerApp\lib\xml-apis-1.3.03.jar"/>
 	<classpathentry kind="lib" path="C:\Users\SUUSER\Dropbox\Projects\git\sabanci\ontologyLearnerApp\lib\xom-1.2.5.jar"/>
+	<classpathentry kind="lib" path="C:\Program Files\play-framework\modules\press-1.0.25\lib\play-press.jar"/>
+	<classpathentry kind="lib" path="C:\Program Files\play-framework\modules\press-1.0.25\lib\yuicompressor-2.4.2.jar"/>
+	<classpathentry kind="lib" path="C:\Program Files\play-framework\modules\press-1.0.25\lib\yuicompressor-2.4.6.jar"/>
 	<classpathentry kind="lib" path="C:\Program Files\play-framework\framework\lib\activation-1.1.1.jar"/>
 	<classpathentry kind="lib" path="C:\Program Files\play-framework\framework\lib\antlr-2.7.6.jar"/>
 	<classpathentry kind="lib" path="C:\Program Files\play-framework\framework\lib\asm-all-3.3.1.jar"/>

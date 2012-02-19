@@ -24,10 +24,6 @@ import play.mvc.results.Redirect;
 import models.*;
 
 public class Documents extends Application {
-
-    public static void nextBest(String featureType) {
-    	//TODO: enter this logic.
-    }
     
     public static void single(String document, String featureType) {
     	class DocFetch implements Function<String,DocumentViewModel> {
@@ -72,7 +68,7 @@ public class Documents extends Application {
     	FeatureType ft = FeatureType.NONE;
     	if (featureType != null) {
 	    	try {
-	    		ft = FeatureType.valueOf(featureType);
+	    		ft = FeatureType.valueOf(featureType.toUpperCase());
 	    	} catch(Exception e) {
 	    		System.out.println("No feature type called " + featureType);
 	    	}

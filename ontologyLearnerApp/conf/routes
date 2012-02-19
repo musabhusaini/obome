@@ -13,45 +13,49 @@ GET		/collections/{collection}/aspects								Aspects.list
 
 GET		/collections/{collection}/aspects/{aspect}						Aspects.single
 
-POST    /collections/{collection}/aspects/{aspect}						Aspects.postAspect
+POST    /collections/{collection}/aspects/{aspect}						Aspects.postSingle
 
-DELETE  /collections/{collection}/aspects/{aspect}						Aspects.deleteAspect
+DELETE  /collections/{collection}/aspects/{aspect}						Aspects.deleteSingle
 
 GET		/collections/{collection}/aspects/{aspect}/keywords				Keywords.list
 
 GET		/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.single
 
-POST	/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.postKeyword
+POST	/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.postSingle
 
-DELETE	/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.deleteKeyword
+DELETE	/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.deleteSingle
 
 GET		/collections/{collection}/items									ReviewCollections.items
 
+GET		/collections/{collection}/items/seen							ReviewCollections.seenItems
+
+GET		/collections/{collection}/items/unseen							ReviewCollections.unseenItems
+
+GET		/collections/{collection}/items/nextBest						ReviewCollections.nextBestItem
+
 GET		/collections/{collection}/items/{item}							ReviewCollections.singleItem
 
-GET		/documents/next													Documents.nextBest
+POST	/collections/{collection}/items/{item}							ReviewCollections.seeItem
 
 GET     /documents/{document}		                      				Documents.single
 
-POST	/documents/{document}											Documents.see
+GET     /aspects/{aspect}	                   				    		Aspects.single(collection:'')
 
-GET     /aspects/{aspect}	                   				    		Aspects.single
+POST	/aspects/{aspect}												Aspects.postSingle(collection:'')
 
-POST	/aspects/{aspect}												Aspects.postAspect
+DELETE	/aspects/{aspect}												Aspects.deleteSingle(collection:'')
 
-DELETE	/aspects/{aspect}												Aspects.deleteAspect
+GET		/aspects/{aspect}/keywords										Keywords.list(collection:'')
 
-GET		/aspects/{aspect}/keywords										Keywords.list
+POST    /aspects/{aspect}/keywords/{keyword}        			     	Keywords.postSingle(collection:'')
 
-POST    /aspects/{aspect}/keywords/{keyword}        			     	Keywords.postKeyword
+DELETE  /aspects/{aspect}/keyword/{keyword}								Keywords.deleteSingle(collection:'')
 
-DELETE  /aspects/{aspect}/keyword/{keyword}								Keywords.deleteKeyword
+GET		/keywords/{keyword}												Keywords.single(collection:'',aspect:'')
 
-GET		/keywords/{keyword}												Keywords.single
+POST	/keywords/{keyword}												Keywords.postSingle(collection:'',aspect:'')
 
-POST	/keywords/{keyword}												Keywords.postKeyword
-
-DELETE	/keywords/{keyword}												Keywords.deleteKeyword
+DELETE	/keywords/{keyword}												Keywords.deleteSingle(collection:'',aspect:'')
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
@@ -61,3 +65,6 @@ GET     /public/                                staticDir:public
 
 # Catch all
 *       /{controller}/{action}                  {controller}.{action}
+
+# Press Module
+*  /  module:press

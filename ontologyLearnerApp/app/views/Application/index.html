@@ -13,7 +13,7 @@
 		</li>
 		<li class="ui-sidebyside-controls-list-item-spaced">
 			<div>
-				<div id="optionsButton"></div>
+				<div id="btnOptions"></div>
 				<h3>Usage:</h3>
 				<ul id="usageList">
 					<li>Suggested features are highlighted.</li>
@@ -25,38 +25,172 @@
 		</li>
 	</ul>
 	
-	<div id="optionsDialogContainer" display="none">
+	<div id="optionsDialogContainer" class="ui-helper-hidden" title="Options">
+		<form id="frmOptions">
+			<fieldset>
+			<ul class="ui-controls-list">
+				<li>
+					<label for="lstCollections">Collections:</label>
+					<select id="lstCollections">
+					</select>
+				</li>
+				<li>
+					<input id="chkBypassCache" type="checkbox" />
+					<label for="chkBypassCache">Always bypass cache</label>
+				</li>
+				<li>
+					<input id="chkSmartNouns" type="checkbox" />
+					<label for="chkSmartNouns">Use smart nouns</label>
+				</li>
+			</ul>
+			</fieldset>
+		</form>
 	</div>
 </div>
 
-#{script "widgets.documents.js" /}
-#{script "widgets.aspectsBrowser.js" /}
+#{press.script "widgets.documents.js" /}
+#{press.script "widgets.aspectsBrowser.js" /}
 
 <script type="text/javascript">
-	(function(window, document, $, ontologyLearner) {
+	(function(window, document, $, ontologyLearner, routes) {
 		$(document).ready(function() {
+			var optionsButton = "#btnOptions";
 			var docContainer = "#documentContainer";
-			var aspectsContainer = "#aspectsContainer"; 
-			$(docContainer)
-				.documentDisplay({
-					header: "Review",
-					featureClick: function(event, data) {
-						$(aspectsContainer).aspectsBrowser("addKeyword", data);
-					}
-				});
+			var aspectsContainer = "#aspectsContainer";
 			
-			$(aspectsContainer)
-				.aspectsBrowser({ });
-		});
-		
-		$("#optionsButton")
-			.addClass("ol-button")
-			.addClass("ol-options-button")
-			.button({
-				text: false,
-				icons: {
-					primary: "ui-icon-wrench"
+			var optionsDialogContainer = "#optionsDialogContainer";
+			var optionsForm = "#frmOptions";
+			var collectionsList = "#lstCollections";
+			var bypassCacheCheckbox = "#chkBypassCache";
+			var smartNounsCheckbox = "#chkSmartNouns";
+			
+			// Basic feature types enum.
+			var featureTypes = {
+				nouns: "nouns",
+				smartNouns: "smart_nouns"
+			};
+			
+			// Standard options.
+			var options = {
+				bypassCache: false,
+				featureType: featureTypes.nouns,
+				collection: null
+			};
+
+			// Function to apply options.
+			var applyOptions = function() {
+				function getAllNewOptions() {
+					return {
+						bypassCache: !!$(bypassCacheCheckbox).attr("selected"),
+						featureType: !!$(smartNounsCheckbox).attr("selected") ? featureTypes.smartNouns : featureTypes.nouns,
+						collection: $(collectionsList).find(":selected:first").data("value")
+					};
+				}
+
+				// First time operations.
+				options = getAllNewOptions();
+				$(docContainer)
+					.documentDisplay($.extend(options, {
+						header: "Review",
+						featureClick: function(event, data) {
+							$(aspectsContainer).aspectsBrowser("addKeyword", data);
+						}					
+					}));
+				
+				$(aspectsContainer)
+					.aspectsBrowser(options);
+
+				// Change the function so we modify options now.
+				applyOptions = function() {
+					// Get all changed options.
+					function modifyOptions() {
+						var newOptions = getAllNewOptions();
+						
+						var modifiedOptions = {};
+						$.each(newOptions, function(key, value) {
+							if ((value.uuid && value.uuid !== newOptions[key].uuid) || (!value.uuid && value !== options[key])) {
+								modifiedOptions[key] = value;
+							}
+						});
+						
+						options = newOptions;
+						return modifiedOptions;
+					}
+
+					// Apply options.
+					var modifiedOptions = modifyOptions();
+					$(docContainer).documentDisplay("option", modifiedOptions);
+					$(aspectsContainer).aspectsBrowser("option", modifiedOptions);
+				};
+			};
+			
+			// Create the options dialog.
+			$(optionsDialogContainer).dialog({
+				autoOpen: true,
+				modal: true,
+				buttons: {
+					Ok: function() {
+						applyOptions();
+						$(optionsDialogContainer).dialog("close");
+					},
+					Cancel: function() {
+						$(optionsDialogContainer).dialog("close");
+					}
+				},
+				resizable: false,
+				closeOnEscape: true,
+				beforeClose: function(event, ui) {
+					return !!options.collection;
+				},
+				open: function() {
+					$(optionsDialogContainer).parent().find("button:first + button:first").button("option", "disabled", !options.collections);
+					
+					window.setTimeout(function() {
+						$(optionsDialogContainer).spinner();
+						
+						// Get all collections.
+						$.getJSON(routes.ReviewCollections.list())
+							.success(function(collections) {
+								$(optionsDialogContainer).spinner("destroy");
+								
+								// Display collections in the list.
+								$.each(collections, function(index,collection) {
+									var selected = (index === 0) || (options.collection && options.collection.uuid === collection.uuid);
+									$(collectionsList)
+										.append($("<option>")
+											.text(collection.name)
+											.val(collection.uuid)
+											.data("value", collection)
+											.attr("selected", selected));
+								});
+								
+								// The option value is not being used right now, might be useful later.
+								$(collectionsList)
+									.data("option", "collection");
+								$(bypassCacheCheckbox)
+									.attr("checked", options.bypassCache)
+									.data("option", "bypassCache");
+								$(smartNounsCheckbox)
+									.attr("checked", options.featureType === featureTypes.smartNouns)
+									.data("option", "smartNouns");
+							});
+					}, 0);
 				}
 			});
-	})(window, window.document, window.jQuery, window.ontologyLearner)
+			
+			// Create the options button.
+			$(optionsButton)
+				.addClass("ol-button")
+				.addClass("ol-options-button")
+				.button({
+					text: false,
+					icons: {
+						primary: "ui-icon-wrench"
+					}
+				})
+				.click(function() {
+					$(optionsDialogContainer).dialog("open");
+				});
+		});
+	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
 </script>

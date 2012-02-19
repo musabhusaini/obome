@@ -41,11 +41,62 @@ public class ReviewCollections extends Application {
 		for (SetCoverReview scReview : sc.getReviews()) {
 			uuids.add(scReview.getIdentifier().toString());
 		}
+		renderJSON(uuids);
+	}
+	
+	public static void seenItems(String collection) {
+		EntityManager em = OntologyLearnerProgram.em();
+		List<SetCoverReview> items = em.createQuery("SELECT scr FROM SetCoverReview scr WHERE scr.setCover=:sc AND scr.seen=true", SetCoverReview.class)
+				.setParameter("sc", fetch(SetCover.class, collection))
+				.getResultList();
 		
+		List<String> uuids = Lists.newArrayList();
+		for (SetCoverReview scReview : items) {
+			uuids.add(scReview.getIdentifier().toString());
+		}
+		renderJSON(uuids);
+	}
+
+	public static void unseenItems(String collection) {
+		EntityManager em = OntologyLearnerProgram.em();
+		List<SetCoverReview> items = em.createQuery("SELECT scr FROM SetCoverReview scr WHERE scr.setCover=:sc AND scr.seen=false", SetCoverReview.class)
+				.setParameter("sc", fetch(SetCover.class, collection))
+				.getResultList();
+		
+		List<String> uuids = Lists.newArrayList();
+		for (SetCoverReview scReview : items) {
+			uuids.add(scReview.getIdentifier().toString());
+		}
 		renderJSON(uuids);
 	}
 	
 	public static void singleItem(String collection, String item) {
 		renderJSON(new ReviewCollectionItemViewModel(fetch(SetCoverReview.class, item)));
 	}
+		
+    public static void nextBestItem(String collection) {
+    	EntityManager em = OntologyLearnerProgram.em();
+    	SetCoverReview scReview = em.createQuery("SELECT scr FROM SetCoverReview scr WHERE scr.setCover=:sc AND scr.seen=false " +
+    			"ORDER BY scr.utilityScore DESC", SetCoverReview.class)
+    			.setParameter("sc", fetch(SetCover.class, collection))
+    			.setMaxResults(1)
+    			.getSingleResult();
+    	encache(scReview);
+    	
+    	renderJSON(new ReviewCollectionItemViewModel(scReview));
+    }
+    
+    public static void seeItem(String collection, String item) {
+    	SetCoverReview scReview = fetch(SetCoverReview.class, item);
+    	scReview.setSeen(true);
+    	
+    	System.out.println("Seeing item " + item);
+    	EntityManager em = OntologyLearnerProgram.em();
+    	em.getTransaction().begin();
+    	scReview = em.merge(scReview);
+    	em.getTransaction().commit();
+    	encache(scReview);
+    	
+    	renderJSON(new ReviewCollectionItemViewModel(scReview));
+    }
 }

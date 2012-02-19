@@ -79,7 +79,7 @@ public class SetCover extends IdentifiableObject {
 		return this.reviews;
 	}
 	
-	public List<SetCoverReview> setReviews(Iterable<SetCoverReview> reviews) {
+	public List<SetCoverReview> setReviews(List<SetCoverReview> reviews) {
 		if (reviews == null) {
 			reviews = Collections.emptyList();
 		}

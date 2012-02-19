@@ -12,7 +12,7 @@ import java.util.*;
 
 @Entity
 public class ReviewCollectionItemViewModel extends ViewModel {
-    public String reviewUuid;
+    public String review;
     public int utilityScore;
     public boolean seen;
     
@@ -21,7 +21,7 @@ public class ReviewCollectionItemViewModel extends ViewModel {
     
     public ReviewCollectionItemViewModel(SetCoverReview scReview) {
     	this.uuid = scReview.getIdentifier().toString();
-    	this.reviewUuid = scReview.getReview().getIdentifier().toString();
+    	this.review = scReview.getReview().getIdentifier().toString();
     	this.utilityScore = scReview.getUtilityScore();
     	this.seen = scReview.isSeen();
     }
