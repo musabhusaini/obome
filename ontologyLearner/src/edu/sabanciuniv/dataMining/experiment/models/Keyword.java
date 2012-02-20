@@ -35,7 +35,7 @@ public class Keyword extends IdentifiableObject {
 	}
 
 	@ManyToOne
-	@JoinColumn(name="aspect_uuid")
+	@JoinColumn(name="aspect_uuid", nullable=false)
 	@Basic(fetch=FetchType.LAZY)
 	public Aspect getAspect() {
 		return aspect;

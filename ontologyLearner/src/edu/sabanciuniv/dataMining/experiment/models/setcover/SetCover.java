@@ -1,6 +1,5 @@
 package edu.sabanciuniv.dataMining.experiment.models.setcover;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -11,8 +10,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Version;
-
-import com.google.common.collect.Lists;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Aspect;
@@ -29,7 +26,7 @@ public class SetCover extends IdentifiableObject {
 	private String name;
 	private int coverOffset;
 	private int coverSize;
-	private List<SetCoverReview> reviews;
+	private List<SetCoverItem> reviews;
 	private Date timestamp;
 	private List<Aspect> aspects;
 	
@@ -71,34 +68,20 @@ public class SetCover extends IdentifiableObject {
 	}
 
 	@OneToMany(mappedBy="setCover")
-	public List<SetCoverReview> getReviews() {
-		if (this.reviews == null) {
-			this.setReviews(null);
-		}
-		
+	public List<SetCoverItem> getReviews() {
 		return this.reviews;
 	}
 	
-	public List<SetCoverReview> setReviews(List<SetCoverReview> reviews) {
-		if (reviews == null) {
-			reviews = Collections.emptyList();
-		}
-		return this.reviews = Lists.newArrayList(reviews);
+	public List<SetCoverItem> setReviews(List<SetCoverItem> reviews) {
+		return this.reviews = reviews;
 	}
 	
 	@OneToMany(mappedBy="setCover")
 	public List<Aspect> getAspects() {
-		if (aspects == null) {
-			this.setAspects(null);
-		}
-		
 		return this.aspects;
 	}
 	
-	public void setAspects(List<Aspect> aspects) {
-		if (aspects == null) {
-			aspects = Collections.emptyList();
-		}
-		this.aspects = Lists.newArrayList(aspects);
+	public List<Aspect> setAspects(List<Aspect> aspects) {
+		return this.aspects = aspects;
 	}
 }

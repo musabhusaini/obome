@@ -1,6 +1,5 @@
 package edu.sabanciuniv.dataMining.experiment.models;
 
-import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Basic;
@@ -11,8 +10,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import com.google.common.collect.Lists;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
@@ -53,16 +50,13 @@ public class Aspect extends IdentifiableObject {
 	}
 
 	@ManyToOne
-	@JoinColumn(name="setcover_uuid")
-	@Basic(fetch = FetchType.LAZY)
+	@JoinColumn(name="setcover_uuid", nullable=false)
+	@Basic(fetch=FetchType.LAZY)
 	public SetCover getSetCover() {
 		return setCover;
 	}
 
 	public SetCover setSetCover(SetCover setCover) {
-		if (setCover == null) {
-			throw new IllegalArgumentException("Must provide a set cover.");
-		}
 		return this.setCover = setCover;
 	}
 
@@ -72,9 +66,6 @@ public class Aspect extends IdentifiableObject {
 	}
 
 	public void setKeywords(List<Keyword> keywords) {
-		if (keywords == null) {
-			keywords = Collections.emptyList();
-		}
-		this.keywords = Lists.newArrayList(keywords);
+		this.keywords = keywords;
 	}
 }

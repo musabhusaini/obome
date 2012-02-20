@@ -4,27 +4,27 @@ import edu.sabanciuniv.dataMining.data.factory.AbstractObjectFactory;
 import edu.sabanciuniv.dataMining.data.factory.ObjectFactory;
 import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
-import edu.sabanciuniv.dataMining.experiment.models.Review;
+import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 
 public class ReviewTaggedContentFactory extends AbstractObjectFactory<TextDocument> {
 
-	private ObjectFactory<Review> reviewFactory;
+	private ObjectFactory<OpinionDocument> reviewFactory;
 	private TextDocumentOptions options;
 
-	public ReviewTaggedContentFactory(ObjectFactory<Review> reviewFactory) {
+	public ReviewTaggedContentFactory(ObjectFactory<OpinionDocument> reviewFactory) {
 		this(reviewFactory, new TextDocumentOptions());
 	}
 	
-	public ReviewTaggedContentFactory(ObjectFactory<Review> reviewFactory, TextDocumentOptions options) {
+	public ReviewTaggedContentFactory(ObjectFactory<OpinionDocument> reviewFactory, TextDocumentOptions options) {
 		this.setReviewFactory(reviewFactory);
 		this.setOptions(options);
 	}
 	
-	public ObjectFactory<Review> getReviewFactory() {
+	public ObjectFactory<OpinionDocument> getReviewFactory() {
 		return reviewFactory;
 	}
 
-	public void setReviewFactory(ObjectFactory<Review> reviewFactory) {
+	public void setReviewFactory(ObjectFactory<OpinionDocument> reviewFactory) {
 		this.reviewFactory = reviewFactory;
 	}
 
@@ -40,7 +40,7 @@ public class ReviewTaggedContentFactory extends AbstractObjectFactory<TextDocume
 	public TextDocument create() {
 		super.create();
 
-		Review review = this.reviewFactory.create();
+		OpinionDocument review = this.reviewFactory.create();
 		if (review != null) {
 			TextDocument doc = review.getTaggedContent(options);
 			System.out.println(this.getCount() + ". " + doc.getSummary());

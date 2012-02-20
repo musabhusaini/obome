@@ -13,9 +13,9 @@ import com.google.common.collect.Sets;
 
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 import edu.sabanciuniv.dataMining.data.text.TextDocumentSummary;
-import edu.sabanciuniv.dataMining.experiment.models.Review;
+import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
-import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverReview;
+import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
 public class RandomSetCoverBuilder extends SetCoverBuilderBase {
@@ -55,8 +55,8 @@ public class RandomSetCoverBuilder extends SetCoverBuilderBase {
 			int index = rand.nextInt(examples.size());
 			TextDocumentSummary docSummary = examples.get(index);			
 			examples.remove(index);
-			SetCoverReview scReview = new SetCoverReview(setCover);
-			scReview.setReview(this.entityManager.find(Review.class, docSummary.getId()));
+			SetCoverItem scReview = new SetCoverItem(setCover);
+			scReview.setReview(this.entityManager.find(OpinionDocument.class, docSummary.getId()));
 			scReview.setUtilityScore(1);
 			scReview.setSeen(false);
 			setCover.getReviews().add(scReview);

@@ -16,7 +16,7 @@ import com.google.common.base.Joiner;
 
 import edu.sabanciuniv.dataMining.data.factory.QueryBasedObjectFactory;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
-import edu.sabanciuniv.dataMining.experiment.models.Review;
+import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 import edu.sabanciuniv.dataMining.experiment.models.factory.ReviewTaggedContentFactory;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.builder.GreedySetCoverBuilder;
@@ -34,6 +34,10 @@ public class OntologyLearnerProgram {
 		if (entityManager == null) {
 			EntityManagerFactory emFactory = Persistence.createEntityManagerFactory("edu.sabanciuniv.dataMining.experiment");
 			entityManager = emFactory.createEntityManager();
+		}
+		
+		if (!entityManager.getTransaction().isActive()) {
+			entityManager.getTransaction().begin();
 		}
 		
 		return entityManager;
@@ -111,7 +115,7 @@ public class OntologyLearnerProgram {
 			GreedySetCoverBuilder greedyBuilder = new GreedySetCoverBuilder(em);
 //			ClustererSetCoverBuilder clustererBuilder = new ClustererSetCoverBuilder(em);
 			
-			LargeTypedQuery<Review> query = new LargeTypedQuery<>(em.createQuery("SELECT p FROM Review p", Review.class).setFirstResult(offset).setMaxResults(count),
+			LargeTypedQuery<OpinionDocument> query = new LargeTypedQuery<>(em.createQuery("SELECT p FROM Review p", OpinionDocument.class).setFirstResult(offset).setMaxResults(count),
 					increment);
 			ReviewTaggedContentFactory factory = new ReviewTaggedContentFactory(new QueryBasedObjectFactory<>(query));
 			TextDocument document;

@@ -15,28 +15,18 @@ import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 
 @Entity
-@Table(name="reviews")
-public class Review extends IdentifiableObject {
+@Table(name="opinion_documents")
+public class OpinionDocument extends IdentifiableObject {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String hotelId;
+	private String corpusName;
 	private String author;
 	private String content;
 	private Date date;
-	private short rating;
-
-	@Column(name="hotel_id", columnDefinition="VARCHAR(10)", length=10)
-	public String getHotelId() {
-		return hotelId;
-	}
 	
-	public String setHotelId(String hotelId) {
-		return this.hotelId = hotelId;
-	}
-
 	@Column
 	public String getAuthor() {
 		return author;
@@ -77,18 +67,17 @@ public class Review extends IdentifiableObject {
 		return this.date = date;
 	}
 
-	@Column
-	public short getRating() {
-		return rating;
+	@Column(name="corpus_name")
+	public String getCorpusName() {
+		return this.corpusName;
 	}
-
-	public short setRating(short rating) {
-		return this.rating = rating;
+	
+	public void setCorpusName(String corpusName) {
+		this.corpusName = corpusName;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("%s (for %s on %s): %s",
-				this.getAuthor(), this.getHotelId().trim(), DateFormat.getInstance().format(this.getDate()), this.getContent());
+		return String.format("%s (on %s): %s", this.getAuthor(), DateFormat.getInstance().format(this.getDate()), this.getContent());
 	}
 }

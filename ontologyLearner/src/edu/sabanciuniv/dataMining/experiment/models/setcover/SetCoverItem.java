@@ -9,11 +9,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
-import edu.sabanciuniv.dataMining.experiment.models.Review;
+import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 
 @Entity
-@Table(name="setcover_reviews")
-public class SetCoverReview extends IdentifiableObject implements Comparable<SetCoverReview> {
+@Table(name="setcover_items")
+public class SetCoverItem extends IdentifiableObject implements Comparable<SetCoverItem> {
 	/**
 	 * 
 	 */
@@ -22,23 +22,23 @@ public class SetCoverReview extends IdentifiableObject implements Comparable<Set
 	private SetCover setCover;
 	private int utilityScore;
 	private boolean seen;
-	private Review review;
+	private OpinionDocument review;
 	
-	public SetCoverReview() {
+	public SetCoverItem() {
 		this(new SetCover());
 	}
 	
-	public SetCoverReview(SetCover setCover) {
-		this(setCover, new Review());
+	public SetCoverItem(SetCover setCover) {
+		this(setCover, new OpinionDocument());
 	}
 	
-	public SetCoverReview(SetCover setCover, Review review) {
+	public SetCoverItem(SetCover setCover, OpinionDocument review) {
 		this.setSetCover(setCover);
 		this.setReview(review);
 	}
 	
 	@ManyToOne
-	@JoinColumn(name="setcover_uuid")
+	@JoinColumn(name="setcover_uuid", nullable=false)
 	@Basic(fetch=FetchType.LAZY)
 	public SetCover getSetCover() {
 		return setCover;
@@ -70,13 +70,13 @@ public class SetCoverReview extends IdentifiableObject implements Comparable<Set
 	}
 	
 	@ManyToOne
-	@JoinColumn(name="review_uuid")
+	@JoinColumn(name="opinion_document_uuid", nullable=false)
 	@Basic(fetch=FetchType.LAZY)
-	public Review getReview() {
+	public OpinionDocument getReview() {
 		return this.review;
 	}
 	
-	public void setReview(Review review) {
+	public void setReview(OpinionDocument review) {
 		if (setCover == null) {
 			throw new IllegalArgumentException("Must provide a set cover.");
 		}
@@ -84,7 +84,7 @@ public class SetCoverReview extends IdentifiableObject implements Comparable<Set
 	}
 
 	@Override
-	public int compareTo(SetCoverReview other) {
+	public int compareTo(SetCoverItem other) {
 		return this.getUtilityScore() - other.getUtilityScore();
 	}
 }

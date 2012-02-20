@@ -5,9 +5,9 @@ import javax.persistence.EntityManager;
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesCluster;
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesClusterWorld;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
-import edu.sabanciuniv.dataMining.experiment.models.Review;
+import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
-import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverReview;
+import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
 public class ClustererSetCoverBuilder extends SetCoverBuilderBase {
@@ -74,8 +74,8 @@ public class ClustererSetCoverBuilder extends SetCoverBuilderBase {
 		
 		Iterable<FeaturesCluster<LinguisticToken>> clusters = clusterWorld.getClusters();
 		for (FeaturesCluster<LinguisticToken> cluster : clusters) {
-			SetCoverReview scReview = new SetCoverReview(setCover);
-			scReview.setReview(this.entityManager.find(Review.class, cluster.getHead().getId()));
+			SetCoverItem scReview = new SetCoverItem(setCover);
+			scReview.setReview(this.entityManager.find(OpinionDocument.class, cluster.getHead().getId()));
 			scReview.setUtilityScore(cluster.getMemberCount());
 			scReview.setSeen(false);
 			setCover.getReviews().add(scReview);
