@@ -1,6 +1,10 @@
 package edu.sabanciuniv.dataMining.experiment.models.setcover.builder;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
+
+import com.google.common.collect.Lists;
 
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesCluster;
 import edu.sabanciuniv.dataMining.data.clustering.text.FeaturesClusterWorld;
@@ -10,13 +14,13 @@ import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
-public class ClustererSetCoverBuilder extends SetCoverBuilderBase {
+public class EagerSetCoverBuilder extends SetCoverBuilderBase {
 
 	private FeaturesClusterWorld<LinguisticToken> clusterWorld;
 	private double minDataCoverage;
 	private boolean isClosed;
 	
-	public ClustererSetCoverBuilder(EntityManager entityManager) {
+	public EagerSetCoverBuilder(EntityManager entityManager) {
 		super(entityManager);
 		
 		this.clusterWorld = new FeaturesClusterWorld<>();
@@ -55,7 +59,7 @@ public class ClustererSetCoverBuilder extends SetCoverBuilderBase {
 	}
 
 	public SetCover build() {
-		return this.build("Clustering");
+		return this.build("Eager");
 	}
 	
 	@Override
@@ -69,6 +73,7 @@ public class ClustererSetCoverBuilder extends SetCoverBuilderBase {
 			clusterWorld.prune(0, this.minDataCoverage);
 		}
 		
+		List<SetCoverItem> items = Lists.newArrayList();
 		SetCover setCover = new SetCover();
 		setCover.setName(name);
 		
@@ -79,9 +84,10 @@ public class ClustererSetCoverBuilder extends SetCoverBuilderBase {
 			scReview.setUtilityScore(cluster.getMemberCount());
 			scReview.setSeen(false);
 			scReview.setSetCover(setCover);
-			//setCover.getItems().add(scReview);
+			items.add(scReview);
 		}
 		
+		setCover.setItems(items);
 		return setCover;
 	}
 }

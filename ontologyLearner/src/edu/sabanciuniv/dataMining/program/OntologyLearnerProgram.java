@@ -19,8 +19,9 @@ import com.google.common.base.Joiner;
 import edu.sabanciuniv.dataMining.data.factory.QueryBasedObjectFactory;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
-import edu.sabanciuniv.dataMining.experiment.models.factory.ReviewTaggedContentFactory;
+import edu.sabanciuniv.dataMining.experiment.models.factory.OpinionDocumentTaggedContentFactory;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
+import edu.sabanciuniv.dataMining.experiment.models.setcover.builder.EagerSetCoverBuilder;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.builder.GreedySetCoverBuilder;
 import edu.sabanciuniv.dataMining.util.LargeTypedQuery;
 
@@ -107,16 +108,25 @@ public class OntologyLearnerProgram {
 		try {
 			EntityManager em = em();
 			em.getTransaction().begin();
-			
-			Scanner scanner = new Scanner(new FileInputStream("C:\\Users\\SUUSER\\Dropbox\\Projects\\Eclipse Projects\\" +
-					"ontologyLearner\\LBH.txt"));
-			while (scanner.hasNextLine()) {
-				OpinionDocument document = new OpinionDocument();
-				document.setContent(scanner.nextLine());
-				document.setCorpusName("LBH Survey");
-				em.persist(document);
-				em.flush();
+
+			double minDataCoverage = 0.90;
+			EagerSetCoverBuilder eagerBuilder = new EagerSetCoverBuilder(em);
+			eagerBuilder.setMinDataCoverage(minDataCoverage);
+			LargeTypedQuery<OpinionDocument> query = new LargeTypedQuery<>(
+					em.createQuery("SELECT doc FROM OpinionDocument doc WHERE doc.corpusName=:corpusName", OpinionDocument.class)
+						.setParameter("corpusName", "LBH Survey"), 1000);
+			OpinionDocumentTaggedContentFactory factory = new OpinionDocumentTaggedContentFactory(new QueryBasedObjectFactory<>(query));
+			TextDocument document;
+			while ((document = factory.create()) != null) {
+				eagerBuilder.seeUniverseExample(document);
 			}
+			
+			SetCover setCover;
+			
+			setCover = eagerBuilder.build("Eager-LBH-" + Math.round(minDataCoverage * 100));
+			setCover.setCoverOffset(0);
+			setCover.setCoverSize(factory.getCount() - 1);
+			em.persist(setCover);
 			
 			em.getTransaction().commit();
 			

@@ -3,6 +3,7 @@ package edu.sabanciuniv.dataMining.experiment.models;
 import java.util.List;
 
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -60,7 +61,7 @@ public class Aspect extends IdentifiableObject {
 		return this.setCover = setCover;
 	}
 
-	@OneToMany(mappedBy="aspect")
+	@OneToMany(mappedBy="aspect", cascade=CascadeType.ALL)
 	public List<Keyword> getKeywords() {
 		return keywords;
 	}

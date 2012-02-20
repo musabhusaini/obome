@@ -3,6 +3,7 @@ package edu.sabanciuniv.dataMining.experiment.models.setcover;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -67,16 +68,16 @@ public class SetCover extends IdentifiableObject {
 		this.timestamp = timestamp;
 	}
 
-	@OneToMany(mappedBy="setCover")
+	@OneToMany(mappedBy="setCover", cascade=CascadeType.ALL)
 	public List<SetCoverItem> getItems() {
 		return this.items;
 	}
 	
-	public List<SetCoverItem> setItems(List<SetCoverItem> reviews) {
-		return this.items = reviews;
+	public List<SetCoverItem> setItems(List<SetCoverItem> items) {
+		return this.items = items;
 	}
 	
-	@OneToMany(mappedBy="setCover")
+	@OneToMany(mappedBy="setCover", cascade=CascadeType.ALL)
 	public List<Aspect> getAspects() {
 		return this.aspects;
 	}

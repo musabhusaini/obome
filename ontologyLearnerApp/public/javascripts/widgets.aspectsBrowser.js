@@ -128,19 +128,24 @@
 				$(event.target).removeClass("ui-state-highlight", "fast");
 			})
 			.dblclick(function(event) {
+				var uuid = $(event.target).val();
 				showSingleFieldDialog({
 					operation: "Edit",
 					buttonTitle: "Update",
 					fieldName: options.typeName,
-					initialValue: $(event.target).val(),
+					initialValue: $(event.target).text(),
 					operate: function(newValue) {
 						callAndDisplay({
 							ajax: function(value) {
-								return options.updateHandler($(event.target).val(), value);
+								value.uuid = uuid;
+								return options.updateHandler({
+									uuid: uuid,
+									label: $(event.target).text()
+								}, value);
 							},
 							
 							display: function(value) {
-								$(event.target).text(value).val(value);
+								$(event.target).text(value.label);
 							}
 						}, newValue, {
 							title: 'Update Failed',
@@ -287,10 +292,10 @@
 						text: aspect.label,
 						value: aspect.uuid,
 						typeName: "Aspect",
-						updateHandler: function(aspect, newAspect) {
+						updateHandler: function(oldAspect, newAspect) {
 							return $.post(routes.Aspects.single({
 								collection: me.options.collection.uuid,
-								aspect: aspect.uuid
+								aspect: oldAspect.uuid
 							}), window.JSON.stringify(newAspect));
 						}
 					})));
@@ -363,12 +368,12 @@
 						text: keyword.label,
 						value: keyword.uuid,
 						typeName: "Keyword",
-						updateHandler: function(keyword, newKeyword) {
+						updateHandler: function(oldKeyword, newKeyword) {
 							var aspect = $$(aspectsListId, me._id).val() || null;
 							return $.post(routes.Keywords.single({
 								collection: me.options.collection.uuid,
-								aspect: $$(aspectsListId, this._id).val() || null,
-								keyword: keyword.uuid
+								aspect: aspect,
+								keyword: oldKeyword.uuid
 							}), window.JSON.stringify(newKeyword));
 						}
 					})));
