@@ -21,7 +21,7 @@ public class OpinionCollectionItemViewModel extends ViewModel {
     
     public OpinionCollectionItemViewModel(SetCoverItem scReview) {
     	this.uuid = scReview.getIdentifier().toString();
-    	this.review = scReview.getReview().getIdentifier().toString();
+    	this.review = scReview.getOpinionDocument().getIdentifier().toString();
     	this.utilityScore = scReview.getUtilityScore();
     	this.seen = scReview.isSeen();
     }

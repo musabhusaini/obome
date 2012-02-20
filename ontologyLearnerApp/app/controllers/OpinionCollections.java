@@ -16,14 +16,21 @@ import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 
 public class OpinionCollections extends Application {
 
+	private static long getCollectionSize(SetCover sc) {
+		// We do it this way because getting this count from the property is costly.
+		return em.createQuery("SELECT COUNT(scr) FROM SetCoverItem scr WHERE scr.setCover=:sc", Long.class)
+			.setParameter("sc", sc)
+			.getSingleResult();
+	}
+	
 	public static void list() {
-		EntityManager em = OntologyLearnerProgram.em();
 		List<SetCover> setCovers = em.createQuery("SELECT sc FROM SetCover sc", SetCover.class).getResultList();
 		
 		List<OpinionCollectionViewModel> viewModels = Lists.newArrayList();
 		for (SetCover sc : setCovers) {
 			encache(sc);
 			OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
+			viewModel.size = getCollectionSize(sc);
 			viewModels.add(viewModel);
 		}
 		
@@ -31,21 +38,24 @@ public class OpinionCollections extends Application {
 	}
 	
 	public static void single(String collection) {
-		renderJSON(new OpinionCollectionViewModel(fetch(SetCover.class, collection)));
+		SetCover sc = fetch(SetCover.class, collection);
+		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
+		viewModel.size = getCollectionSize(sc);
+		
+		renderJSON(viewModel);
 	}
 	
 	public static void items(String collection) {
 		SetCover sc = fetch(SetCover.class, collection);
 		
 		List<String> uuids = Lists.newArrayList();
-		for (SetCoverItem scReview : sc.getReviews()) {
+		for (SetCoverItem scReview : sc.getItems()) {
 			uuids.add(scReview.getIdentifier().toString());
 		}
 		renderJSON(uuids);
 	}
 	
 	public static void seenItems(String collection) {
-		EntityManager em = OntologyLearnerProgram.em();
 		List<SetCoverItem> items = em.createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=true", SetCoverItem.class)
 				.setParameter("sc", fetch(SetCover.class, collection))
 				.getResultList();
@@ -58,7 +68,6 @@ public class OpinionCollections extends Application {
 	}
 
 	public static void unseenItems(String collection) {
-		EntityManager em = OntologyLearnerProgram.em();
 		List<SetCoverItem> items = em.createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=false", SetCoverItem.class)
 				.setParameter("sc", fetch(SetCover.class, collection))
 				.getResultList();
@@ -75,7 +84,6 @@ public class OpinionCollections extends Application {
 	}
 		
     public static void nextBestItem(String collection) {
-    	EntityManager em = OntologyLearnerProgram.em();
     	SetCoverItem scReview = em.createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=false " +
     			"ORDER BY scr.utilityScore DESC", SetCoverItem.class)
     			.setParameter("sc", fetch(SetCover.class, collection))
@@ -91,7 +99,6 @@ public class OpinionCollections extends Application {
     	scReview.setSeen(true);
     	
     	System.out.println("Seeing item " + item);
-    	EntityManager em = OntologyLearnerProgram.em();
     	scReview = em.merge(scReview);
     	em.flush();
     	encache(scReview);

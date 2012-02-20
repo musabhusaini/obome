@@ -44,7 +44,6 @@ public class Aspects extends Application {
 		AspectViewModel aspectView = new Gson().fromJson(body, AspectViewModel.class);
 
 		Aspect a;
-		EntityManager em = OntologyLearnerProgram.em();
 		if (aspect.equals(aspectView.uuid)) {
 			a = fetch(Aspect.class, aspectView.uuid);
 			
@@ -75,13 +74,10 @@ public class Aspects extends Application {
 //			encache(a);
 //		}
 
-		em.flush();
-
 		renderJSON(aspectView);
 	}
 	
 	public static void deleteSingle(String collection, String aspect) {
-		EntityManager em = OntologyLearnerProgram.em();
 		Aspect a = fetch(Aspect.class, aspect);
 		
 		if (StringUtils.isNotEmpty(collection)) {
@@ -91,7 +87,6 @@ public class Aspects extends Application {
 		}
 
 		em.remove(a);
-		em.flush();
 		
 		decache(a.getSetCover());
 		decache(a);

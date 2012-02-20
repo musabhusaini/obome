@@ -17,7 +17,7 @@ public class OpinionCollectionViewModel extends ViewModel {
     public String name;
     public int offset;
     public int corpusSize;
-    public int size;
+    public long size;
     public Date timestamp;
     
     public OpinionCollectionViewModel() {
@@ -29,6 +29,5 @@ public class OpinionCollectionViewModel extends ViewModel {
 		this.offset = sc.getCoverOffset();
 		this.corpusSize = sc.getCoverSize();
 		this.timestamp = sc.getTimestamp();
-		this.size = sc.getReviews().size();
     }
 }

@@ -11,10 +11,28 @@ import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 import play.cache.Cache;
+import play.mvc.After;
+import play.mvc.Before;
 import play.mvc.Controller;
 
 public class Application extends Controller {
 
+	protected static EntityManager em;
+
+	@Before
+	static void initializeEntityManager() {
+		em = OntologyLearnerProgram.em();
+		em.getTransaction().begin();
+	}
+	
+	@After
+	static void finalizeEntityManager() {
+		if (em.getTransaction().isActive()) {
+			em.getTransaction().commit();
+		}
+		em.close();
+	}
+	
 	static class EMFetch<T> implements Function<String,T> {
 		private Class<T> clazz;
 		
@@ -24,7 +42,6 @@ public class Application extends Controller {
 
 		@Override
 		public T apply(String uuid) {
-			EntityManager em = OntologyLearnerProgram.em();
 			T obj = em.find(this.clazz, IdentifiableObject.getUuidBytes(UUID.fromString(uuid)));
 			em.refresh(obj);
 			return obj;

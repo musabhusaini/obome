@@ -37,7 +37,6 @@ public class Keywords extends Application {
 		KeywordViewModel keywordView = new Gson().fromJson(body, KeywordViewModel.class);
 		
 		Keyword k;
-		EntityManager em = OntologyLearnerProgram.em();
 		if (keyword.equals(keywordView.uuid)) {
 			k = fetch(Keyword.class, keyword);
 			
@@ -68,13 +67,10 @@ public class Keywords extends Application {
 //			encache(k);
 //		}
 
-		em.flush();
-		
 		renderJSON(keywordView);
 	}
 	
 	public static void deleteSingle(String collection, String aspect, String keyword) {
-		EntityManager em = OntologyLearnerProgram.em();
 		Keyword k = fetch(Keyword.class, keyword);
 		
 		if (StringUtils.isNotEmpty(aspect)) {
@@ -84,7 +80,6 @@ public class Keywords extends Application {
 		}
 
 		em.remove(k);
-		em.flush();
 
 		decache(k.getAspect());
 		decache(k);
