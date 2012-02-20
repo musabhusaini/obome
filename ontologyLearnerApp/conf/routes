@@ -19,11 +19,11 @@ DELETE  /collections/{collection}/aspects/{aspect}						Aspects.deleteSingle
 
 GET		/collections/{collection}/aspects/{aspect}/keywords				Keywords.list
 
-GET		/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.single
+GET		/collections/{collection}/aspects/{aspect}/keywords/{keyword}	Keywords.single
 
-POST	/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.postSingle
+POST	/collections/{collection}/aspects/{aspect}/keywords/{keyword}	Keywords.postSingle
 
-DELETE	/collections/{collection}/aspects{aspect}/keywords/{keyword}	Keywords.deleteSingle
+DELETE	/collections/{collection}/aspects/{aspect}/keywords/{keyword}	Keywords.deleteSingle
 
 GET		/collections/{collection}/items									ReviewCollections.items
 

@@ -1,7 +1,7 @@
 #{extends 'main.html' /}
-#{set title:'Active Learner' /}
+#{set title:'Ontology Learner' /}
 
-<h2>Ontology Creation by Active Learning</h2>
+<h2>Ontology Learner</h2>
 
 <div id="mainContainer" class="ui-widget">
 	<ul class="ui-sidebyside-controls-list">
@@ -48,7 +48,7 @@
 	</div>
 </div>
 
-#{press.script "widgets.documents.js" /}
+#{press.script "widgets.documentDisplay.js" /}
 #{press.script "widgets.aspectsBrowser.js" /}
 
 <script type="text/javascript">
@@ -100,7 +100,7 @@
 				$(aspectsContainer)
 					.aspectsBrowser(options);
 
-				// Change the function so we modify options now.
+				// Change the function so we modify options instead of creating new widgets.
 				applyOptions = function() {
 					// Get all changed options.
 					function modifyOptions() {
@@ -108,7 +108,7 @@
 						
 						var modifiedOptions = {};
 						$.each(newOptions, function(key, value) {
-							if ((value.uuid && value.uuid !== newOptions[key].uuid) || (!value.uuid && value !== options[key])) {
+							if ((value.uuid && value.uuid !== options[key].uuid) || (!value.uuid && value !== options[key])) {
 								modifiedOptions[key] = value;
 							}
 						});
@@ -143,7 +143,7 @@
 					return !!options.collection;
 				},
 				open: function() {
-					$(optionsDialogContainer).parent().find("button:first + button:first").button("option", "disabled", !options.collections);
+					$(optionsDialogContainer).parent().find("button:first + button:first").button("option", "disabled", !options.collection);
 					
 					window.setTimeout(function() {
 						$(optionsDialogContainer).spinner();
@@ -154,6 +154,7 @@
 								$(optionsDialogContainer).spinner("destroy");
 								
 								// Display collections in the list.
+								$(collectionsList).empty();
 								$.each(collections, function(index,collection) {
 									var selected = (index === 0) || (options.collection && options.collection.uuid === collection.uuid);
 									$(collectionsList)

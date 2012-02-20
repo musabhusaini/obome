@@ -49,9 +49,7 @@ public class Keywords extends Application {
 			
 			k.setLabel(keywordView.label);
 			
-			em.getTransaction().begin();
 			k = em.merge(k);
-			em.getTransaction().commit();
 		} else {
 			if (StringUtils.isEmpty(aspect)) {
 				throw new IllegalArgumentException("Must provide a aspect to add to.");
@@ -61,16 +59,16 @@ public class Keywords extends Application {
 			k = new Keyword(a, keywordView.label);
 			k.setIdentifier(keywordView.uuid);
 			
-			em.getTransaction().begin();
 			em.persist(k);
-			em.getTransaction().commit();
 		}
 		
-		if (k != null) {
-			em.refresh(k);
-			decache(k.getAspect());
-			encache(k);
-		}
+//		if (k != null) {
+//			em.refresh(k);
+//			decache(k.getAspect());
+//			encache(k);
+//		}
+
+		em.flush();
 		
 		renderJSON(keywordView);
 	}
@@ -78,7 +76,6 @@ public class Keywords extends Application {
 	public static void deleteSingle(String collection, String aspect, String keyword) {
 		EntityManager em = OntologyLearnerProgram.em();
 		Keyword k = fetch(Keyword.class, keyword);
-		em.refresh(k);
 		
 		if (StringUtils.isNotEmpty(aspect)) {
 			if (!k.getAspect().getIdentifier().toString().equals(aspect)) {
@@ -86,9 +83,8 @@ public class Keywords extends Application {
 			}
 		}
 
-		em.getTransaction().begin();
 		em.remove(k);
-		em.getTransaction().commit();
+		em.flush();
 
 		decache(k.getAspect());
 		decache(k);

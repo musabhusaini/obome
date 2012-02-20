@@ -92,9 +92,8 @@ public class ReviewCollections extends Application {
     	
     	System.out.println("Seeing item " + item);
     	EntityManager em = OntologyLearnerProgram.em();
-    	em.getTransaction().begin();
     	scReview = em.merge(scReview);
-    	em.getTransaction().commit();
+    	em.flush();
     	encache(scReview);
     	
     	renderJSON(new ReviewCollectionItemViewModel(scReview));

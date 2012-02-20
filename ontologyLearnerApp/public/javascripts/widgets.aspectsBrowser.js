@@ -1,7 +1,9 @@
-(function(window, document, $, UrlStore, Util) {
+(function(window, document, JSON, $, routes, Util) {
 
 	var aspectsListId = "ab_aspects_list";
 	var keywordsListId = "ab_keywords_list";
+	
+	var olButtonClass = "ol-button";
 	
 	// Helpers to make things easier.
 	function makeId(domIdPrefix, id) {
@@ -23,7 +25,7 @@
 		
 		context = context || this;
 		$.proxy(handlers.ajax, context)(value)
-			.success(function() {
+			.success(function(value) {
 				$.proxy(handlers.display, context)(value);
 				
 				if (list) {
@@ -75,7 +77,10 @@
 		var buttonsOption = {};
 		
 		function submit() {
-			window.setTimeout(dialogOptions.operate($(form).find("input[type='text'][id|='" + dialogOptions.fieldName.toLowerCase() + "']").val()), 0);
+			var value = {
+				label: $(form).find("input[type='text'][id|='" + dialogOptions.fieldName.toLowerCase() + "']").val()
+			};
+			window.setTimeout(dialogOptions.operate(value), 0);
 			closeDialog();			
 		}
 		
@@ -187,20 +192,27 @@
 						greedy: true,
 						scope: "features",
 						drop: function(event, ui) {
-							callAndDisplay(options.addHandlers, ui.draggable.text(), {
+							callAndDisplay(options.addHandlers, {
+								label: ui.draggable.text()
+							}, {
 								title: "Add Failed",
 								message: "Could not add, possibly due to a conflict."
 							}, me, list);
 						}
 					}))
-			// add button.
+			// add buttons.
 			.append($("<li>")
 				.addClass("ui-controls-list-item-spaced")
 				.append($("<ul>")
 					.addClass("ui-sidebyside-controls-list")
 					.append(addButton = $("<li>")
+						.addClass(olButtonClass)
 						.button({
-							label: "Add"
+							text: false,
+							disabled: true,
+							icons: {
+								primary: "ui-icon-plusthick"
+							}
 						})
 						.click(function() {
 							showSingleFieldDialog({
@@ -217,9 +229,13 @@
 						}))
 					.append(deleteButton = $("<li>")
 						.addClass("ui-sidebyside-controls-list-item-spaced")
+						.addClass(olButtonClass)
 						.button({
-							label: "Delete",
-							disabled: true
+							text: false,
+							disabled: true,
+							icons: {
+								primary: "ui-icon-trash"
+							}
 						})
 						.click(function() {
 							var value = $(list).val();
@@ -237,19 +253,6 @@
 		return listContainer;
 	}
 
-	// Converts a list of aspects to the proper format.
-	function convertToAspects(aspects) {
-		var list = [];
-		for (var i=0; i<aspects.length; i++) {
-			var aspect = aspects[i];
-			list.push({
-				name: aspect.name || aspect
-			});
-		}
-		
-		return list;
-	}
-	
 	// Selects a given option in a list properly.
 	function selectOption(option) {
 		$(option).attr("selected", true).change();
@@ -258,7 +261,8 @@
 	// Create the widget.
 	$.widget("widgets.aspectsBrowser", {
 		options: {
-			aspects: []
+			collection: null,
+			bypassCache: false
 		},
 		
 		_id: null,
@@ -266,49 +270,55 @@
 		_container: null,
 
 		_addAspectHandlers: {
-			ajax: function(value) {
-				return $.post(UrlStore.postAspect(value));
+			ajax: function(aspect) {
+				return $.post(routes.Aspects.single({
+					collection: this.options.collection.uuid,
+					aspect: "new"
+				}), window.JSON.stringify(aspect));
 			},
 			
 			display: function(aspect) {
-				aspect = convertToAspects([aspect])[0];
+				var me = this; 
+				var newAspectElem;
 				
-				var me = this;
-				var aspectsList = $$(aspectsListId, me._id); 
-				var newAspect;
-				
-				$(aspectsList)
-					.append(newAspect = $(createEditableListItem({
+				var aspectsList = $$(aspectsListId, me._id)
+					.append(newAspectElem = $(createEditableListItem({
 						me: me,
-						text: aspect.name,
-						value: aspect.name,
+						text: aspect.label,
+						value: aspect.uuid,
 						typeName: "Aspect",
-						updateHandler: function(aspect, newValue) {
-							return $.post(UrlStore.postAspect(aspect), {
-								value: newValue
-							});
+						updateHandler: function(aspect, newAspect) {
+							return $.post(routes.Aspects.single({
+								collection: me.options.collection.uuid,
+								aspect: aspect.uuid
+							}), window.JSON.stringify(newAspect));
 						}
 					})));
 				
 				// If nothing is selected, then select this.
 				if (!$(aspectsList).find(":selected").size()) {
-					selectOption(newAspect);
+					selectOption(newAspectElem);
+					
+					$($$(keywordsListId, me._id).data("addButton")).button("enable");
 				}
 			}
 		},
 		
 		_deleteAspectHandlers: {
-			ajax: function(value) {
+			ajax: function(aspect) {
 				return $.ajax({
 					type: "DELETE",
-					url: UrlStore.deleteAspect(value)
+					url: routes.Aspects.single({
+						collection: this.options.collection.uuid,
+						aspect: aspect.uuid || aspect
+					})
 				});
 			},
 			
 			display: function(aspect) {
 				var me = this;
 				var aspectsList = $$(aspectsListId, me._id);
-				var toDelete = $(aspectsList).find("option[value='" + aspect + "']");
+				var toDelete = $(aspectsList).find("option[value='" + (aspect.uuid || aspect) + "']");
 				
 				// Find the next possible selection.
 				var next = $(toDelete).next();
@@ -319,57 +329,73 @@
 				
 				$(toDelete).remove();
 				if (!$(next).size()) {
-					// If this was the last aspect, then clear keywords and disable the delete button.
+					// If this was the last aspect, then clear keywords and disable useless buttons.
 					$.each($$(keywordsListId, me._id).find("option").val() || [], function(i, keyword) {
 						$.proxy(me._deleteKeywordHandlers.display, me)(keyword);
 					});
 					
 					$($(aspectsList).data("deleteButton")).button("disable");
+					
+					var keywordsList = $$(keywordsListId, me._id);
+					$($(keywordsList).data("addButton")).button("disable");
+					$($(keywordsList).data("deleteButton")).button("disable");
+					$(keywordsList).empty();
 				}
 			}
 		},
 		
 		_addKeywordHandlers: {
-			ajax: function(value) {
-				return $.post(UrlStore.postKeyword($$(aspectsListId, this._id).val() || null,
-						value));
+			ajax: function(keyword) {
+				return $.post(routes.Keywords.single({
+					collection: this.options.collection.uuid,
+					aspect: $$(aspectsListId, this._id).val() || null,
+					keyword: "new"
+				}), window.JSON.stringify(keyword));
 			},
 			
 			display: function(keyword) {
 				var me = this;
-				var keywordsList = $$(keywordsListId, me._id);
-				var newKeyword = $(createEditableListItem({
-					me: me,
-					text: keyword,
-					value: keyword,
-					typeName: "Keyword",
-					updateHandler: function(keyword, newValue) {
-						var aspect = $$(aspectsListId, me._id).val() || null;
-						return $.post(UrlStore.postKeyword(aspect, keyword), {
-							value: newValue,
-						});
-					}
-				}))
-				.appendTo(keywordsList);
+				var newKeywordElem;
+				
+				var keywordsList = $$(keywordsListId, me._id)
+					.append(newKeywordElem = $(createEditableListItem({
+						me: me,
+						text: keyword.label,
+						value: keyword.uuid,
+						typeName: "Keyword",
+						updateHandler: function(keyword, newKeyword) {
+							var aspect = $$(aspectsListId, me._id).val() || null;
+							return $.post(routes.Keywords.single({
+								collection: me.options.collection.uuid,
+								aspect: $$(aspectsListId, this._id).val() || null,
+								keyword: keyword.uuid
+							}), window.JSON.stringify(newKeyword));
+						}
+					})));
 				
 				if (!$(keywordsList).find(":selected").size()) {
-					selectOption(newKeyword);
+					selectOption(newKeywordElem);
+					$($(keywordsList).data("deleteButton")).button("enable");
 				}
 			}
 		},
 		
 		_deleteKeywordHandlers: {
-			ajax: function(value) {
+			ajax: function(keyword) {
 				var aspect = $$(aspectsListId, this._id).val() || null;
 				return $.ajax({
 					type: "DELETE",
-					url: UrlStore.deleteKeyword(aspect, value)
+					url: routes.Keywords.single({
+						collection: this.options.collection.uuid,
+						aspect: aspect,
+						keyword: keyword.uuid || keyword
+					})
 				});					
 			},
 			
 			display: function(keyword) {
 				var keywordsList = $$(keywordsListId, this._id);
-				var toDelete = keywordsList.find("option[value='" + keyword + "']");
+				var toDelete = keywordsList.find("option[value='" + (keyword.uuid || keyword) + "']");
 				var next = $(toDelete).next();
 				if (!$(next).size()) {
 					next = $(toDelete).prev();
@@ -387,7 +413,7 @@
 		
 		addAspect: function(aspect) {
 			var me = this;
-			callAndDisplay(me._addAspectHandlers, value, {
+			callAndDisplay(me._addAspectHandlers, aspect, {
 				title: "Add Failed",
 				message: "Could not add, possibly due to a conflict."
 			}, me, $$(aspectsListId, me._id));
@@ -395,7 +421,6 @@
 		
 		addKeyword: function(keyword) {
 			var me = this;
-			var aspect = $$(aspectsListId, me._id).val() || null;
 			callAndDisplay(me._addKeywordHandlers, keyword, {
 				title: "Add Failed",
 				message: "Could not add, possibly due to a conflict."
@@ -405,12 +430,25 @@
 		refresh: function() {
 			var me = this;
 			
-			me.disable();
-			$$(aspectsListId, me._id).empty();
-			$.each(me.options.aspects, function(i, aspect) {
+			var aspectsList = $$(aspectsListId, me._id);
+			var keywordsList = $$(keywordsListId, me._id);
+			$(aspectsList)
+				.attr("disabled", true)
+				.empty();
+			$(keywordsList)
+				.attr("disabled", true)
+				.empty();
+			
+			$.each(me.options.collection.aspects, function(i, aspect) {
 				$.proxy(me._addAspectHandlers.display, me)(aspect);
 			});
-			me.enable();
+			
+			$($(aspectsList)
+				.removeAttr("disabled")
+				.data("addButton"))
+					.button("enable");
+			$(keywordsList)
+				.removeAttr("disabled");
 		},
 	
 		_create: function() {
@@ -428,15 +466,30 @@
 				if ($(target).is("option")) {
 					target = $(target).parent("select");
 				}
+
+				selected = $(target)
+					.attr("disabled", true)
+					.val();
 				
-				$(target).attr("disabled", true);
-				selected = $(target).val();
-				$$(keywordsListId, id).empty();
-				$.getJSON(UrlStore.getAspect(selected), function(keywords) {
-					$.each(keywords, function(i, keyword) {
+				var keywordsList = $$(keywordsListId, me._id);
+				$($(keywordsList)
+					.attr("disabled", true)
+					.empty()
+					.data("deleteButton"))
+						.button("disable");
+				
+				$.getJSON(routes.Keywords.list({
+					collection: me.options.collection.uuid,
+					aspect: selected
+				}), function(keywords) {
+					$.each(keywords || [], function(i, keyword) {
 						$.proxy(me._addKeywordHandlers.display, me)(keyword);
 					});
-					$(target).removeAttr("disabled");
+					
+					$(target)
+						.removeAttr("disabled");
+					$(keywordsList)
+						.removeAttr("disabled");
 				});
 			}
 			
@@ -476,28 +529,42 @@
 		_init: function() {
 			var me = this;
 			
-			$(me._container)
-				.appendTo(me.element);
+			$(me.element)
+				.append(me._container);
 			
-			function setAspects(aspects) {
-				me.option("aspects", aspects);
-			};
-			
-			if (!me.options.aspects || !me.options.aspects.length) {
-				$.getJSON(UrlStore.getAspectList(), function(aspects) {
-					setAspects(aspects);
-				});
+			if (!me.options.collection) {
+				$(me._container).find($$(textContainer, id)).spinner();
+				
+				$.getJSON(routes.ReviewCollections.list(), params)
+					.success(function(collections) {
+						$(me._container).find($$(textContainer, id)).spinner("destroy");
+						if (collections.length) {
+							me.option({ collection: collections[0] });
+						}
+					});
 			} else {
-				setAspects(me.options.aspects);
+				me.option({ collection: me.options.collection });
 			}
 		},
 		
 		_setOption: function(key, value) {
 			$.Widget.prototype._setOption.apply(this, arguments);
 			
-			if (key === "aspects" && value.length >= 0) {
-				this.options.aspects = convertToAspects(value);
-				this.refresh();
+			var me = this;
+			
+			if (key === "collection") {
+				if (!me.options.collection.aspects) {
+					$.getJSON(routes.Aspects.list({
+						collection: me.options.collection.uuid
+					}), function(aspects) {
+						me.options.collection.aspects = aspects || [];
+						me.refresh();
+					});
+				} else {
+					me.refresh();
+				}
+			} else if (key === "bypassCache") {
+				me.refresh();
 			}
 		},
 		
@@ -509,4 +576,4 @@
 		}
 	});
 
-})(window, window.document, window.jQuery, window.ontologyLearner.UrlStore, window.ontologyLearner.Util);
+})(window, window.document, window.JSON, window.jQuery, window.ontologyLearner.routes, window.ontologyLearner.Util);

@@ -25,7 +25,9 @@ public class Application extends Controller {
 		@Override
 		public T apply(String uuid) {
 			EntityManager em = OntologyLearnerProgram.em();
-			return em.find(this.clazz, IdentifiableObject.getUuidBytes(UUID.fromString(uuid)));
+			T obj = em.find(this.clazz, IdentifiableObject.getUuidBytes(UUID.fromString(uuid)));
+			em.refresh(obj);
+			return obj;
 		}
 	}
 
@@ -42,7 +44,7 @@ public class Application extends Controller {
 	}
 	
 	public static <T extends Identifiable> T fetch(Class<T> clazz, String uuid, String idAppendage, Function<String,T> fallback) {
-		Boolean bypassCache = params.get("bypassCache", Boolean.class);
+		Boolean bypassCache = true; //params.get("bypassCache", Boolean.class);
 		if (bypassCache != null && bypassCache) {
 			System.out.println("Bypassing cache as requested.");
 			
@@ -59,13 +61,11 @@ public class Application extends Controller {
 			if (obj == null) {
 				throw new IllegalArgumentException("No such item exists.");
 			}
-			
-			encache(obj, idAppendage);
 		} else {
 			System.out.println("Found " + clazz.getSimpleName() + " from cache.");
-			Cache.replace(uuid, obj, "1h");
 		}
 		
+		encache(obj, idAppendage);
 		return obj;
 	}
 	
@@ -74,10 +74,10 @@ public class Application extends Controller {
 	}
 	
 	public static <T extends Identifiable> T encache(T obj, String idAppendage) {
-		String cacheId = obj.getIdentifier().toString() + idAppendage;
-		Cache.set(cacheId, obj, "1h");
-		
-		System.out.println("Storing a " + obj.getClass().getSimpleName() + " in cache as " + cacheId);
+//		String cacheId = obj.getIdentifier().toString() + idAppendage;
+//		Cache.set(cacheId, obj, "1h");
+//		
+//		System.out.println("Storing a " + obj.getClass().getSimpleName() + " in cache as " + cacheId);
 		return obj;
 	}
 	
@@ -86,10 +86,10 @@ public class Application extends Controller {
 	}
 	
 	public static <T extends Identifiable> T decache(T obj, String idAppendage) {
-		String cacheId = obj.getIdentifier().toString() + idAppendage;
-		Cache.delete(cacheId);
-		
-		System.out.println("Deleting a " + obj.getClass().getSimpleName() + " from cache as " + cacheId);
+//		String cacheId = obj.getIdentifier().toString() + idAppendage;
+//		Cache.delete(cacheId);
+//		
+//		System.out.println("Deleting a " + obj.getClass().getSimpleName() + " from cache as " + cacheId);
 		return obj;
 	}
 	

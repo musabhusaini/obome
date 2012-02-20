@@ -27,12 +27,13 @@ public class Aspects extends Application {
 	public static void list(String collection) {
 		SetCover sc = fetch(SetCover.class, collection);
 		
-		List<String> uuids = Lists.newArrayList();
+		List<AspectViewModel> aspects = Lists.newArrayList();
 		for (Aspect aspect : sc.getAspects()) {
-			uuids.add(aspect.getIdentifier().toString());
+			aspects.add(new AspectViewModel(aspect));
+			encache(aspect);
 		}
 		
-		renderJSON(uuids);
+		renderJSON(aspects);
 	}
 	
 	public static void single(String collection, String aspect) {
@@ -56,9 +57,7 @@ public class Aspects extends Application {
 			
 			a.setLabel(aspectView.label);
 			
-			em.getTransaction().begin();
 			a = em.merge(a);
-			em.getTransaction().commit();
 		} else {
 			if (StringUtils.isEmpty(collection)) {
 				throw new IllegalArgumentException("Must provide a collection to add to.");
@@ -68,16 +67,16 @@ public class Aspects extends Application {
 			a = new Aspect(sc, aspectView.label);
 			a.setIdentifier(aspectView.uuid);
 			
-			em.getTransaction().begin();
 			em.persist(a);
-			em.getTransaction().commit();
 		}
 
-		if (a != null) {
-			em.refresh(a);
-			decache(a.getSetCover());
-			encache(a);
-		}
+//		if (a != null) {
+//			em.refresh(a);
+//			decache(a.getSetCover());
+//			encache(a);
+//		}
+
+		em.flush();
 
 		renderJSON(aspectView);
 	}
@@ -85,7 +84,6 @@ public class Aspects extends Application {
 	public static void deleteSingle(String collection, String aspect) {
 		EntityManager em = OntologyLearnerProgram.em();
 		Aspect a = fetch(Aspect.class, aspect);
-		em.refresh(a);
 		
 		if (StringUtils.isNotEmpty(collection)) {
 			if (!a.getSetCover().getIdentifier().toString().equals(collection)) {
@@ -93,9 +91,8 @@ public class Aspects extends Application {
 			}
 		}
 
-		em.getTransaction().begin();
 		em.remove(a);
-		em.getTransaction().commit();
+		em.flush();
 		
 		decache(a.getSetCover());
 		decache(a);

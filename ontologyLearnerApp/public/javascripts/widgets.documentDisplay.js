@@ -135,7 +135,9 @@
 									zIndex: 1000
 								})
 								.click(function(event) {
-									me._trigger("featureClick", event, $(event.target).text());
+									me._trigger("featureClick", event, {
+										label: $(event.target).text()
+									});
 								});
 							
 							if (index >= uuids.length) {
