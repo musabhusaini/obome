@@ -535,7 +535,7 @@
 			if (!me.options.collection) {
 				$(me._container).find($$(textContainer, id)).spinner();
 				
-				$.getJSON(routes.ReviewCollections.list(), params)
+				$.getJSON(routes.OpinionCollections.list(), params)
 					.success(function(collections) {
 						$(me._container).find($$(textContainer, id)).spinner("destroy");
 						if (collections.length) {

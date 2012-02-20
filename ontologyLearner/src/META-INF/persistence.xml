@@ -29,9 +29,9 @@
     <persistence-unit name="edu.sabanciuniv.dataMining.experiment">
     	<provider>org.hibernate.ejb.HibernatePersistence</provider>
     	
- 		<class>edu.sabanciuniv.dataMining.experiment.models.Review</class>
+ 		<class>edu.sabanciuniv.dataMining.experiment.models.OpinionDocument</class>
 		<class>edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover</class>
-		<class>edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverReview</class>
+		<class>edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem</class>
 		<class>edu.sabanciuniv.dataMining.experiment.models.Aspect</class>
 		<class>edu.sabanciuniv.dataMining.experiment.models.Keyword</class>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>

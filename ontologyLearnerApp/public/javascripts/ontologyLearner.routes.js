@@ -5,15 +5,15 @@
 		Application: {
 			index: #{jsAction @Application.index() /}
 		},
-		ReviewCollections: {
-			list: #{jsAction @ReviewCollections.list() /},
-			single: #{jsAction @ReviewCollections.single(':collection') /},
+		OpinionCollections: {
+			list: #{jsAction @OpinionCollections.list() /},
+			single: #{jsAction @OpinionCollections.single(':collection') /},
 			Items: {
-				list: #{jsAction @ReviewCollections.items(':collection') /},
-				seen: #{jsAction @ReviewCollections.seenItems(':collection') /},
-				unseen: #{jsAction @ReviewCollections.unseenItems(':collection') /},
-				single: #{jsAction @ReviewCollections.singleItem(':collection', ':item') /},
-				nextBest: #{jsAction @ReviewCollections.nextBestItem(':collection') /},
+				list: #{jsAction @OpinionCollections.items(':collection') /},
+				seen: #{jsAction @OpinionCollections.seenItems(':collection') /},
+				unseen: #{jsAction @OpinionCollections.unseenItems(':collection') /},
+				single: #{jsAction @OpinionCollections.singleItem(':collection', ':item') /},
+				nextBest: #{jsAction @OpinionCollections.nextBestItem(':collection') /},
 			}
 		},
 		Documents: {

@@ -21,7 +21,7 @@
 		return "#" + makeId(domIdPrefix, id);
 	};
 	
-	$.widget("widgets.documentDisplay", {
+	$.widget("widgets.documentBrowser", {
 		options: {
 			header: "Review",
 			collection: null,
@@ -85,7 +85,7 @@
 			// If no seen items available, get them.
 			if (!collection.seenItems) {
 				$(me._container).find($$(textContainer, id)).spinner();
-				$.getJSON(routes.ReviewCollections.Items.seen({ collection: collection.uuid }), { bypassCache: me.options.bypassCache })
+				$.getJSON(routes.OpinionCollections.Items.seen({ collection: collection.uuid }), { bypassCache: me.options.bypassCache })
 					.success(function(uuids) {
 						collection.seenItems = uuids;
 						$(me._container).find($$(textContainer, id)).spinner("destroy");
@@ -105,8 +105,8 @@
 			}
 			
 			// Decide whether we need the next best document or a document by uuid.
-			var url = index >= uuids.length ? routes.ReviewCollections.Items.nextBest({ collection: collection.uuid }) :
-				routes.ReviewCollections.Items.single({ collection: collection.uuid, item: uuids[index] });
+			var url = index >= uuids.length ? routes.OpinionCollections.Items.nextBest({ collection: collection.uuid }) :
+				routes.OpinionCollections.Items.single({ collection: collection.uuid, item: uuids[index] });
 			
 			// Get the document and display it.
 			$(me._container).find($$(textContainer, id)).spinner();
@@ -172,7 +172,7 @@
 					};
 					
 					if (me.options.offset >= me.options.collection.seenItems.length-1) {
-						$.post(routes.ReviewCollections.Items.single({
+						$.post(routes.OpinionCollections.Items.single({
 								collection: me.options.collection.uuid,
 								item: uuid
 							}), params);
@@ -264,7 +264,7 @@
 			if (!me.options.collection) {
 				$(me._container).find($$(textContainer, id)).spinner();
 				
-				$.getJSON(routes.ReviewCollections.list(), params)
+				$.getJSON(routes.OpinionCollections.list(), params)
 					.success(function(collections) {
 						$(me._container).find($$(textContainer, id)).spinner("destroy");
 						if (collections.length) {

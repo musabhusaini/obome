@@ -22,10 +22,10 @@ public class OpinionDocument extends IdentifiableObject {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private String corpusName;
 	private String author;
 	private String content;
 	private Date date;
+	private String corpusName;
 	
 	@Column
 	public String getAuthor() {

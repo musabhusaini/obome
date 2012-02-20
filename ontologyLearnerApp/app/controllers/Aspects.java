@@ -17,7 +17,6 @@ import com.google.gson.JsonObject;
 
 import edu.sabanciuniv.dataMining.experiment.models.Aspect;
 import edu.sabanciuniv.dataMining.experiment.models.Keyword;
-import edu.sabanciuniv.dataMining.experiment.models.Review;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 import play.mvc.*;

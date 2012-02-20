@@ -9,22 +9,21 @@ import com.google.common.collect.Lists;
 
 import edu.sabanciuniv.dataMining.data.Identifiable;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
-import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverReview;
 
 import java.util.*;
 
 @Entity
-public class ReviewCollectionViewModel extends ViewModel {
+public class OpinionCollectionViewModel extends ViewModel {
     public String name;
     public int offset;
     public int corpusSize;
     public int size;
     public Date timestamp;
     
-    public ReviewCollectionViewModel() {
+    public OpinionCollectionViewModel() {
     }
     
-    public ReviewCollectionViewModel(SetCover sc) {
+    public OpinionCollectionViewModel(SetCover sc) {
 		this.uuid = sc.getIdentifier().toString();
 		this.name = sc.getName();
 		this.offset = sc.getCoverOffset();

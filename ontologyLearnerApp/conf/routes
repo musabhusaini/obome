@@ -5,9 +5,9 @@
 # Home page
 GET     /                				                       			Application.index
 
-GET		/collections													ReviewCollections.list
+GET		/collections													OpinionCollections.list
 
-GET		/collections/{collection}										ReviewCollections.single
+GET		/collections/{collection}										OpinionCollections.single
 
 GET		/collections/{collection}/aspects								Aspects.list
 
@@ -25,17 +25,17 @@ POST	/collections/{collection}/aspects/{aspect}/keywords/{keyword}	Keywords.post
 
 DELETE	/collections/{collection}/aspects/{aspect}/keywords/{keyword}	Keywords.deleteSingle
 
-GET		/collections/{collection}/items									ReviewCollections.items
+GET		/collections/{collection}/items									OpinionCollections.items
 
-GET		/collections/{collection}/items/seen							ReviewCollections.seenItems
+GET		/collections/{collection}/items/seen							OpinionCollections.seenItems
 
-GET		/collections/{collection}/items/unseen							ReviewCollections.unseenItems
+GET		/collections/{collection}/items/unseen							OpinionCollections.unseenItems
 
-GET		/collections/{collection}/items/nextBest						ReviewCollections.nextBestItem
+GET		/collections/{collection}/items/nextBest						OpinionCollections.nextBestItem
 
-GET		/collections/{collection}/items/{item}							ReviewCollections.singleItem
+GET		/collections/{collection}/items/{item}							OpinionCollections.singleItem
 
-POST	/collections/{collection}/items/{item}							ReviewCollections.seeItem
+POST	/collections/{collection}/items/{item}							OpinionCollections.seeItem
 
 GET     /documents/{document}		                      				Documents.single
 

@@ -15,7 +15,7 @@ import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
 import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions.FeatureType;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
-import edu.sabanciuniv.dataMining.experiment.models.Review;
+import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 import play.cache.Cache;
@@ -36,10 +36,10 @@ public class Documents extends Application {
     		
     		@Override
 			public DocumentViewModel apply(String uuid) {
-				Review review = fetch(Review.class, uuid);
+				OpinionDocument opinionDocument = fetch(OpinionDocument.class, uuid);
 		    	TextDocumentOptions options = new TextDocumentOptions();
 		    	options.setFeatureType(this.ft);
-		    	TextDocument textDoc = review.getTaggedContent(options);
+		    	TextDocument textDoc = opinionDocument.getTaggedContent(options);
 		    	
 		    	StringBuilder text = new StringBuilder(textDoc.getText());
 		    	List<LinguisticToken> features = Lists.newArrayList(textDoc.getFeatures());

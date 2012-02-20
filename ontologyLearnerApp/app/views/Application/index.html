@@ -48,7 +48,7 @@
 	</div>
 </div>
 
-#{press.script "widgets.documentDisplay.js" /}
+#{press.script "widgets.documentBrowser.js" /}
 #{press.script "widgets.aspectsBrowser.js" /}
 
 <script type="text/javascript">
@@ -90,7 +90,7 @@
 				// First time operations.
 				options = getAllNewOptions();
 				$(docContainer)
-					.documentDisplay($.extend(options, {
+					.documentBrowser($.extend(options, {
 						header: "Review",
 						featureClick: function(event, data) {
 							$(aspectsContainer).aspectsBrowser("addKeyword", data);
@@ -119,7 +119,7 @@
 
 					// Apply options.
 					var modifiedOptions = modifyOptions();
-					$(docContainer).documentDisplay("option", modifiedOptions);
+					$(docContainer).documentBrowser("option", modifiedOptions);
 					$(aspectsContainer).aspectsBrowser("option", modifiedOptions);
 				};
 			};
@@ -149,7 +149,7 @@
 						$(optionsDialogContainer).spinner();
 						
 						// Get all collections.
-						$.getJSON(routes.ReviewCollections.list())
+						$.getJSON(routes.OpinionCollections.list())
 							.success(function(collections) {
 								$(optionsDialogContainer).spinner("destroy");
 								
