@@ -22,7 +22,7 @@ public class SetCoverItem extends IdentifiableObject implements Comparable<SetCo
 	private SetCover setCover;
 	private int utilityScore;
 	private boolean seen;
-	private OpinionDocument review;
+	private OpinionDocument opinionDocument;
 	
 	public SetCoverItem() {
 		this(new SetCover());
@@ -34,7 +34,7 @@ public class SetCoverItem extends IdentifiableObject implements Comparable<SetCo
 	
 	public SetCoverItem(SetCover setCover, OpinionDocument review) {
 		this.setSetCover(setCover);
-		this.setReview(review);
+		this.setOpinionDocument(review);
 	}
 	
 	@ManyToOne
@@ -72,15 +72,15 @@ public class SetCoverItem extends IdentifiableObject implements Comparable<SetCo
 	@ManyToOne
 	@JoinColumn(name="opinion_document_uuid", nullable=false)
 	@Basic(fetch=FetchType.LAZY)
-	public OpinionDocument getReview() {
-		return this.review;
+	public OpinionDocument getOpinionDocument() {
+		return this.opinionDocument;
 	}
 	
-	public void setReview(OpinionDocument review) {
+	public void setOpinionDocument(OpinionDocument review) {
 		if (setCover == null) {
 			throw new IllegalArgumentException("Must provide a set cover.");
 		}
-		this.review = review;
+		this.opinionDocument = review;
 	}
 
 	@Override

@@ -56,10 +56,10 @@ public class RandomSetCoverBuilder extends SetCoverBuilderBase {
 			TextDocumentSummary docSummary = examples.get(index);			
 			examples.remove(index);
 			SetCoverItem scReview = new SetCoverItem(setCover);
-			scReview.setReview(this.entityManager.find(OpinionDocument.class, docSummary.getId()));
+			scReview.setOpinionDocument(this.entityManager.find(OpinionDocument.class, docSummary.getId()));
 			scReview.setUtilityScore(1);
 			scReview.setSeen(false);
-			setCover.getReviews().add(scReview);
+			scReview.setSetCover(setCover);
 			
 			remainingNouns = Sets.newHashSet(Sets.difference(remainingNouns, docSummary.getFeatures()));
 		}

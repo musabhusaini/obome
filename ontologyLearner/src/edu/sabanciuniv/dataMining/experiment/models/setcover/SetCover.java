@@ -26,7 +26,7 @@ public class SetCover extends IdentifiableObject {
 	private String name;
 	private int coverOffset;
 	private int coverSize;
-	private List<SetCoverItem> reviews;
+	private List<SetCoverItem> items;
 	private Date timestamp;
 	private List<Aspect> aspects;
 	
@@ -68,12 +68,12 @@ public class SetCover extends IdentifiableObject {
 	}
 
 	@OneToMany(mappedBy="setCover")
-	public List<SetCoverItem> getReviews() {
-		return this.reviews;
+	public List<SetCoverItem> getItems() {
+		return this.items;
 	}
 	
-	public List<SetCoverItem> setReviews(List<SetCoverItem> reviews) {
-		return this.reviews = reviews;
+	public List<SetCoverItem> setItems(List<SetCoverItem> reviews) {
+		return this.items = reviews;
 	}
 	
 	@OneToMany(mappedBy="setCover")

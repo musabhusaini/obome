@@ -75,10 +75,11 @@ public class ClustererSetCoverBuilder extends SetCoverBuilderBase {
 		Iterable<FeaturesCluster<LinguisticToken>> clusters = clusterWorld.getClusters();
 		for (FeaturesCluster<LinguisticToken> cluster : clusters) {
 			SetCoverItem scReview = new SetCoverItem(setCover);
-			scReview.setReview(this.entityManager.find(OpinionDocument.class, cluster.getHead().getId()));
+			scReview.setOpinionDocument(this.entityManager.find(OpinionDocument.class, cluster.getHead().getId()));
 			scReview.setUtilityScore(cluster.getMemberCount());
 			scReview.setSeen(false);
-			setCover.getReviews().add(scReview);
+			scReview.setSetCover(setCover);
+			//setCover.getItems().add(scReview);
 		}
 		
 		return setCover;

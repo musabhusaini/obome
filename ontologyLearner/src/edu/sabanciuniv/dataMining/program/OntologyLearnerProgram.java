@@ -1,7 +1,9 @@
 package edu.sabanciuniv.dataMining.program;
 
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,19 +30,14 @@ import edu.sabanciuniv.dataMining.util.LargeTypedQuery;
  */
 public class OntologyLearnerProgram {
 
-	private static EntityManager entityManager;
+	private static EntityManagerFactory emFactory;
 	
 	public static EntityManager em() {
-		if (entityManager == null) {
-			EntityManagerFactory emFactory = Persistence.createEntityManagerFactory("edu.sabanciuniv.dataMining.experiment");
-			entityManager = emFactory.createEntityManager();
+		if (emFactory == null) {
+			emFactory = Persistence.createEntityManagerFactory("edu.sabanciuniv.dataMining.experiment");
 		}
 		
-		if (!entityManager.getTransaction().isActive()) {
-			entityManager.getTransaction().begin();
-		}
-		
-		return entityManager;
+		return emFactory.createEntityManager();
 	}
 		
 	/**
@@ -108,29 +105,40 @@ public class OntologyLearnerProgram {
 		}
 
 		try {
-			EntityManagerFactory emFactory = Persistence.createEntityManagerFactory("edu.sabanciuniv.dataMining.experiment");
-			EntityManager em = emFactory.createEntityManager();
+			EntityManager em = em();
 			em.getTransaction().begin();
-
-			GreedySetCoverBuilder greedyBuilder = new GreedySetCoverBuilder(em);
-//			ClustererSetCoverBuilder clustererBuilder = new ClustererSetCoverBuilder(em);
 			
-			LargeTypedQuery<OpinionDocument> query = new LargeTypedQuery<>(em.createQuery("SELECT p FROM Review p", OpinionDocument.class).setFirstResult(offset).setMaxResults(count),
-					increment);
-			ReviewTaggedContentFactory factory = new ReviewTaggedContentFactory(new QueryBasedObjectFactory<>(query));
-			TextDocument document;
-			while ((document = factory.create()) != null) {
-				greedyBuilder.seeUniverseExample(document);
-//				clustererBuilder.seeUniverseExample(document);
+			Scanner scanner = new Scanner(new FileInputStream("C:\\Users\\SUUSER\\Dropbox\\Projects\\Eclipse Projects\\" +
+					"ontologyLearner\\LBH.txt"));
+			while (scanner.hasNextLine()) {
+				OpinionDocument document = new OpinionDocument();
+				document.setContent(scanner.nextLine());
+				document.setCorpusName("LBH Survey");
+				em.persist(document);
+				em.flush();
 			}
-
-			SetCover setCover;
 			
-			setCover = greedyBuilder.buildRandom("garbage");
-			setCover.setCoverOffset(offset);
-			setCover.setCoverSize(count);
-			em.persist(setCover);
-			setCover = null;
+			em.getTransaction().commit();
+			
+//			GreedySetCoverBuilder greedyBuilder = new GreedySetCoverBuilder(em);
+////			ClustererSetCoverBuilder clustererBuilder = new ClustererSetCoverBuilder(em);
+//			
+//			LargeTypedQuery<OpinionDocument> query = new LargeTypedQuery<>(em.createQuery("SELECT p FROM Review p", OpinionDocument.class).setFirstResult(offset).setMaxResults(count),
+//					increment);
+//			ReviewTaggedContentFactory factory = new ReviewTaggedContentFactory(new QueryBasedObjectFactory<>(query));
+//			TextDocument document;
+//			while ((document = factory.create()) != null) {
+//				greedyBuilder.seeUniverseExample(document);
+////				clustererBuilder.seeUniverseExample(document);
+//			}
+//
+//			SetCover setCover;
+//			
+//			setCover = greedyBuilder.buildRandom("garbage");
+//			setCover.setCoverOffset(offset);
+//			setCover.setCoverSize(count);
+//			em.persist(setCover);
+//			setCover = null;
 
 //			setCover = greedyBuilder.build("Greedy-small");
 //			setCover.setCoverOffset(offset);
@@ -173,10 +181,6 @@ public class OntologyLearnerProgram {
 //				HashMap<LinguisticToken,Long> features = program.getFeatureMap(clusterHeads);
 //				program.writeFeaturesToDB(features);
 //			}
-			
-			em.getTransaction().commit();
-			em.close();
-			emFactory.close();
 		} catch(Exception ex) {
 			Logger.getLogger(OntologyLearnerProgram.class.getName()).log(Level.SEVERE, "Error talking to database.", ex);
 		}
