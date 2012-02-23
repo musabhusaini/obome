@@ -3,11 +3,13 @@
 # ~~~~
 
 # Home page
-GET     /                				                       			Application.index
+GET     /                				                       			Application.landingPage
 
 GET		/collections													OpinionCollections.list
 
 GET		/collections/{collection}										OpinionCollections.single
+
+GET		/collections/{collection}/browser								OpinionCollections.browserPage
 
 GET		/collections/{collection}/aspects								Aspects.list
 

@@ -10,7 +10,7 @@ import edu.sabanciuniv.dataMining.experiment.models.Keyword;
 import java.util.*;
 
 @Entity
-public class KeywordViewModel extends ViewModel {
+public class KeywordViewModel extends ViewModel implements Comparable<KeywordViewModel> {
     
 	public String label;
 	
@@ -20,5 +20,10 @@ public class KeywordViewModel extends ViewModel {
 	public KeywordViewModel(Keyword keyword) {
 		this.uuid = keyword.getIdentifier().toString();
 		this.label = keyword.getLabel();
+	}
+
+	@Override
+	public int compareTo(KeywordViewModel o) {
+		return this.label.compareTo(o.label);
 	}
 }

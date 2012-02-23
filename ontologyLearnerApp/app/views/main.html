@@ -7,7 +7,10 @@
         #{press.stylesheet 'main.css' /}
         #{press.stylesheet 'ui-lightness/jquery-ui-1.8.16.css' /}
         #{get 'moreStyles' /}
+        
         <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
+        <link rel="spinner image" type="image/gif" href="@{'/public/images/spinner.gif'}">
+        
 		#{press.script src:"jquery-1.7.1.min.js", compress:false /}
 		#{press.script src:"jquery-ui-1.8.16.min.js", compress:false /}
 		#{press.script "ontologyLearner.js" /}

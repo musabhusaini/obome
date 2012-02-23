@@ -110,7 +110,7 @@ public class Application extends Controller {
 		return obj;
 	}
 	
-	public static void index() {
+	public static void landingPage() {
 		render();
 	}
 }

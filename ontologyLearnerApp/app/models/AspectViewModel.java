@@ -14,7 +14,7 @@ import edu.sabanciuniv.dataMining.experiment.models.Keyword;
 import java.util.*;
 
 @Entity
-public class AspectViewModel extends ViewModel {
+public class AspectViewModel extends ViewModel implements Comparable<AspectViewModel> {
 	
     public String label;
     
@@ -25,4 +25,9 @@ public class AspectViewModel extends ViewModel {
     	this.uuid = aspect.getIdentifier().toString();
     	this.label = aspect.getLabel();
     }
+
+	@Override
+	public int compareTo(AspectViewModel o) {
+		return this.label.compareTo(o.label);
+	}
 }

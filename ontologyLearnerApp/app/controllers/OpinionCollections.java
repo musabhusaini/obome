@@ -44,6 +44,10 @@ public class OpinionCollections extends Application {
 		
 		renderJSON(viewModel);
 	}
+
+	public static void browserPage(String collection) {
+		render(collection);
+	}
 	
 	public static void items(String collection) {
 		SetCover sc = fetch(SetCover.class, collection);

@@ -2,6 +2,7 @@ package controllers;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -32,6 +33,7 @@ public class Aspects extends Application {
 			encache(aspect);
 		}
 		
+		Collections.sort(aspects);
 		renderJSON(aspects);
 	}
 	
@@ -43,6 +45,15 @@ public class Aspects extends Application {
 	public static void postSingle(String collection, String aspect, JsonObject body) {
 		AspectViewModel aspectView = new Gson().fromJson(body, AspectViewModel.class);
 
+		// No duplicates.
+		SetCover sc = fetch(SetCover.class, collection);
+		if (em.createQuery("SELECT a FROM Aspect a WHERE a.setCover=:sc AND a.label=:label", Aspect.class)
+				.setParameter("sc", sc)
+				.setParameter("label", aspectView.label)
+				.getResultList().size() > 0) {
+			throw new IllegalArgumentException("Aspect already exists");
+		}
+		
 		Aspect a;
 		if (aspect.equals(aspectView.uuid)) {
 			a = fetch(Aspect.class, aspectView.uuid);
@@ -61,7 +72,6 @@ public class Aspects extends Application {
 				throw new IllegalArgumentException("Must provide a collection to add to.");
 			}
 			
-			SetCover sc = fetch(SetCover.class, collection);
 			a = new Aspect(sc, aspectView.label);
 			a.setIdentifier(aspectView.uuid);
 			

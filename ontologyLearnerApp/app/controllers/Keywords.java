@@ -1,5 +1,6 @@
 package controllers;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -26,6 +27,7 @@ public class Keywords extends Application {
 			keywords.add(new KeywordViewModel(keyword));
 		}
 		
+		Collections.sort(keywords);
 		renderJSON(keywords);
 	}
 	
@@ -35,6 +37,15 @@ public class Keywords extends Application {
 	
 	public static void postSingle(String collection, String aspect, String keyword, JsonObject body) {
 		KeywordViewModel keywordView = new Gson().fromJson(body, KeywordViewModel.class);
+		
+		// No duplicates.
+		Aspect a = fetch(Aspect.class, aspect);
+		if (em.createQuery("SELECT k FROM Keyword k WHERE k.aspect=:a AND k.label=:label", Keyword.class)
+				.setParameter("a", a)
+				.setParameter("label", keywordView.label)
+				.getResultList().size() > 0) {
+			throw new IllegalArgumentException("Keyword already exists");
+		}
 		
 		Keyword k;
 		if (keyword.equals(keywordView.uuid)) {
@@ -54,7 +65,6 @@ public class Keywords extends Application {
 				throw new IllegalArgumentException("Must provide a aspect to add to.");
 			}
 
-			Aspect a = fetch(Aspect.class, aspect);
 			k = new Keyword(a, keywordView.label);
 			k.setIdentifier(keywordView.uuid);
 			
