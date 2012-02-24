@@ -40,7 +40,7 @@ public class SetCover extends IdentifiableObject {
 		return this.name = name;
 	}
 
-	@Column
+	@Column(name="cover_offset")
 	public int getCoverOffset() {
 		return coverOffset;
 	}
@@ -49,7 +49,7 @@ public class SetCover extends IdentifiableObject {
 		return this.coverOffset = coverageOffset;
 	}
 
-	@Column
+	@Column(name="cover_size")
 	public int getCoverSize() {
 		return coverSize;
 	}
