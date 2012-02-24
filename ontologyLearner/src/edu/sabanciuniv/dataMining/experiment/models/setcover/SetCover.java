@@ -3,9 +3,13 @@ package edu.sabanciuniv.dataMining.experiment.models.setcover;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -14,6 +18,7 @@ import javax.persistence.Version;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Aspect;
+import edu.sabanciuniv.dataMining.experiment.models.Corpus;
 
 @Entity
 @Table(name="setcovers")
@@ -30,6 +35,7 @@ public class SetCover extends IdentifiableObject {
 	private List<SetCoverItem> items;
 	private Date timestamp;
 	private List<Aspect> aspects;
+	private Corpus corpus;
 	
 	@Column(nullable=false)
 	public String getName() {
@@ -84,5 +90,16 @@ public class SetCover extends IdentifiableObject {
 	
 	public List<Aspect> setAspects(List<Aspect> aspects) {
 		return this.aspects = aspects;
+	}
+	
+	@ManyToOne
+	@JoinColumn(name="corpus_uuid")
+	@Basic(fetch=FetchType.LAZY)
+	public Corpus getCorpus() {
+		return corpus;
+	}
+
+	public void setCorpus(Corpus corpus) {
+		this.corpus = corpus;
 	}
 }

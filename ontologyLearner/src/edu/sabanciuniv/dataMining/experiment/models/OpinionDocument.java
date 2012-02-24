@@ -3,8 +3,12 @@ package edu.sabanciuniv.dataMining.experiment.models;
 import java.text.DateFormat;
 import java.util.Date;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -26,6 +30,7 @@ public class OpinionDocument extends IdentifiableObject {
 	private String content;
 	private Date date;
 	private String corpusName;
+	private Corpus corpus;
 	
 	@Column
 	public String getAuthor() {
@@ -76,6 +81,17 @@ public class OpinionDocument extends IdentifiableObject {
 		this.corpusName = corpusName;
 	}
 	
+	@ManyToOne
+	@JoinColumn(name="corpus_uuid")
+	@Basic(fetch=FetchType.LAZY)
+	public Corpus getCorpus() {
+		return corpus;
+	}
+
+	public void setCorpus(Corpus corpus) {
+		this.corpus = corpus;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("%s (on %s): %s", this.getAuthor(), DateFormat.getInstance().format(this.getDate()), this.getContent());
