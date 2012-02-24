@@ -2,10 +2,10 @@
 
 <html>
     <head>
-        <title>#{get 'title' /}</title>
+        <title>SUSA #{get 'title' /}</title>
         <meta charset="${_response_encoding}">
-        #{press.stylesheet 'main.css' /}
         #{press.stylesheet 'ui-lightness/jquery-ui-1.8.16.css' /}
+        #{press.stylesheet 'main.css' /}
         #{get 'moreStyles' /}
         
         <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
@@ -20,6 +20,15 @@
         #{get 'moreScripts' /}
     </head>
     <body>
-        #{doLayout /}
+    	<div id="wrapper" class="ui-widget">
+    		<div id="banner">
+    			<span>Sabancı University Sentiment Analyzer</span>
+    		</div>
+    		<div id="banner-bottom">
+    		</div>
+    		<div id="content-wrapper">
+        		#{doLayout /}
+        	</div>
+        </div>
     </body>
 </html>

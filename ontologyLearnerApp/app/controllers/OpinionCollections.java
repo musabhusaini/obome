@@ -45,8 +45,8 @@ public class OpinionCollections extends Application {
 		renderJSON(viewModel);
 	}
 
-	public static void browserPage(String collection) {
-		render(collection);
+	public static void browserPage(String collection, boolean bypassCache, String featureType) {
+		render(collection, bypassCache, featureType);
 	}
 	
 	public static void items(String collection) {

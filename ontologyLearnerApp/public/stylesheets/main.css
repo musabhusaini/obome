@@ -7,7 +7,9 @@ html {
 
 body {
 	font-size: 70%;
-	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
+	font-family: "Arial", "Helvetica", "Verdana", "sans-serif";
+	min-height: 100%;
+	background: lightgray;
 }
 
 ul.ui-sidebyside-controls-list, ul.ui-controls-list {
@@ -49,51 +51,19 @@ ul.ui-controls-list > li {
 	height: 100%;
 }
 
-.ol-header {
-	padding: .25em;
+#wrapper {
+	margin: 0 auto;
+	width: 80%;
 }
 
-.ol-document-text {
-	width: 35em;
-	height: 23.89em;
-	overflow: auto;
-	padding: .5em;
+#banner {
+	font-size: 1.5em;
 }
 
-.ol-editable-list {
-	width: 13em;
-	height: 25em;
-	overflow: auto;
+#banner-bottom {
+	height: .75em;
 }
 
-.ol-edit-textbox {
-	width: 95%;
-}
-
-.ol-counter-textbox {
-	width: 2em;
-	height: 1em;
-	text-align: right;
-}
-
-.ol-button {
-	width: 7em;
-	height: 2em;
-}
-
-.ol-options-button {
-	float: right;
-}
-
-ul#usageList {
-	padding: 0em;
-	display: inline;
-}
-
-#usageList > li {
-	list-style: none;
-	list-style-position: inside;
-	margin-left: 0em;
-	padding-left: .75em;
-	text-indent: .75em;
+#content-wrapper {
+	background: white;
 }

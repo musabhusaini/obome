@@ -1,0 +1,47 @@
+.ol-header {
+	padding: .25em;
+}
+
+.ol-document-text {
+	width: 35em;
+	height: 23.89em;
+	overflow: auto;
+	padding: .5em;
+}
+
+.ol-editable-list {
+	width: 13em;
+	height: 25em;
+	overflow: auto;
+}
+
+.ol-edit-textbox {
+	width: 95%;
+}
+
+.ol-counter-textbox {
+	width: 2em;
+	height: 1em;
+	text-align: right;
+}
+
+.ol-button {
+	height: 2em;
+}
+
+.ol-options-button {
+	float: right;
+}
+
+ul#usageList {
+	padding: 0em;
+	display: inline;
+}
+
+#usageList > li {
+	list-style: none;
+	list-style-position: inside;
+	margin-left: 0em;
+	padding-left: .75em;
+	text-indent: .75em;
+}

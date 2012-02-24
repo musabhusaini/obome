@@ -1,9 +1,9 @@
 #{extends 'main.html' /}
-#{set title:'Ontology Learner' /}
+#{set title:'' /}
 
-<h2>Ontology Learner</h2>
+#{press.stylesheet 'collectionBrowserPage.css' /}
 
-<div id="mainContainer" class="ui-widget">
+<div id="content">
 	<ul class="ui-sidebyside-controls-list">
 		<li>
 			<ul class="ui-sidebyside-controls-list">
@@ -11,6 +11,7 @@
 				<li><div class="ui-sidebyside-controls-list-item-spaced" id="aspectsContainer"></div></li>
 			</ul>
 		</li>
+<!--
 		<li class="ui-sidebyside-controls-list-item-spaced">
 			<div>
 				<div id="btnOptions"></div>
@@ -23,6 +24,7 @@
 				</ul>
 			</div>
 		</li>
+ -->
 	</ul>
 	
 	<div id="optionsDialogContainer" class="ui-helper-hidden" title="Options">
@@ -72,64 +74,66 @@
 			
 			// Standard options.
 			var options = {
-				bypassCache: false,
-				featureType: featureTypes.nouns,
-				collection: null
+				bypassCache: ${bypassCache} || false,
+				featureType: "${featureType}" || featureTypes.nouns,
+				collection: "${collection}" || null
 			};
+
+			function getAllNewOptions() {
+				return {
+					bypassCache: !!$(bypassCacheCheckbox).attr("selected"),
+					featureType: !!$(smartNounsCheckbox).attr("selected") ? featureTypes.smartNouns : featureTypes.nouns,
+					collection: $(collectionsList).find(":selected:first").data("value")
+				};
+			}
+
+			// First time operations.
+			var params = $.extend({ }, options);
+			delete params.collection;
+			$.getJSON(routes.OpinionCollections.single({ collection: options.collection }), params)
+				.success(function(collection) {
+					options.collection = collection;
+					$(docContainer)
+						.documentBrowser($.extend(options, {
+							header: "Review",
+							featureClick: function(event, data) {
+								$(aspectsContainer).aspectsBrowser("addKeyword", data);
+							}					
+						}));
+			
+					$(aspectsContainer)
+						.aspectsBrowser(options);
+			});
 
 			// Function to apply options.
 			var applyOptions = function() {
-				function getAllNewOptions() {
-					return {
-						bypassCache: !!$(bypassCacheCheckbox).attr("selected"),
-						featureType: !!$(smartNounsCheckbox).attr("selected") ? featureTypes.smartNouns : featureTypes.nouns,
-						collection: $(collectionsList).find(":selected:first").data("value")
-					};
+				// Get all changed options.
+				function modifyOptions() {
+					var newOptions = getAllNewOptions();
+					
+					var modifiedOptions = {};
+					$.each(newOptions, function(key, value) {
+						if ((value.uuid && value.uuid !== options[key].uuid) || (!value.uuid && value !== options[key])) {
+							modifiedOptions[key] = value;
+						}
+					});
+					
+					options = newOptions;
+					return modifiedOptions;
 				}
 
-				// First time operations.
-				options = getAllNewOptions();
-				$(docContainer)
-					.documentBrowser($.extend(options, {
-						header: "Review",
-						featureClick: function(event, data) {
-							$(aspectsContainer).aspectsBrowser("addKeyword", data);
-						}					
-					}));
-				
-				$(aspectsContainer)
-					.aspectsBrowser(options);
-
-				// Change the function so we modify options instead of creating new widgets.
-				applyOptions = function() {
-					// Get all changed options.
-					function modifyOptions() {
-						var newOptions = getAllNewOptions();
-						
-						var modifiedOptions = {};
-						$.each(newOptions, function(key, value) {
-							if ((value.uuid && value.uuid !== options[key].uuid) || (!value.uuid && value !== options[key])) {
-								modifiedOptions[key] = value;
-							}
-						});
-						
-						options = newOptions;
-						return modifiedOptions;
-					}
-
-					// Apply options.
-					var modifiedOptions = modifyOptions();
-					$(docContainer).documentBrowser("option", modifiedOptions);
-					$(aspectsContainer).aspectsBrowser("option", modifiedOptions);
-				};
+				// Apply options.
+				var modifiedOptions = modifyOptions();
+				$(docContainer).documentBrowser("option", modifiedOptions);
+				$(aspectsContainer).aspectsBrowser("option", modifiedOptions);
 			};
 			
 			// Create the options dialog.
 			$(optionsDialogContainer).dialog({
-				autoOpen: true,
+				autoOpen: false,
 				modal: true,
 				buttons: {
-					Ok: function() {
+					Save: function() {
 						applyOptions();
 						$(optionsDialogContainer).dialog("close");
 					},
@@ -138,6 +142,7 @@
 					}
 				},
 				resizable: false,
+				draggable: false,
 				closeOnEscape: true,
 				beforeClose: function(event, ui) {
 					return !!options.collection;
