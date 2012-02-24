@@ -32,6 +32,7 @@ public class SetCover extends IdentifiableObject {
 	private String name;
 	private int coverOffset;
 	private int coverSize;
+	private double errorTolerance;
 	private List<SetCoverItem> items;
 	private Date timestamp;
 	private List<Aspect> aspects;
@@ -62,6 +63,15 @@ public class SetCover extends IdentifiableObject {
 
 	public int setCoverSize(int coverageSize) {
 		return this.coverSize = coverageSize;
+	}
+
+	@Column(name="error_tolerance")
+	public double getErrorTolerance() {
+		return errorTolerance;
+	}
+
+	public void setErrorTolerance(double errorTolerance) {
+		this.errorTolerance = errorTolerance;
 	}
 
 	@Version
