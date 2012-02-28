@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
@@ -29,7 +30,7 @@ public class IdentifiableObject implements Identifiable, Serializable {
 	 */
 	public static UUID createUuid(byte[] uuidBytes) {
 		try {
-			ByteBuffer bb = ByteBuffer.wrap((byte[])uuidBytes);
+			ByteBuffer bb = ByteBuffer.wrap(uuidBytes);
 			return new UUID(bb.getLong(), bb.getLong());
 		} catch (BufferUnderflowException ex) {
 			return null;
@@ -49,7 +50,7 @@ public class IdentifiableObject implements Identifiable, Serializable {
 		return uuidBytes;
 	}
 	
-	private UUID id;
+	private byte[] id;
 
 	/**
 	 * Creates a new object of type {@link IdentifiableObject}.
@@ -91,22 +92,23 @@ public class IdentifiableObject implements Identifiable, Serializable {
 			throw new IllegalArgumentException();
 		}
 		
-		this.id = id;
+		this.id = getUuidBytes(id);
 	}
 
 	@Transient
 	public UUID getIdentifier() {
-		return this.id;
+		return createUuid(this.id);
 	}
 
 	@Id
+	@Lob
 	@Column(name="uuid", columnDefinition="VARBINARY(16)", length=16, updatable=false, nullable=false)
 	public byte[] getId() {
-		return IdentifiableObject.getUuidBytes(this.id);
+		return this.id;
 	}
 
 	public void setId(byte[] id) {
-		this.id = createUuid(id);
+		this.id = id;
 	}
 	
 	@Override

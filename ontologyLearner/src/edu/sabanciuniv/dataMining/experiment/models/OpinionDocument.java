@@ -29,7 +29,6 @@ public class OpinionDocument extends IdentifiableObject {
 	private String author;
 	private String content;
 	private Date date;
-	private String corpusName;
 	private Corpus corpus;
 	
 	@Column
@@ -72,15 +71,6 @@ public class OpinionDocument extends IdentifiableObject {
 		return this.date = date;
 	}
 
-	@Column(name="corpus_name")
-	public String getCorpusName() {
-		return this.corpusName;
-	}
-	
-	public void setCorpusName(String corpusName) {
-		this.corpusName = corpusName;
-	}
-	
 	@ManyToOne
 	@JoinColumn(name="corpus_uuid")
 	@Basic(fetch=FetchType.LAZY)
