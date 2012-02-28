@@ -3,10 +3,14 @@
 	
 	ontologyLearner.routes = $.extend(ontologyLearner.routes, {
 		Application: {
-			landingPage: #{jsAction @Application.landingPage() /}
+			landingPage: #{jsAction @Application.landingPage() /},
+			Session: {
+				ping: #{jsAction @Application.ping() /}
+			}
 		},
 		OpinionCollections: {
 			list: #{jsAction @OpinionCollections.list() /},
+			upload: #{jsAction @OpinionCollections.upload(':corpus') /},
 			single: #{jsAction @OpinionCollections.single(':collection') /},
 			browserPage: #{jsAction @OpinionCollections.browserPage(':collection') /},
 			Items: {

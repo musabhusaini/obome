@@ -5,7 +5,11 @@
 # Home page
 GET     /                				                       			Application.landingPage
 
+POST	/session														Application.ping
+
 GET		/collections													OpinionCollections.list
+
+POST	/collections/{corpus}											OpinionCollections.upload
 
 GET		/collections/{collection}										OpinionCollections.single
 

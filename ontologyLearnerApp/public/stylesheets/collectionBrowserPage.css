@@ -15,10 +15,6 @@
 	overflow: auto;
 }
 
-.ol-edit-textbox {
-	width: 95%;
-}
-
 .ol-counter-textbox {
 	width: 2em;
 	height: 1em;
@@ -27,10 +23,6 @@
 
 .ol-button {
 	height: 2em;
-}
-
-.ol-options-button {
-	float: right;
 }
 
 ul#usageList {

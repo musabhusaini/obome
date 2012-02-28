@@ -8,8 +8,15 @@ html {
 body {
 	font-size: 70%;
 	font-family: "Arial", "Helvetica", "Verdana", "sans-serif";
-	min-height: 100%;
 	background: lightgray;
+}
+
+html, body {
+	height: 100%;
+}
+
+pre {
+	font-size: 1.1em;
 }
 
 ul.ui-sidebyside-controls-list, ul.ui-controls-list {
@@ -51,19 +58,29 @@ ul.ui-controls-list > li {
 	height: 100%;
 }
 
+.ui-float-right {
+	float: right;
+}
+
+.ui-float-left {
+	float: left;
+}
+
+.ui-vertical-space {
+	height: .75em;
+}
+
 #wrapper {
 	margin: 0 auto;
 	width: 80%;
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
 }
 
 #banner {
 	font-size: 1.5em;
 }
 
-#banner-bottom {
-	height: .75em;
-}
-
 #content-wrapper {
-	background: white;
 }

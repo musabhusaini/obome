@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import javax.persistence.EntityManager;
 
+import models.SessionViewModel;
+
 import com.google.common.base.Function;
 
 import edu.sabanciuniv.dataMining.data.Identifiable;
@@ -31,6 +33,18 @@ public class Application extends Controller {
 			em.getTransaction().commit();
 		}
 		em.close();
+	}
+	
+	@After
+	static void rekindleSession() {
+		SessionViewModel sessionViewModel = SessionViewModel.findById(session.getId());
+		
+		if (sessionViewModel == null) {
+			sessionViewModel = new SessionViewModel();
+			sessionViewModel.setIdentifier(session.getId()); 
+		}
+		
+		sessionViewModel.keepAlive();
 	}
 	
 	static class EMFetch<T> implements Function<String,T> {
@@ -112,5 +126,9 @@ public class Application extends Controller {
 	
 	public static void landingPage() {
 		render();
+	}
+	
+	public static void ping() {
+		renderText("Good deal!");
 	}
 }

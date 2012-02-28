@@ -18,13 +18,32 @@
 		#{press.script src:"ontologyLearner.routes.js", render:true /}
 		#{press.script "widgets.spinner.js" /}
         #{get 'moreScripts' /}
+        
+        <script type="text/javascript">
+        	(function(window, document, $, routes) {
+        		var pingInterval = 60000;
+        		
+        		$(document).ready(function() {
+        			function pingDelayed() {
+        				window.setTimeout(ping, pingInterval);
+        			}
+        			
+        			function ping() {
+        				$.post(routes.Application.Session.ping())
+        					.success(pingDelayed);
+        			}
+        			
+        			pingDelayed();
+        		});
+        	})(window, window.document, window.jQuery, window.ontologyLearner.routes);
+		</script>
     </head>
     <body>
     	<div id="wrapper" class="ui-widget">
     		<div id="banner">
     			<span>Sabancı University Sentiment Analyzer</span>
     		</div>
-    		<div id="banner-bottom">
+    		<div id="banner-bottom" class="ui-vertical-space">
     		</div>
     		<div id="content-wrapper">
         		#{doLayout /}

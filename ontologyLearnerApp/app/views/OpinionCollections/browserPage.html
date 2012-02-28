@@ -36,14 +36,6 @@
 					<select id="lstCollections">
 					</select>
 				</li>
-				<li>
-					<input id="chkBypassCache" type="checkbox" />
-					<label for="chkBypassCache">Always bypass cache</label>
-				</li>
-				<li>
-					<input id="chkSmartNouns" type="checkbox" />
-					<label for="chkSmartNouns">Use smart nouns</label>
-				</li>
 			</ul>
 			</fieldset>
 		</form>
@@ -66,31 +58,19 @@
 			var bypassCacheCheckbox = "#chkBypassCache";
 			var smartNounsCheckbox = "#chkSmartNouns";
 			
-			// Basic feature types enum.
-			var featureTypes = {
-				nouns: "nouns",
-				smartNouns: "smart_nouns"
-			};
-			
 			// Standard options.
 			var options = {
-				bypassCache: ${bypassCache} || false,
-				featureType: "${featureType}" || featureTypes.nouns,
 				collection: "${collection}" || null
 			};
 
 			function getAllNewOptions() {
 				return {
-					bypassCache: !!$(bypassCacheCheckbox).attr("selected"),
-					featureType: !!$(smartNounsCheckbox).attr("selected") ? featureTypes.smartNouns : featureTypes.nouns,
 					collection: $(collectionsList).find(":selected:first").data("value")
 				};
 			}
 
 			// First time operations.
-			var params = $.extend({ }, options);
-			delete params.collection;
-			$.getJSON(routes.OpinionCollections.single({ collection: options.collection }), params)
+			$.getJSON(routes.OpinionCollections.single({ collection: options.collection }))
 				.success(function(collection) {
 					options.collection = collection;
 					$(docContainer)
@@ -187,7 +167,7 @@
 			// Create the options button.
 			$(optionsButton)
 				.addClass("ol-button")
-				.addClass("ol-options-button")
+				.addClass("ui-float-right")
 				.button({
 					text: false,
 					icons: {

@@ -16,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Aspect;
 import edu.sabanciuniv.dataMining.experiment.models.Keyword;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;

@@ -2,121 +2,165 @@
 #{set title:'' /}
 
 #{press.stylesheet 'landingPage.css' /}
+#{press.stylesheet 'plupload/css/jquery.ui.plupload.css' /}
+
+#{press.script src:'plupload/plupload.js', compress:false /}
+#{press.script src:'plupload/plupload.html5.js', compress:false /}
+#{press.script src:'plupload/plupload.html4.js', compress:false /}
+#{press.script src:'plupload/jquery.ui.plupload.js', compress:false /}
 
 <div id="content">
-	<div id="optionsDialogContainer" class="ui-helper-hidden" title="Options">
-		<form id="frmOptions">
-			<fieldset>
-			<ul class="ui-controls-list">
-				<li>
-					<label for="lstCollections">Collections:</label>
-					<select id="lstCollections">
-					</select>
-				</li>
-				<li>
-					<input id="chkBypassCache" type="checkbox" />
-					<label for="chkBypassCache">Always bypass cache</label>
-				</li>
-				<li>
-					<input id="chkSmartNouns" type="checkbox" />
-					<label for="chkSmartNouns">Use smart nouns</label>
-				</li>
-			</ul>
-			</fieldset>
-		</form>
+	<div id="acrdnNav">
+		<h3><a href="#">Upload a corpus</a></h3>
+		<div id="acrdnOptUpload">
+			<div>You can upload your corpus contained in XML or ZIP files. The ZIP file must contain several XML files.
+			Each XML file must be in a format similar to:
+				<pre>&lt;root&gt;
+	&lt;document&gt;
+		some content
+	&lt;&#47;document&gt;
+	&lt;document&gt;
+		some more content
+	&lt;&#47;document&gt;
+	...
+&lt;&#47;root&gt;</pre>
+			</div>
+			<div id="cntnrUploader"></div>
+		</div>
+		<h3><a href="#">Load an existing corpus</a></h3>
+		<div id="acrdnOptLoad">
+			<label for="lstCollections">Collections:</label>
+			<select id="lstCollections">
+			</select>
+			<div id="cntnrCollectionInfo">
+			</div>
+		</div>
+		<h3><a href="#">Retrieve a corpus with a key</a></h3>
+		<div id="acrdnOptRetrieve">
+			<label for="txtKey">Retrieval Key:</label>
+			<input type="text" id="txtKey" class="ol-uuid" />
+		</div>
 	</div>
+	<div class="ui-vertical-space"></div>
+	<div id="cntnrMessage" class="ui-corner-all ui-float-left"></div>
+	<div id="btnNext" class="ui-float-right">Next</div>
 </div>
 
 <script type="text/javascript">
 	(function(window, document, $, ontologyLearner, routes) {
-		$(document).ready(function() {
-			var optionsButton = "#btnOptions";
-			var docContainer = "#documentContainer";
-			var aspectsContainer = "#aspectsContainer";
-			
-			var optionsDialogContainer = "#optionsDialogContainer";
-			var optionsForm = "#frmOptions";
-			var collectionsList = "#lstCollections";
-			var bypassCacheCheckbox = "#chkBypassCache";
-			var smartNounsCheckbox = "#chkSmartNouns";
-			
-			// Basic feature types enum.
-			var featureTypes = {
-				nouns: "nouns",
-				smartNouns: "smart_nouns"
-			};
-			
-			// Standard options.
-			var options = {
-				bypassCache: false,
-				featureType: featureTypes.nouns,
-				collection: null
-			};
+		var navigationAccordion = "#acrdnNav";
+		var accordionOptionUpload = "#acrdnOptUpload";
+		var accordionOptionLoad = "#acrdnOptLoad";
+		var accordionOptionRetrieve = "#acrdnOptRetrieve";
+		var uploaderContainer = "#cntnrUploader";
+		var collectionsList = "#lstCollections";
+		var keyTextbox = "#txtKey";
+		var collectionInfoContainer = "#cntnrCollectionInfo";
+		var messageContainer = "#cntnrMessage";
+		var nextButton = "#btnNext";
 
-			// Function to apply options.
-			function applyOptions() {
-				options = {
-					bypassCache: !!$(bypassCacheCheckbox).attr("selected"),
-					featureType: !!$(smartNounsCheckbox).attr("selected") ? featureTypes.smartNouns : featureTypes.nouns,
-					collection: $(collectionsList).find(":selected:first").data("value").uuid
-				};
+		$(document).ready(function() {
+			
+			function accordionChange(ui) {
+				$(ui)
+					.find(":input:first")
+					.focus();
 			}
 			
-			// Create the options dialog.
-			$(optionsDialogContainer).dialog({
-				autoOpen: true,
-				modal: true,
-				buttons: {
-					Continue: function() {
-						applyOptions();
-						var url = routes.OpinionCollections.browserPage(options);
-						var params = $.extend({ }, options);
-						delete params.collection;
-						url = url + "?" + $.param(params);
-						window.location.href = url;
-					}
-				},
-				resizable: false,
-				draggable: false,
-				beforeClose: function(event, ui) {
-					return !!options.collection;
-				},
-				open: function() {
-					$(optionsDialogContainer).parent().find("button:first + button:first").button("option", "disabled", !options.collection);
-					
-					window.setTimeout(function() {
-						$(optionsDialogContainer).spinner();
-						
-						// Get all collections.
-						$.getJSON(routes.OpinionCollections.list())
-							.success(function(collections) {
-								$(optionsDialogContainer).spinner("destroy");
-								
-								// Display collections in the list.
-								$(collectionsList).empty();
-								$.each(collections, function(index,collection) {
-									var selected = (index === 0) || (options.collection && options.collection.uuid === collection.uuid);
-									$(collectionsList)
-										.append($("<option>")
-											.text(collection.name)
-											.val(collection.uuid)
-											.data("value", collection)
-											.attr("selected", selected));
-								});
-								
-								// The option value is not being used right now, might be useful later.
-								$(collectionsList)
-									.data("option", "collection");
-								$(bypassCacheCheckbox)
-									.attr("checked", options.bypassCache)
-									.data("option", "bypassCache");
-								$(smartNounsCheckbox)
-									.attr("checked", options.featureType === featureTypes.smartNouns)
-									.data("option", "smartNouns");
-							});
-					}, 0);
+			$(navigationAccordion).accordion({
+				autoHeight: false,
+				change: function(event, ui) {
+					accordionChange(ui.newContent);
 				}
 			});
+			
+			accordionChange(accordionOptionUpload);
+			
+			$(uploaderContainer)
+				.plupload({
+					runtimes: "html5,html4",
+					url: routes.OpinionCollections.upload({ corpus: "new" }),
+					max_file_size: "100mb",
+					max_file_count: 20,
+					chunk_size: "1mb",
+					unique_names : true,
+					multiple_queues : true,
+
+					// Rename files by clicking on their titles
+					rename: true,
+					
+					// Sort files
+					sortable: true,
+
+					// Specify what files to browse for
+					filters : [
+						{title : "XML files", extensions : "xml"},
+						{title : "Zip files", extensions : "zip"}
+					],
+					headers: {}
+				});
+			
+			var uploader = $(uploaderContainer).plupload("getUploader");
+			uploader.bind("FileUploaded", function(uploader, file, response) {
+				response = window.JSON.parse(response.response);
+				uploader.settings.url = routes.OpinionCollections.upload({ corpus: response.uuid });
+				$(uploaderContainer).data("corpus", response);
+			});
+			
+			$(nextButton)
+				.button({ })
+				.click(function() {
+					var active = $(navigationAccordion).accordion("option", "active");
+					if (active === 0) {
+						// Upload.
+					} else if (active === 1) {
+						// Load.
+						window.location.href = routes.OpinionCollections.browserPage({ collection: $(collectionsList).val() });
+					} else if (active === 2) {
+						// Retrieve.
+						$.getJSON(routes.OpinionCollections.single({ collection: $(keyTextbox).val() }))
+							.success(function(collection) {
+								window.location.href = routes.OpinionCollections.browserPage({ collection: collection.uuid });
+							})
+							.error(function() {
+								$(messageContainer)
+									.addClass("ui-state-error")
+									.text("Key is not valid")
+									.show();
+							});
+					}
+				});
+			
+			// Get all collections.
+			$(accordionOptionLoad).spinner();
+			$.getJSON(routes.OpinionCollections.list())
+				.success(function(collections) {
+					$(accordionOptionLoad).spinner("destroy");
+					
+					// Display collections in the list.
+					$(collectionsList)
+						.empty()
+						.change(function(event) {
+							var collection = $(event.target)
+								.find(":selected")
+								.data("value");
+							$(collectionInfoContainer)
+								.empty()
+								.append($("<div>").text("Corpus: " + collection.corpusName))
+								.append($("<div>").text("Corpus size: " + collection.corpusSize))
+								.append($("<div>").text("Collection size: " + collection.size))
+								.append($("<div>").text("Error tolerance: " + collection.errorTolerance));
+						});
+					$.each(collections, function(index,collection) {
+						$(collectionsList)
+							.append($("<option>")
+								.text(collection.name)
+								.val(collection.uuid)
+								.data("value", collection));
+					});
+			
+					$(collectionsList).change();
+				});
 		});
 	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
 </script>
