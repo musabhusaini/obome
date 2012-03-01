@@ -104,8 +104,12 @@
 				return;
 			}
 			
+			if (index >= collection.size) {
+				me.options.offset = index = collection.size-1;
+			}
+			
 			// Decide whether we need the next best document or a document by uuid.
-			var url = index >= uuids.length ? routes.OpinionCollections.Items.nextBest({ collection: collection.uuid }) :
+			var url = (index >= uuids.length && index < collection.size-1) ? routes.OpinionCollections.Items.nextBest({ collection: collection.uuid }) :
 				routes.OpinionCollections.Items.single({ collection: collection.uuid, item: uuids[index] });
 			
 			// Get the document and display it.
@@ -140,7 +144,7 @@
 									});
 								});
 							
-							if (index >= uuids.length) {
+							if (index >= uuids.length && index < collections.size-1) {
 								me.options.offset = index = uuids.length;
 								uuids.push(item.uuid);
 							}

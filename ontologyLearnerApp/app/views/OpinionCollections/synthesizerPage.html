@@ -1,0 +1,91 @@
+#{extends 'main.html' /}
+#{set title:'' /}
+
+#{press.stylesheet 'collectionSynthesizerPage.css' /}
+
+<div id="content">
+	<div id="cntnrProperties">
+		<div>
+			<label for="txtName">Corpus name:</label>
+			<input id="txtName" type="text" />
+		</div>
+	</div>
+	<div id="cntnrProgress">
+		<div>Your corpus is being processed. Please wait; this might take several minutes...</div>
+		<div id="pbarProgress"></div>
+	</div>
+	<div id="cntnrTweak"></div>
+	<div class="ui-vertical-space"></div>
+	<div id="cntnrMessage" class="ui-corner-all ui-float-left"></div>
+	<div id="btnNext" class="ui-float-right">Next</div>
+</div>
+
+<script type="text/javascript">
+	(function(window, document, $, ontologyLearner, routes) {
+		$(document).ready(function() {
+			
+			var propertiesContainer = "#cntnrProperties";
+			var nameTextbox = "#txtName";
+			var progressContainer = "#cntnrProgress";
+			var progressBar = "#pbarProgress";
+			var tweakContainer = "#cntnrTweak";
+			var messageContainer = "#cntnrMessage";
+			var nextButton = "#btnNext";
+			
+			var corpus = $.parseJSON($("<div>").html("${corpus}").text());
+			
+			function renameCorpus(name) {
+				$.post(routes.OpinionCollections.rename({ corpus: corpus.uuid }), { name: name });
+			}
+			
+			$(nameTextbox)
+				.val(corpus.name)
+				.focusout(function(event) {
+					renameCorpus($(event.target).val());
+				})
+				.keyup(function(event) {
+					if (event.keyCode === $.ui.keyCode.ESCAPE) {
+						$(event.target).val(corpus.name);
+					}
+				})
+				.keypress(function(event) {
+					if (event.which === $.ui.keyCode.ENTER) {
+						$(event.target).blur();
+					}
+				});
+
+
+			$(nextButton)
+				.button();
+			
+			$(progressBar)
+				.progressbar({
+					value: 0
+				});
+			
+			function updateProgress() {
+				// Get progress and update.
+				$.getJSON(routes.OpinionCollections.synthesizerProgress({ corpus: corpus.uuid }))
+					.success(function(progress) {
+						var progress = progress || 0.0;
+						$(progressBar).progressbar("option", { value: window.Math.round(progress * 100) });
+						
+						if (progress < 1.0) {
+							window.setTimeout(updateProgress, 100);
+						}
+					});
+			}
+			
+			// Make the call.
+			$.post(routes.OpinionCollections.synthesizer( { corpus: corpus.uuid }))
+				.success(function(collection) {
+					$(progressBar).progressbar("option", { value: 100 });
+					$(progressContainer).hide("highlight", {}, 1000);
+					
+					
+				});
+			
+			updateProgress();
+		});
+	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
+</script>

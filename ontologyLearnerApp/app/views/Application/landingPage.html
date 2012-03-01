@@ -12,8 +12,8 @@
 <div id="content">
 	<div id="acrdnNav">
 		<h3><a href="#">Upload a corpus</a></h3>
-		<div id="acrdnOptUpload">
-			<div>You can upload your corpus contained in XML or ZIP files. The ZIP file must contain several XML files.
+ 		<div id="acrdnOptUpload">
+<!--			<div>You can upload your corpus contained in XML or ZIP files. The ZIP file must contain several XML files.
 			Each XML file must be in a format similar to:
 				<pre>&lt;root&gt;
 	&lt;document&gt;
@@ -24,14 +24,16 @@
 	&lt;&#47;document&gt;
 	...
 &lt;&#47;root&gt;</pre>
-			</div>
+			</div> -->
 			<div id="cntnrUploader"></div>
 		</div>
 		<h3><a href="#">Load an existing corpus</a></h3>
 		<div id="acrdnOptLoad">
-			<label for="lstCollections">Collections:</label>
-			<select id="lstCollections">
-			</select>
+			<div>
+				<label for="lstCollections">Collections:</label>
+				<select id="lstCollections">
+				</select>
+			</div>
 			<div id="cntnrCollectionInfo">
 			</div>
 		</div>
@@ -86,16 +88,17 @@
 					unique_names : true,
 					multiple_queues : true,
 
-					// Rename files by clicking on their titles
+					// Rename files by clicking on their titles.
 					rename: true,
 					
-					// Sort files
+					// Sort files.
 					sortable: true,
 
-					// Specify what files to browse for
-					filters : [
-						{title : "XML files", extensions : "xml"},
-						{title : "Zip files", extensions : "zip"}
+					// Specify what files to browse for.
+					filters: [
+						{title: "XML files", extensions: "xml"},
+						{title: "Zip files", extensions: "zip"},
+						{title: "Text files", extensions: "txt,csv"}
 					],
 					headers: {}
 				});
@@ -113,6 +116,26 @@
 					var active = $(navigationAccordion).accordion("option", "active");
 					if (active === 0) {
 						// Upload.
+						function redirectToSynthesizer() {
+							var corpus = $(uploaderContainer).data("corpus");
+							if (corpus) {
+								window.location.href = routes.OpinionCollections.synthesizerPage({ corpus: corpus.uuid });
+							}
+						}
+						
+				        // Files in queue upload them first.
+				        if (uploader.files.length > 0) {
+				            // When all files are uploaded submit form.
+				            uploader.bind("StateChanged", function() {
+				                if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) {
+				                	redirectToSynthesizer();
+				                }
+				            });
+				                
+				            uploader.start();
+				        } else {
+				            alert("You must upload at least one file.");
+				        }
 					} else if (active === 1) {
 						// Load.
 						window.location.href = routes.OpinionCollections.browserPage({ collection: $(collectionsList).val() });

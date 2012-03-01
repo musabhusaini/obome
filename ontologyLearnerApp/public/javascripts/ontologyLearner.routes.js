@@ -10,8 +10,12 @@
 		},
 		OpinionCollections: {
 			list: #{jsAction @OpinionCollections.list() /},
-			upload: #{jsAction @OpinionCollections.upload(':corpus') /},
 			single: #{jsAction @OpinionCollections.single(':collection') /},
+			upload: #{jsAction @OpinionCollections.upload(':corpus') /},
+			rename: #{jsAction @OpinionCollections.rename(':corpus') /},
+			synthesizer: #{jsAction @OpinionCollections.synthesize(':corpus') /},
+			synthesizerPage: #{jsAction @OpinionCollections.synthesizerPage(':corpus') /},
+			synthesizerProgress: #{jsAction @OpinionCollections.synthesizerProgress(':corpus') /},
 			browserPage: #{jsAction @OpinionCollections.browserPage(':collection') /},
 			Items: {
 				list: #{jsAction @OpinionCollections.items(':collection') /},

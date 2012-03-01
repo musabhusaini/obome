@@ -39,15 +39,24 @@ public class OrphanCorporaCleaner extends Job {
 		List<Corpus> corpora = em.createQuery("SELECT c FROM Corpus c WHERE c.ownerSessionId!=null", Corpus.class)
 				.getResultList();
 		
+		Date staleDate = new DateTime().minusHours(CORPUS_TIMEOUT).toDate();
+		
 		for (Corpus corpus : corpora) {
 			SessionViewModel session = SessionViewModel.findById(corpus.getOwnerSessionId());
-			if (session == null || session.lastActivity.before(new DateTime().minusHours(CORPUS_TIMEOUT).toDate())) {
+			if (session == null || session.lastActivity.before(staleDate)) {
 				em.remove(corpus);
 			}
 		}
 
 		em.getTransaction().commit();
 		em.close();
+		
+		// Delete all orphan sessions as well.
+		List<SessionViewModel> sessions = SessionViewModel.find("SELECT s FROM models.SessionViewModel s WHERE s.lastActivity < ?", staleDate)
+				.fetch();
+		for (SessionViewModel session : sessions) {
+			session.delete();
+		}
 		
 		System.out.println("Done cleaning orphan corpora.");
 	}
