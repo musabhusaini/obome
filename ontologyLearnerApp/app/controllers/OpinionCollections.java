@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.UUID;
@@ -20,6 +21,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import jobs.OpinionCollectionDistiller;
+import jobs.OpinionCollectionDistillerAnalyzer;
 import jobs.OpinionCollectionSynthesizer;
 import jobs.OrphanCorporaCleaner;
 
@@ -186,21 +189,48 @@ public class OpinionCollections extends Application {
 	
 	public static void synthesize(String corpus) {
 		Corpus c = fetch(Corpus.class, corpus);
-		Promise<OpinionCollectionViewModel> promise = new OpinionCollectionSynthesizer(c).now();
-		OpinionCollectionViewModel viewModel = await(promise);
+		Promise<SetCover> promise = new OpinionCollectionSynthesizer(c).now();
+		SetCover setCover = await(promise);
+		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(setCover);
+		viewModel.size = em.createQuery("SELECT COUNT(item) FROM SetCoverItem item WHERE item.setCover=:sc", Long.class)
+				.setParameter("sc", setCover)
+				.getSingleResult();
 		renderJSON(viewModel);
 	}
 	
 	public static void synthesizerProgress(String corpus) {
 		OpinionCollectionSynthesizer process = OpinionCollectionSynthesizer.get(corpus);
-		
-		double progress;
-		if (process == null) {
-			progress = 1.0;
-		} else {
-			progress = process.getProgress();
+		double progress = process == null ? 1.0 : process.getProgress();
+		renderJSON(progress);
+	}
+	
+	public static void distillerStats(String collection) {
+		SetCover sc = fetch(SetCover.class, collection);
+		Promise<Map<Double, Double>> promise = new OpinionCollectionDistillerAnalyzer(sc).now();
+		Map<Double, Double> map = await(promise);
+		List<Double[]> points = Lists.newArrayList();
+		for (Entry<Double, Double> entry : map.entrySet()) {
+			points.add(new Double[]{ entry.getKey(), entry.getValue() });
 		}
+		renderJSON(points);
+	}
+	
+	public static void distill(String collection, double threshold) {
+		threshold /= 100;
 		
+		SetCover sc = fetch(SetCover.class, collection);
+		Promise<SetCover> promise = new OpinionCollectionDistiller(sc, threshold).now();
+		sc = await(promise);
+		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
+		viewModel.size = em.createQuery("SELECT COUNT(item) FROM SetCoverItem item WHERE item.setCover=:sc", Long.class)
+				.setParameter("sc", sc)
+				.getSingleResult();
+		renderJSON(viewModel);
+	}
+	
+	public static void distillerProgress(String collection) {
+		OpinionCollectionDistillerAnalyzer process = OpinionCollectionDistillerAnalyzer.get(collection);
+		double progress = process == null ? 1.0 : process.getProgress();
 		renderJSON(progress);
 	}
 	

@@ -57,7 +57,6 @@ public class Application extends Controller {
 		@Override
 		public T apply(String uuid) {
 			T obj = em.find(this.clazz, IdentifiableObject.getUuidBytes(UUID.fromString(uuid)));
-			em.refresh(obj);
 			return obj;
 		}
 	}
@@ -130,5 +129,9 @@ public class Application extends Controller {
 	
 	public static void ping() {
 		renderText("Good deal!");
+	}
+	
+	public static void testPage() {
+		render();
 	}
 }

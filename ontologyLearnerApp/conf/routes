@@ -5,6 +5,8 @@
 # Home page
 GET     /                				                       			Application.landingPage
 
+GET		/test															Application.testPage
+
 POST	/session														Application.ping
 
 GET		/collections													OpinionCollections.list
@@ -20,6 +22,12 @@ GET		/collections/{corpus}/synthesizer								OpinionCollections.synthesizerPage
 POST	/collections/{corpus}/synthesizer								OpinionCollections.synthesize
 
 GET		/collections/{corpus}/synthesizer/progress						OpinionCollections.synthesizerProgress
+
+GET		/collections/{collection}/distiller								OpinionCollections.distillerStats
+
+POST	/collections/{collection}/distiller								OpinionCollections.distill
+
+GET		/collections/{collection}/distiller/progress					OpinionCollections.distillerProgress
 
 GET		/collections/{collection}/browser								OpinionCollections.browserPage
 

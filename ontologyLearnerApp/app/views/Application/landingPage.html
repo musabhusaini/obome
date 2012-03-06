@@ -113,6 +113,9 @@
 			$(nextButton)
 				.button({ })
 				.click(function() {
+					$(nextButton).button("disable");
+					$(nextButton).spinner();
+					
 					var active = $(navigationAccordion).accordion("option", "active");
 					if (active === 0) {
 						// Upload.
@@ -135,6 +138,8 @@
 				            uploader.start();
 				        } else {
 				            alert("You must upload at least one file.");
+				            $(nextButton).button("enable");
+				            $(nextButton).spinner("destroy");
 				        }
 					} else if (active === 1) {
 						// Load.
@@ -150,6 +155,8 @@
 									.addClass("ui-state-error")
 									.text("Key is not valid")
 									.show();
+								
+								$(nextButton).button("enable");
 							});
 					}
 				});

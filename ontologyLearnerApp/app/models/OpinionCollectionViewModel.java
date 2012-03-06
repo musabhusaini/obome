@@ -32,7 +32,7 @@ public class OpinionCollectionViewModel extends ViewModel {
 		this.corpusName = sc.getCorpus().getName();
 		this.offset = sc.getCoverOffset();
 		this.corpusSize = sc.getCoverSize();
-		this.errorTolerance = sc.getErrorTolerance();
+		this.errorTolerance = sc.getErrorTolerance() * 100;
 		this.timestamp = sc.getTimestamp();
     }
 }

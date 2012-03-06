@@ -20,9 +20,9 @@ import models.OpinionCorpusViewModel;
 import play.db.jpa.JPA;
 import play.jobs.Job;
 
-public class OpinionCollectionSynthesizer extends Job<OpinionCollectionViewModel> {
+public class OpinionCollectionSynthesizer extends Job<SetCover> {
 	
-	private static Map<String,OpinionCollectionSynthesizer> registry = Maps.newHashMap();
+	private static Map<String, OpinionCollectionSynthesizer> registry = Maps.newHashMap();
 	
 	public static OpinionCollectionSynthesizer get(String uuid) {
 		if (registry.containsKey(uuid)) {
@@ -45,7 +45,7 @@ public class OpinionCollectionSynthesizer extends Job<OpinionCollectionViewModel
 	}
 	
 	@Override
-	public OpinionCollectionViewModel doJobWithResult() {
+	public SetCover doJobWithResult() {
 		EntityManager em = OntologyLearnerProgram.em();
 		em.getTransaction().begin();
 
@@ -76,11 +76,9 @@ public class OpinionCollectionSynthesizer extends Job<OpinionCollectionViewModel
 		setCover.setName(this.corpus.getName());
 		setCover.setErrorTolerance(0.0);
 		em.persist(setCover);
-		
 		em.getTransaction().commit();
 		
 		registry.remove(this.corpus.getIdentifier().toString());
-		
-		return new OpinionCollectionViewModel(setCover);
+		return setCover;
 	}
 }

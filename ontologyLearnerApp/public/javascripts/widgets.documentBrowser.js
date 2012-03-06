@@ -144,7 +144,7 @@
 									});
 								});
 							
-							if (index >= uuids.length && index < collections.size-1) {
+							if (index >= uuids.length && index < collection.size-1) {
 								me.options.offset = index = uuids.length;
 								uuids.push(item.uuid);
 							}

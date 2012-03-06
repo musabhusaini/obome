@@ -16,6 +16,9 @@
 			synthesizer: #{jsAction @OpinionCollections.synthesize(':corpus') /},
 			synthesizerPage: #{jsAction @OpinionCollections.synthesizerPage(':corpus') /},
 			synthesizerProgress: #{jsAction @OpinionCollections.synthesizerProgress(':corpus') /},
+			distillerStats: #{jsAction @OpinionCollections.distillerStats(':collection') /},
+			distill: #{jsAction @OpinionCollections.distill(':collection') /},
+			distillerProgress: #{jsAction @OpinionCollections.distillerProgress(':collection') /},
 			browserPage: #{jsAction @OpinionCollections.browserPage(':collection') /},
 			Items: {
 				list: #{jsAction @OpinionCollections.items(':collection') /},
