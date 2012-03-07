@@ -88,3 +88,7 @@ ul.ui-controls-list > li {
 #banner-links-container {
 	float: right;
 }
+
+#banner-links-container a {
+	font-size: .75em;
+}
