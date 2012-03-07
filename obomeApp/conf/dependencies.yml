@@ -1,0 +1,7 @@
+# Application dependencies
+
+require:
+    - play
+    - com.google.guava -> guava 10.0.1
+    - play -> maven head
+    - play -> press 1.0.25

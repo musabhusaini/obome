@@ -1,0 +1,94 @@
+html {
+	padding-top: .25em;
+	padding-left: .25em;
+	padding-right: .25em;
+	padding-bottom: 1em;
+}
+
+body {
+	font-size: 70%;
+	font-family: "Arial", "Helvetica", "Verdana", "sans-serif";
+	background: lightgray;
+}
+
+html, body {
+	height: 100%;
+}
+
+pre {
+	font-size: 1.1em;
+}
+
+ul.ui-sidebyside-controls-list, ul.ui-controls-list {
+	padding: 0em;
+	display: inline;
+}
+
+ul.ui-sidebyside-controls-list > li {
+	float: left;
+	list-style: none;
+	padding: 0em;
+}
+
+ul.ui-controls-list > li {
+	list-style: none;
+	padding: 0em;
+	clear: left;
+}
+
+.ui-controls-list-item-spaced {
+	margin-top: .5em;
+}
+
+.ui-sidebyside-controls-list-item-spaced {
+	margin-left: .5em;
+}
+
+.ui-spinner {
+	width: 36px;
+	height: 36px;
+	background-image: url(/public/images/spinner.gif);
+}
+
+.ui-fit-horizontal {
+	width: 100%;
+}
+
+.ui-fit-vertical {
+	height: 100%;
+}
+
+.ui-float-right {
+	float: right;
+}
+
+.ui-float-left {
+	float: left;
+}
+
+.ui-vertical-space {
+	height: .75em;
+}
+
+#wrapper {
+	margin: 0 auto;
+	width: 70%;
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
+}
+
+#banner {
+	font-size: 1.5em;
+}
+
+#content-wrapper {
+}
+
+#banner-links-container {
+	float: right;
+}
+
+#banner-links-container a {
+	font-size: .75em;
+}

@@ -1,0 +1,94 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                				                       			Application.landingPage
+
+GET		/test															Application.testPage
+
+POST	/session														Application.ping
+
+GET		/collections													OpinionCollections.list
+
+GET		/collections/{collection}										OpinionCollections.single
+
+POST	/collections/{corpus}											OpinionCollections.upload
+
+POST	/collections/{corpus}/name										OpinionCollections.rename
+
+GET		/collections/{corpus}/synthesizer								OpinionCollections.synthesizerPage
+
+POST	/collections/{corpus}/synthesizer								OpinionCollections.synthesize
+
+GET		/collections/{corpus}/synthesizer/progress						OpinionCollections.synthesizerProgress
+
+GET		/collections/{collection}/distiller								OpinionCollections.distillerStats
+
+POST	/collections/{collection}/distiller								OpinionCollections.distill
+
+GET		/collections/{collection}/distiller/progress					OpinionCollections.distillerProgress
+
+GET		/collections/{collection}/aspectsBrowser						OpinionCollections.aspectsBrowserPage
+
+GET		/collections/{collection}/opinionBrowser						OpinionCollection.opinionsBrowserPage
+
+GET		/collections/{collection}/aspects								Aspects.list
+
+GET		/collections/{collection}/aspects/{aspect}						Aspects.single
+
+POST    /collections/{collection}/aspects/{aspect}						Aspects.postSingle
+
+DELETE  /collections/{collection}/aspects/{aspect}						Aspects.deleteSingle
+
+GET		/collections/{collection}/aspects/{aspect}/keywords				Keywords.list
+
+GET		/collections/{collection}/aspects/{aspect}/keywords/{keyword}	Keywords.single
+
+POST	/collections/{collection}/aspects/{aspect}/keywords/{keyword}	Keywords.postSingle
+
+DELETE	/collections/{collection}/aspects/{aspect}/keywords/{keyword}	Keywords.deleteSingle
+
+GET		/collections/{collection}/items									OpinionCollections.items
+
+GET		/collections/{collection}/items/seen							OpinionCollections.seenItems
+
+GET		/collections/{collection}/items/unseen							OpinionCollections.unseenItems
+
+GET		/collections/{collection}/items/nextBest						OpinionCollections.nextBestItem
+
+GET		/collections/{collection}/items/{item}							OpinionCollections.singleItem
+
+POST	/collections/{collection}/items/{item}							OpinionCollections.seeItem
+
+GET     /documents/{document}		                      				Documents.single
+
+GET     /aspects/{aspect}	                   				    		Aspects.single(collection:'')
+
+POST	/aspects/{aspect}												Aspects.postSingle(collection:'')
+
+DELETE	/aspects/{aspect}												Aspects.deleteSingle(collection:'')
+
+GET		/aspects/{aspect}/keywords										Keywords.list(collection:'')
+
+POST    /aspects/{aspect}/keywords/{keyword}        			     	Keywords.postSingle(collection:'')
+
+DELETE  /aspects/{aspect}/keyword/{keyword}								Keywords.deleteSingle(collection:'')
+
+GET		/keywords/{keyword}												Keywords.single(collection:'',aspect:'')
+
+POST	/keywords/{keyword}												Keywords.postSingle(collection:'',aspect:'')
+
+DELETE	/keywords/{keyword}												Keywords.deleteSingle(collection:'',aspect:'')
+
+# Ignore favicon requests
+GET     /favicon.ico                            404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/                                staticDir:public
+
+# Catch all
+*       /{controller}/{action}                  {controller}.{action}
+
+# Press Module
+*  /  module:press
