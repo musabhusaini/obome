@@ -58,7 +58,8 @@ public final class MPredicates {
 	static class WordExistsInDictionaryPredicate<T extends HasWord & HasTag> implements Predicate<T> {
 		@Override
 		public boolean apply(T w) {
-			return DictionaryEN.wordExists(w);
+//			return DictionaryEN.wordExists(w);
+			return true;
 		}
 	}
 	
