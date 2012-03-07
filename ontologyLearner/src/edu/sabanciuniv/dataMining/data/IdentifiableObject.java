@@ -42,15 +42,15 @@ public class IdentifiableObject implements Identifiable, Serializable {
 		
 		if (uuidString.length() == uuid.toString().length() - 4) {
 			StringBuilder sb = new StringBuilder();
-			sb.append(uuidString.substring(0, 7));
+			sb.append(uuidString.substring(0, 8));
 			sb.append("-");
-			sb.append(uuidString.substring(8, 11));
+			sb.append(uuidString.substring(8, 12));
 			sb.append("-");
-			sb.append(uuidString.substring(12, 15));
+			sb.append(uuidString.substring(12, 16));
 			sb.append("-");
-			sb.append(uuidString.substring(16, 19));
+			sb.append(uuidString.substring(16, 20));
 			sb.append("-");
-			sb.append(uuidString.substring(20, 31));
+			sb.append(uuidString.substring(20));
 			uuidString = sb.toString();
 		}
 		
