@@ -37,6 +37,27 @@ public class IdentifiableObject implements Identifiable, Serializable {
 		}
 	}
 	
+	public static UUID createUuid(String uuidString) {
+		UUID uuid = UUID.randomUUID();
+		
+		if (uuidString.length() == uuid.toString().length() - 4) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(uuidString.substring(0, 7));
+			sb.append("-");
+			sb.append(uuidString.substring(8, 11));
+			sb.append("-");
+			sb.append(uuidString.substring(12, 15));
+			sb.append("-");
+			sb.append(uuidString.substring(16, 19));
+			sb.append("-");
+			sb.append(uuidString.substring(20, 31));
+			uuidString = sb.toString();
+		}
+		
+		uuid = UUID.fromString(uuidString);
+		return uuid;
+	}
+	
 	/**
 	 * Gets the UUID in a byte array format.
 	 * @param uuid The UUID to convert bytes.
@@ -72,7 +93,7 @@ public class IdentifiableObject implements Identifiable, Serializable {
 	 * @param id Identifier of the object.
 	 */
 	public IdentifiableObject(String id) {
-		this(UUID.fromString(id));
+		this.setIdentifier(id);
 	}
 	
 	/**
@@ -80,7 +101,7 @@ public class IdentifiableObject implements Identifiable, Serializable {
 	 * @param id The identifier to set.
 	 */
 	public void setIdentifier(String id) {
-		this.setIdentifier(UUID.fromString(id));
+		this.setIdentifier(createUuid(id));
 	}
 	
 	/**
