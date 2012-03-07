@@ -1,18 +1,18 @@
 package models;
 
-import play.*;
-import play.db.jpa.*;
+import javax.persistence.Entity;
 
-import javax.persistence.*;
-
-import edu.sabanciuniv.dataMining.data.Identifiable;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
-
-import java.util.*;
 
 @Entity
 public class OpinionCollectionItemViewModel extends ViewModel {
-    public String review;
+    
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	public String review;
     public int utilityScore;
     public boolean seen;
     

@@ -1,0 +1,60 @@
+#{extends 'main.html' /}
+#{set title:'' /}
+
+#{press.stylesheet 'browserPages.css' /}
+#{press.stylesheet 'aspectsBrowserPage.css' /}
+
+<div id="content">
+	<ul class="ui-sidebyside-controls-list">
+		<li>
+			<ul class="ui-sidebyside-controls-list">
+				<li><div id="documentContainer"></div></li>
+				<li><div class="ui-sidebyside-controls-list-item-spaced" id="aspectsContainer"></div></li>
+			</ul>
+		</li>
+	</ul>
+	<div class="ui-helper-clearfix"></div>
+	<div id="btnNext" class="ui-float-right">Next</div>
+</div>
+
+#{press.script "widgets.documentBrowser.js" /}
+#{press.script "widgets.aspectsBrowser.js" /}
+
+<script type="text/javascript">
+	(function(window, document, $, ontologyLearner, routes) {
+		$(document).ready(function() {
+			var docContainer = "#documentContainer";
+			var aspectsContainer = "#aspectsContainer";
+			var nextButton = "#btnNext";
+			
+			// Loaded from the controller.
+			var options = {
+				collection: $.parseJSON($("<div>").html("${collection}").text())
+			};
+
+			$(docContainer)
+				.documentBrowser($.extend(options, {
+					header: "Review",
+					featureClick: function(event, data) {
+						$(aspectsContainer).aspectsBrowser("addKeyword", data);
+					}
+				}));
+
+			$(aspectsContainer)
+				.aspectsBrowser(options);
+			
+			$(nextButton)
+				.button()
+				.click(function() {
+					$(nextButton).button("disable");
+					$(nextButton).spinner();
+					
+					$.post(routes.OpinionCollections.distill({ collection: collection.uuid }), { threshold: $(thresholdTextbox).val() })
+						.success(function(collection) {
+							$(messageContainer).spinner("destroy");
+							//window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: collection.uuid });
+						});
+				});
+		});
+	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
+</script>

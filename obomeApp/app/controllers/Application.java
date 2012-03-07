@@ -5,17 +5,16 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 
 import models.SessionViewModel;
+import play.cache.Cache;
+import play.mvc.After;
+import play.mvc.Before;
+import play.mvc.Controller;
 
 import com.google.common.base.Function;
 
 import edu.sabanciuniv.dataMining.data.Identifiable;
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
-import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
-import play.cache.Cache;
-import play.mvc.After;
-import play.mvc.Before;
-import play.mvc.Controller;
 
 public class Application extends Controller {
 

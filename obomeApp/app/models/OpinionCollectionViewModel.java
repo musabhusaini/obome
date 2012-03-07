@@ -1,21 +1,19 @@
 package models;
 
-import play.*;
-import play.db.jpa.*;
+import java.util.Date;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
 
-import com.google.common.collect.Lists;
-
-import edu.sabanciuniv.dataMining.data.Identifiable;
-import edu.sabanciuniv.dataMining.experiment.models.Corpus;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
-
-import java.util.*;
 
 @Entity
 public class OpinionCollectionViewModel extends ViewModel {
-    public String name;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	public String name;
     public String corpusName;
     public int offset;
     public int corpusSize;

@@ -19,7 +19,8 @@
 			distillerStats: #{jsAction @OpinionCollections.distillerStats(':collection') /},
 			distill: #{jsAction @OpinionCollections.distill(':collection') /},
 			distillerProgress: #{jsAction @OpinionCollections.distillerProgress(':collection') /},
-			browserPage: #{jsAction @OpinionCollections.browserPage(':collection') /},
+			aspectsBrowserPage: #{jsAction @OpinionCollections.aspectsBrowserPage(':collection') /},
+			opinionsBrowserPage: #{jsAction @OpinionCollections.opinionsBrowserPage(':collection') /},
 			Items: {
 				list: #{jsAction @OpinionCollections.items(':collection') /},
 				seen: #{jsAction @OpinionCollections.seenItems(':collection') /},

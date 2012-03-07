@@ -3,11 +3,9 @@ package controllers;
 import java.util.Collections;
 import java.util.List;
 
-import javax.persistence.EntityManager;
+import models.KeywordViewModel;
 
 import org.apache.commons.lang.StringUtils;
-
-import models.KeywordViewModel;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
@@ -15,8 +13,6 @@ import com.google.gson.JsonObject;
 
 import edu.sabanciuniv.dataMining.experiment.models.Aspect;
 import edu.sabanciuniv.dataMining.experiment.models.Keyword;
-import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
-import play.mvc.*;
 
 public class Keywords extends Application {
 

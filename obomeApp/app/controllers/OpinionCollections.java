@@ -2,8 +2,6 @@ package controllers;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.List;
@@ -15,42 +13,34 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import jobs.OpinionCollectionDistiller;
 import jobs.OpinionCollectionDistillerAnalyzer;
 import jobs.OpinionCollectionSynthesizer;
-import jobs.OrphanCorporaCleaner;
+import models.OpinionCollectionItemViewModel;
+import models.OpinionCollectionViewModel;
+import models.OpinionCorpusViewModel;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import play.data.Upload;
 import play.libs.F.Promise;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 
-import models.OpinionCollectionItemViewModel;
-import models.OpinionCollectionViewModel;
-import models.OpinionCorpusViewModel;
-
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
-import edu.sabanciuniv.dataMining.experiment.models.Aspect;
 import edu.sabanciuniv.dataMining.experiment.models.Corpus;
 import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
-import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 
 public class OpinionCollections extends Application {
 
@@ -252,6 +242,15 @@ public class OpinionCollections extends Application {
 		}
 	}
 	
+	public static void opinionsBrowserPage(String collection) {
+		SetCover sc = fetch(SetCover.class, collection);
+		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
+		viewModel.size = getCollectionSize(sc);
+		collection = new Gson().toJson(viewModel, OpinionCollectionViewModel.class);
+		
+		render(collection);
+	}
+	
 	public static void single(String collection) {
 		SetCover sc = fetch(SetCover.class, collection);
 		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
@@ -260,7 +259,12 @@ public class OpinionCollections extends Application {
 		renderJSON(viewModel);
 	}
 
-	public static void browserPage(String collection, boolean bypassCache, String featureType) {
+	public static void aspectsBrowserPage(String collection, boolean bypassCache, String featureType) {
+		SetCover sc = fetch(SetCover.class, collection);
+		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
+		viewModel.size = getCollectionSize(sc);
+		collection = new Gson().toJson(viewModel, OpinionCollectionViewModel.class);
+		
 		render(collection, bypassCache, featureType);
 	}
 	

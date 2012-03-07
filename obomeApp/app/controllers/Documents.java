@@ -3,25 +3,17 @@ package controllers;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
 
-import javax.persistence.EntityManager;
+import models.DocumentViewModel;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions;
 import edu.sabanciuniv.dataMining.data.options.text.TextDocumentOptions.FeatureType;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
 import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
-import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
-import play.cache.Cache;
-import play.mvc.*;
-import play.mvc.results.Redirect;
-import models.*;
 
 public class Documents extends Application {
     

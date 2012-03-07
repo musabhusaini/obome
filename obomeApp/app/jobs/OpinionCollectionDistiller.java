@@ -6,14 +6,13 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 
-import com.google.common.collect.Lists;
+import play.jobs.Job;
+
 import com.google.common.collect.Maps;
 
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
-import play.db.jpa.JPA;
-import play.jobs.Job;
 
 public class OpinionCollectionDistiller extends Job<SetCover> {
 	

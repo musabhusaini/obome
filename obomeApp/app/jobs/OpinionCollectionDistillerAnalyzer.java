@@ -12,7 +12,6 @@ import com.google.common.collect.Maps;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
-import play.db.jpa.JPA;
 import play.jobs.Job;
 
 public class OpinionCollectionDistillerAnalyzer extends Job<Map<Double, Double>> {

@@ -29,7 +29,9 @@ POST	/collections/{collection}/distiller								OpinionCollections.distill
 
 GET		/collections/{collection}/distiller/progress					OpinionCollections.distillerProgress
 
-GET		/collections/{collection}/browser								OpinionCollections.browserPage
+GET		/collections/{collection}/aspectsBrowser						OpinionCollections.aspectsBrowserPage
+
+GET		/collections/{collection}/opinionBrowser						OpinionCollection.opinionsBrowserPage
 
 GET		/collections/{collection}/aspects								Aspects.list
 

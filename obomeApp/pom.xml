@@ -25,6 +25,11 @@
   	<artifactId>ontologyLearner</artifactId>
   	<version>0.0.1</version>
   </dependency>
+  <dependency>
+  	<groupId>edu.sabanciuniv.dataMining</groupId>
+  	<artifactId>opinionMining</artifactId>
+  	<version>0.0.1-SNAPSHOT</version>
+  </dependency>
   </dependencies>
   
   <build>

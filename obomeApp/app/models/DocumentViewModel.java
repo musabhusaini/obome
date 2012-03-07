@@ -1,15 +1,14 @@
 package models;
 
-import java.util.UUID;
-
 import javax.persistence.Entity;
-
-import edu.sabanciuniv.dataMining.data.Identifiable;
-
-import play.db.jpa.Model;
 
 @Entity
 public class DocumentViewModel extends ViewModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public String text;
     
     public DocumentViewModel(String uuid, String text) {

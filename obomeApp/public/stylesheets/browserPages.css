@@ -24,16 +24,3 @@
 .ol-button {
 	height: 2em;
 }
-
-ul#usageList {
-	padding: 0em;
-	display: inline;
-}
-
-#usageList > li {
-	list-style: none;
-	list-style-position: inside;
-	margin-left: 0em;
-	padding-left: .75em;
-	text-indent: .75em;
-}

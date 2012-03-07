@@ -27,7 +27,9 @@
 			collection: null,
 			offset: 0,
 			bypassCache: false,
-			featureType: "nouns"
+			featureType: "nouns",
+			showNav: true,
+			showCounter: true
 		},
 		
 		_id: null,
@@ -36,6 +38,11 @@
 		
 		_refreshCountDisplay: function() {
 			var me = this;
+			
+			if (!me.options.showCounter) {
+				return;
+			}
+			
 			$(me._container)
 				.find($$(countContainer, me._id))
 				.empty()
@@ -63,7 +70,7 @@
 								.keypress(function(event) {
 									if (event.which === $.ui.keyCode.ENTER) {
 										var index = $(event.target).val();
-										if (index >= 1 && index <= me.options.uuids.length) {
+										if (index >= 1 && index <= me.options.collection.seenItems.length) {
 											me.option({ offset: index-1 });
 										}
 									} else {
@@ -82,6 +89,10 @@
 			var uuids = collection.seenItems;
 			var index = me.options.offset;
 
+			if (!collection.size) {
+				return;
+			}
+			
 			// If no seen items available, get them.
 			if (!collection.seenItems) {
 				$(me._container).find($$(textContainer, id)).spinner();
@@ -219,7 +230,7 @@
 						.attr("id", makeId(textContainer, id))
 						.addClass("ol-document-text")))
 				// Controls container.
-				.append($("<li>")
+				.append(me.options.showNav && $("<li>")
 					.addClass("ui-controls-list-item-spaced")
 					.append($("<ul>")
 						.addClass("ui-sidebyside-controls-list")

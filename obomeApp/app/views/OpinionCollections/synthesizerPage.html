@@ -68,7 +68,6 @@
 					}
 				});
 
-
 			$(nextButton)
 				.button({
 					disabled: true
@@ -80,7 +79,7 @@
 					$.post(routes.OpinionCollections.distill({ collection: collection.uuid }), { threshold: $(thresholdTextbox).val() })
 						.success(function(collection) {
 							$(messageContainer).spinner("destroy");
-							window.location.href = routes.OpinionCollections.browserPage({ collection: collection.uuid });
+							window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: collection.uuid });
 						});
 				});
 			

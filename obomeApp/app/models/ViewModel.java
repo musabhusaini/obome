@@ -5,15 +5,16 @@ import java.util.UUID;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
-import edu.sabanciuniv.dataMining.data.Identifiable;
-import edu.sabanciuniv.dataMining.data.IdentifiableObject;
-
 import play.db.jpa.GenericModel;
+import edu.sabanciuniv.dataMining.data.Identifiable;
 
 @MappedSuperclass
 public abstract class ViewModel extends GenericModel implements Identifiable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	@Id
 	public String uuid;
 	

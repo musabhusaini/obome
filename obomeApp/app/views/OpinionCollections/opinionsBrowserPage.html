@@ -1,0 +1,39 @@
+#{extends 'main.html' /}
+#{set title:'' /}
+
+#{press.stylesheet 'browserPages.css' /}
+#{press.stylesheet 'opinionsBrowserPage.css' /}
+
+<div id="content">
+	<ul class="ui-sidebyside-controls-list">
+		<li>
+			<ul class="ui-sidebyside-controls-list">
+				<li><div id="documentContainer"></div></li>
+				<li><div class="ui-sidebyside-controls-list-item-spaced" id="aspectsContainer"></div></li>
+			</ul>
+		</li>
+	</ul>
+	<div class="ui-helper-clearfix"></div>
+</div>
+
+#{press.script "widgets.documentBrowser.js" /}
+#{press.script "widgets.aspectsBrowser.js" /}
+
+<script type="text/javascript">
+	(function(window, document, $, ontologyLearner, routes) {
+		$(document).ready(function() {
+			var docContainer = "#documentContainer";
+			
+			// Loaded from the controller.
+			var options = {
+				collection: $.parseJSON($("<div>").html("${collection}").text())
+			};
+
+			$(docContainer)
+				.documentBrowser($.extend(options, {
+					header: "Review Text",
+					showNav: false
+				}));
+		});
+	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
+</script>

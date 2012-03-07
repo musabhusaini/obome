@@ -1,17 +1,17 @@
 package models;
 
-import play.*;
-import play.db.jpa.*;
-
-import javax.persistence.*;
+import javax.persistence.Entity;
 
 import edu.sabanciuniv.dataMining.experiment.models.Keyword;
-
-import java.util.*;
 
 @Entity
 public class KeywordViewModel extends ViewModel implements Comparable<KeywordViewModel> {
     
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	public String label;
 	
 	public KeywordViewModel() {
