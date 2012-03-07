@@ -9,7 +9,7 @@
   </parent>
 
   <groupId>edu.sabanciuniv.dataMining</groupId>
-  <artifactId>ontologyLearnerApp</artifactId>
+  <artifactId>obomeApp</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <dependencies>
