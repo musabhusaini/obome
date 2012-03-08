@@ -128,7 +128,7 @@ public class OntologyHandlerForDatabase extends OntologyHandler {
     // stmt.close();
     // return new Long(-1);
     PreparedStatement stmt = conn
-        .prepareStatement("SELECT CAST(CONV(SUBSTRING(MD5(aspects.uuid), 1, 15), 16, 10) AS SIGNED INTEGER) AS id FROM aspects WHERE aspects.uuid IN (SELECT keywords.aspect_uuid FROM keywords WHERE keywords.label=?) AND aspects.setcover_uuid=?;");
+        .prepareStatement("SELECT CAST(CONV(SUBSTRING(MD5(aspects.uuid), 1, 15), 16, 10) AS SIGNED INTEGER) AS featureId FROM aspects WHERE aspects.uuid IN (SELECT keywords.aspect_uuid FROM keywords WHERE keywords.label=?) AND aspects.setcover_uuid=?;");
     stmt.setString(1, word);
     stmt.setBytes(2, uuid);
     ResultSet set = stmt.executeQuery();
