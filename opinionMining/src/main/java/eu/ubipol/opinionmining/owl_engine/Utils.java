@@ -46,7 +46,7 @@ public class Utils {
     if (scores == null) {
       scores = new HashMap<String, Float>();
       EnglishStemmer stemmer = new EnglishStemmer();
-      Scanner reader = new Scanner(new FileInputStream("sentiwordnet_processed.txt"));
+      Scanner reader = new Scanner(Utils.class.getResourceAsStream("sentiwordnet_processed.txt"));
       while (reader.hasNextLine()) {
         String[] line = reader.nextLine().split("\t");
         stemmer.setCurrent(line[0].trim());
