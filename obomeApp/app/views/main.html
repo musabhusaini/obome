@@ -2,7 +2,7 @@
 
 <html>
     <head>
-        <title>OBOME #{get 'title' /}</title>
+        <title>OBOME</title>
         <meta charset="${_response_encoding}">
         #{press.stylesheet 'ui-lightness/jquery-ui-1.8.16.css' /}
         #{press.stylesheet 'main.css' /}
@@ -41,15 +41,21 @@
     <body>
     	<div id="wrapper" class="ui-widget">
     		<div id="banner">
-    			<span>Ontology-Based Opinion Mining Engine</span>
     			<div id="banner-links-container">
+    				#{a @Application.aboutPage()}About#{/a}
     				<a href="mailto:musabhusaini@sabanciuniv.edu">Contact</a>
     			</div>
+    			<div id="banner-home-link">
+    				#{a @Application.landingPage()}Ontology-Based Opinion Mining Engine#{/a}
+    			</div>
+    			<div class="ui-subtitle">#{get 'title' /}</div>
     		</div>
     		<div id="banner-bottom" class="ui-vertical-space">
     		</div>
     		<div id="content-wrapper">
         		#{doLayout /}
+        	</div>
+        	<div id="footer">
         	</div>
         </div>
     </body>

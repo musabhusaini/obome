@@ -23,6 +23,7 @@
 	
 	$.widget("widgets.documentBrowser", {
 		options: {
+			uuid: null,
 			header: "Review",
 			collection: null,
 			offset: 0,
@@ -85,11 +86,72 @@
 		refresh: function() {
 			var me = this;
 			var id = me._id;
-			var collection = me.options.collection;
-			var uuids = collection.seenItems;
+			var collection = me.options.collection || {};
+			var uuids = collection.seenItems || [];
 			var index = me.options.offset;
 
-			if (!collection.size) {
+			function displayDocument(item, params) {
+				$(me._container).find($$(textContainer, id)).spinner();
+				$.getJSON(routes.Documents.single({ document: item.document }), params || {})
+					.success(function(document) {
+						var pattern = /\\feature\{(.+?)\}/mg;
+						var text = document.text;
+						var match = null;
+						text = text.replace(pattern, "<span class='ol-feature-element'>$1</span>");
+						
+						$(me._container).find($$(textContainer, id)).spinner("destroy");
+						$(me._container)
+							.find($$(textContainer, id))
+							.empty()
+							.html(window.unescape(text));
+										
+						$(me._container).find(".ol-feature-element")
+							.button()
+							.draggable({
+								helper: "clone",
+								revert: "invalid",
+								revertDuration: 400,
+								scope: "features",
+								zIndex: 1000
+							})
+							.click(function(event) {
+								me._trigger("featureClick", event, {
+									label: $(event.target).text()
+								});
+							});
+						
+						if (index >= uuids.length && index < collection.size-1) {
+							me.options.offset = index = uuids.length;
+							uuids.push(item.uuid);
+						}
+						
+						me._refreshCountDisplay();
+						
+						if (me.options.showNav) {
+							// The back or forward buttons might need to be disabled.
+							$(me._container).find($$(prevButton, id)).button("option", {
+								disabled: (index === 0)
+							});
+		
+							$(me._container).find($$(nextButton, id)).button("option", {
+								disabled: (index === me.options.collection.size-1)
+							});
+						}
+					});
+			}
+
+			var params = {
+				featureType: me.options.featureType,
+				bypassCache: me.options.bypassCache
+			};
+			
+			// If a particular uuid is set, use it. If nothing is available, then just go away.
+			if (me.options.uuid) {
+				displayDocument({
+					document: me.options.uuid
+				}, params);
+				return;
+			} else if (!collection.size) {
 				return;
 			}
 			
@@ -106,11 +168,6 @@
 				return true;
 			}
 			
-			var params = {
-				featureType: me.options.featureType,
-				bypassCache: me.options.bypassCache
-			};
-
 			if (index < 0) {
 				return;
 			}
@@ -120,57 +177,15 @@
 			}
 			
 			// Decide whether we need the next best document or a document by uuid.
-			var url = (index >= uuids.length && index < collection.size-1) ? routes.OpinionCollections.Items.nextBest({ collection: collection.uuid }) :
+			var url = (index >= uuids.length && index < collection.size) ? routes.OpinionCollections.Items.nextBest({ collection: collection.uuid }) :
 				routes.OpinionCollections.Items.single({ collection: collection.uuid, item: uuids[index] });
 			
 			// Get the document and display it.
 			$(me._container).find($$(textContainer, id)).spinner();
 			$.getJSON(url, params)
 				.success(function(item) {
-					$.getJSON(routes.Documents.single({ document: item.review }), params)
-						.success(function(document) {
-							var pattern = /\\feature\{(.+?)\}/mg;
-							var text = document.text;
-							var match = null;
-							text = text.replace(pattern, "<span class='ol-feature-element'>$1</span>");
-							
-							$(me._container).find($$(textContainer, id)).spinner("destroy");
-							$(me._container)
-								.find($$(textContainer, id))
-								.empty()
-								.html(window.unescape(text));
-											
-							$(me._container).find(".ol-feature-element")
-								.button()
-								.draggable({
-									helper: "clone",
-									revert: "invalid",
-									revertDuration: 400,
-									scope: "features",
-									zIndex: 1000
-								})
-								.click(function(event) {
-									me._trigger("featureClick", event, {
-										label: $(event.target).text()
-									});
-								});
-							
-							if (index >= uuids.length && index < collection.size-1) {
-								me.options.offset = index = uuids.length;
-								uuids.push(item.uuid);
-							}
-							
-							me._refreshCountDisplay();
-							
-							// The back or forward buttons might need to be disabled.
-							$(me._container).find($$(prevButton, id)).button("option", {
-								disabled: (index === 0)
-							});
-
-							$(me._container).find($$(nextButton, id)).button("option", {
-								disabled: (index === me.options.collection.size-1)
-							});
-						});
+					$(me._container).find($$(textContainer, id)).spinner("destroy");
+					displayDocument(item, params);
 				});
 		},
 	
@@ -276,16 +291,19 @@
 			me.options.offset = 0;
 
 			// If no collection set, then we try to get the first collection.
-			if (!me.options.collection) {
-				$(me._container).find($$(textContainer, id)).spinner();
-				
-				$.getJSON(routes.OpinionCollections.list(), params)
-					.success(function(collections) {
-						$(me._container).find($$(textContainer, id)).spinner("destroy");
-						if (collections.length) {
-							me.option({ collection: collections[0] });
-						}
-					});
+			if (me.options.uuid) {
+				me.option({ uuid: me.options.uuid });
+			} else if (!me.options.collection) {
+//				$(me._container).find($$(textContainer, id)).spinner();
+//				
+//				$.getJSON(routes.OpinionCollections.list(), params)
+//					.success(function(collections) {
+//						$(me._container).find($$(textContainer, id)).spinner("destroy");
+//						if (collections.length) {
+//							me.option({ collection: collections[0] });
+//						}
+//					});
+				return;
 			} else {
 				me.option({ collection: me.options.collection });
 			}
@@ -311,6 +329,8 @@
 			} else if (key === "bypassCache") {
 				me.refresh();
 			} else if (key === "featureType") {
+				me.refresh();
+			} else if (key === "uuid") {
 				me.refresh();
 			}
 		},

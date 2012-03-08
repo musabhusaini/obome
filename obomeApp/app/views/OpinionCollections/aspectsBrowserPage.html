@@ -34,7 +34,7 @@
 
 			$(docContainer)
 				.documentBrowser($.extend(options, {
-					header: "Review",
+					header: "Review Text",
 					featureClick: function(event, data) {
 						$(aspectsContainer).aspectsBrowser("addKeyword", data);
 					}
@@ -46,14 +46,7 @@
 			$(nextButton)
 				.button()
 				.click(function() {
-					$(nextButton).button("disable");
-					$(nextButton).spinner();
-					
-					$.post(routes.OpinionCollections.distill({ collection: collection.uuid }), { threshold: $(thresholdTextbox).val() })
-						.success(function(collection) {
-							$(messageContainer).spinner("destroy");
-							//window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: collection.uuid });
-						});
+					window.location.href = routes.OpinionCollections.opinionsBrowserPage({ collection: options.collection.uuid });
 				});
 		});
 	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)

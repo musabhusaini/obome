@@ -143,12 +143,12 @@
 				        }
 					} else if (active === 1) {
 						// Load.
-						window.location.href = routes.OpinionCollections.aspectBrowserPage({ collection: $(collectionsList).val() });
+						window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: $(collectionsList).val() });
 					} else if (active === 2) {
 						// Retrieve.
 						$.getJSON(routes.OpinionCollections.single({ collection: $(keyTextbox).val() }))
 							.success(function(collection) {
-								window.location.href = routes.OpinionCollections.aspectBrowserPage({ collection: collection.uuid });
+								window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: collection.uuid });
 							})
 							.error(function() {
 								$(messageContainer)

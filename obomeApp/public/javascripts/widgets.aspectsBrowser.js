@@ -180,7 +180,7 @@
 			// listbox.
 			.append($("<li>")
 				.append(list = $("<select>")
-					.addClass("ol-editable-list")
+					.addClass("ol-list")
 					.addClass("ui-widget-content")
 					.attr("id", options.listId)
 					.attr("size", options.listSize))

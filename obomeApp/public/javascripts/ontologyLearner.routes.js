@@ -4,6 +4,7 @@
 	ontologyLearner.routes = $.extend(ontologyLearner.routes, {
 		Application: {
 			landingPage: #{jsAction @Application.landingPage() /},
+			aboutPage: #{jsAction @Application.aboutPage() /},
 			Session: {
 				ping: #{jsAction @Application.ping() /}
 			}
@@ -21,6 +22,7 @@
 			distillerProgress: #{jsAction @OpinionCollections.distillerProgress(':collection') /},
 			aspectsBrowserPage: #{jsAction @OpinionCollections.aspectsBrowserPage(':collection') /},
 			opinionsBrowserPage: #{jsAction @OpinionCollections.opinionsBrowserPage(':collection') /},
+			opinionMiner: #{jsAction @OpinionCollections.opinionMiner(':collection', ':document') /},
 			Items: {
 				list: #{jsAction @OpinionCollections.items(':collection') /},
 				seen: #{jsAction @OpinionCollections.seenItems(':collection') /},

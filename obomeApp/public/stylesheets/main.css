@@ -70,6 +70,14 @@ ul.ui-controls-list > li {
 	height: .75em;
 }
 
+.ui-main-title {
+	font-size: 1.5em;
+}
+
+.ui-subtitle {
+	font-size: 1.2em;
+}
+
 #wrapper {
 	margin: 0 auto;
 	width: 70%;
@@ -78,17 +86,31 @@ ul.ui-controls-list > li {
 	height: 100%;
 }
 
-#banner {
-	font-size: 1.5em;
+#content-wrapper {
 }
 
-#content-wrapper {
+#banner {
+	padding-bottom: 2em;
+}
+
+#banner-home-link {
+	font-size: 1.9em;
+	padding-bottom: 1em;
+}
+
+#banner-home-link a {
+	text-decoration: none;
 }
 
 #banner-links-container {
 	float: right;
+	font-size: 1.1em;
 }
 
 #banner-links-container a {
 	font-size: .75em;
+}
+
+#footer {
+	height: 10em;
 }

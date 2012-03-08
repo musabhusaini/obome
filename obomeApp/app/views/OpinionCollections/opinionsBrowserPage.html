@@ -5,11 +5,30 @@
 #{press.stylesheet 'opinionsBrowserPage.css' /}
 
 <div id="content">
-	<ul class="ui-sidebyside-controls-list">
+	<ul class="ui-sidebyside-controls-list ui-widget">
 		<li>
-			<ul class="ui-sidebyside-controls-list">
-				<li><div id="documentContainer"></div></li>
-				<li><div class="ui-sidebyside-controls-list-item-spaced" id="aspectsContainer"></div></li>
+			<div class="ui-widget-header ui-corner-top ol-header"><span>Reviews</span></div>
+			<select id="lstReviews" class="ol-list ui-widget-content" size="20">
+				%{ index = 0; }%
+				#{list items:documents, as:'document'}
+					%{ index++; }%
+					<option value="${document}">Comment ${index}</option>
+				#{/list}
+			</select>
+		</li>
+		<li class="ui-sidebyside-controls-list-item-spaced">
+			<div id="documentContainer"></div>
+		</li>
+		<li class="ui-sidebyside-controls-list-item-spaced">
+			<ul class="ui-controls-list">
+				<li>
+					<div class="ui-widget-header ui-corner-top ol-header"><span>Opinion Summary</span></div>
+					<div id="cntnrOpinionSummary" class="ui-widget-content op-summary-box"></div>
+				</li>
+				<li class="ui-controls-list-item-spaced">
+					<div class="ui-widget-header ui-corner-top ol-header"><span>Aspect Polarity Association</span></div>
+					<div id="cntnrOpinionGraph" class="ui-widget-content op-summary-box"></div>
+				</li>
 			</ul>
 		</li>
 	</ul>
@@ -17,12 +36,14 @@
 </div>
 
 #{press.script "widgets.documentBrowser.js" /}
-#{press.script "widgets.aspectsBrowser.js" /}
 
 <script type="text/javascript">
 	(function(window, document, $, ontologyLearner, routes) {
 		$(document).ready(function() {
 			var docContainer = "#documentContainer";
+			var reviewsList = "#lstReviews";
+			var summaryContainer = "#cntnrOpinionSummary";
+			var graphContainer = "#cntnrOpinionGraph";
 			
 			// Loaded from the controller.
 			var options = {
@@ -30,10 +51,40 @@
 			};
 
 			$(docContainer)
-				.documentBrowser($.extend(options, {
+				.documentBrowser({
 					header: "Review Text",
-					showNav: false
-				}));
+					featureType: "none",
+					showNav: false,
+					showCounter: false
+				});
+			
+			$(reviewsList)
+				.change(function(event) {
+					var uuid = $(event.target).find(":selected:first").val();
+					$(docContainer).documentBrowser("option", { uuid: uuid });
+					
+					$(summaryContainer)
+						.empty()
+						.spinner();
+					$(graphContainer)
+						.empty()
+						.spinner();
+					
+					$.getJSON(routes.OpinionCollections.opinionMiner({ collection: options.collection.uuid, document: uuid }))
+						.success(function(map) {
+							$(summaryContainer).spinner("destroy");
+							$(graphContainer).spinner("destroy");
+							
+							$.each(map, function(key, value) {
+								$(summaryContainer)
+									.append("<div>" + key + ": " + value + "</div>");
+							});
+						});
+				})
+				.find("option:first")
+					.attr("selected", true);
+			
+			$(reviewsList).change();
 		});
 	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
 </script>

@@ -1,0 +1,70 @@
+#{extends 'main.html' /}
+#{set title:'About' /}
+
+#{press.stylesheet 'browserPages.css' /}
+
+<div id="content">
+	This is a prototype application for analyzing sentiment of documents from a corpus of opinionated text.
+	This tool will guide you through the following steps:
+	<ol>
+		<li>
+			<h3>Corpus selection</h3>
+			<span>In this step, you can pick one of the following options:</span>
+			<ol>
+				<li>
+					<h4>Upload a corpus</h4>
+					<span>
+						You can upload corpora in CSV, text, or XML formats. In the case of CSV and text files, each line should contain
+						a separate review or comment. XML files should have a root element with any number of child nodes where each node would be
+						considered a separate review or comment. You can also upload a ZIP file containing several files in one of the above formats.
+					</span>
+				</li>
+				<li>
+					<h4>Load an already uploaded corpus</h4>
+					<span>
+						You can access one of the corpora that you have uploaded recently in this session. There is no guarantee that a corpus you
+						uploaded earlier will be available to you if you close your browser window.
+					</span>
+				</li>
+				<li>
+					<h4>Retrieve a corpus with a key</h4>
+					<span>
+						This is an advanced option. If you have to close your browser window and you want a better chance of coming back to the
+						same page, you can enter the UUID-style key from one of the later steps. Again, there is no guarantee this will work,
+						but it's an option to try.
+					</span>
+				</li>
+			</ol>
+		</li>
+		<li>
+			<h3>Reduce the size of corpus to annotate</h3>
+			<span>
+				This is only applicable when uploading a new corpus. You will be able to select a threshold for data reduction. More reduction
+				means less data for you to look at, and a higher threshold means a lower loss in data quality.
+			</span>
+		</li>
+		<li>
+			<h3>Aspect extraction</h3>
+			<span>
+				In this step, you can create an ontology for your domain by adding terms to the aspects and keywords lists. Some words have
+				been highlighted which the tool thinks are more likely to be keywords; these can be clicked or dragged and dropped into one
+				of the lists as convenient. (The URL for this page contains a UUID-style key that can be used in the first step to retrieve
+				this corpus.)
+			</span>
+		</li>
+		<li>
+			<h3>Opinion analysis</h3>
+			<span>
+				Finally, you can browse through individual comments and the breakdown of sentiments for various aspects.
+			</span>
+		</li>
+	</ol>
+	<div>
+		Please remember that this is a prototype application so we would really appreciate your feedback should you experience any problems.
+	</div>
+</div>
+
+<script type="text/javascript">
+	(function(window, document, $, ontologyLearner, routes) {
+	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
+</script>

@@ -36,6 +36,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 
+import demoPackage.demoPage;
+
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Corpus;
 import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
@@ -248,7 +250,40 @@ public class OpinionCollections extends Application {
 		viewModel.size = getCollectionSize(sc);
 		collection = new Gson().toJson(viewModel, OpinionCollectionViewModel.class);
 		
-		render(collection);
+		Corpus corpus = sc.getCorpus();
+		List<String> documents = em.createQuery("SELECT HEX(doc.id) FROM OpinionDocument doc WHERE doc.corpus=:corpus", String.class)
+				.setParameter("corpus", corpus)
+				.getResultList();
+		
+		render(collection, documents);
+	}
+	
+	public static void opinionMiner(String collection, String document) {
+		String commentText = fetch(OpinionDocument.class, document).getContent();
+		byte[] uuid = IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(collection));
+		String url = em.getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.url").toString();
+		String user = em.getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.user").toString();
+		String pwd = em.getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.password").toString();
+		String connectionString = url + "?user=" + user + "&password=" + pwd;
+		
+		Map<Long, Float> aspectSummaryRaw;
+		try {
+			// Call opinion mining engine.
+			aspectSummaryRaw = demoPage.GetScoreOfAComment(commentText, connectionString, uuid);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+		
+		Map<String, Float> aspectSummary = Maps.newHashMap();
+		for (Long key : aspectSummaryRaw.keySet()) {
+			String label = (String)em.createNativeQuery("SELECT label FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
+					.setParameter("key", key)
+					.getSingleResult();
+			
+			aspectSummary.put(label, aspectSummaryRaw.get(key));
+		}
+		
+		renderJSON(aspectSummary);
 	}
 	
 	public static void single(String collection) {

@@ -12,7 +12,7 @@ public class OpinionCollectionItemViewModel extends ViewModel {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	public String review;
+	public String document;
     public int utilityScore;
     public boolean seen;
     
@@ -21,7 +21,7 @@ public class OpinionCollectionItemViewModel extends ViewModel {
     
     public OpinionCollectionItemViewModel(SetCoverItem scReview) {
     	this.uuid = scReview.getIdentifier().toString();
-    	this.review = scReview.getOpinionDocument().getIdentifier().toString();
+    	this.document = scReview.getOpinionDocument().getIdentifier().toString();
     	this.utilityScore = scReview.getUtilityScore();
     	this.seen = scReview.isSeen();
     }

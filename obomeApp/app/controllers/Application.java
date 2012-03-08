@@ -55,7 +55,10 @@ public class Application extends Controller {
 
 		@Override
 		public T apply(String uuid) {
-			T obj = em.find(this.clazz, IdentifiableObject.getUuidBytes(UUID.fromString(uuid)));
+			System.out.println(uuid);
+			UUID uuidObj = IdentifiableObject.createUuid(uuid);
+			System.out.println(uuidObj.toString());
+			T obj = em.find(this.clazz, IdentifiableObject.getUuidBytes(uuidObj));
 			return obj;
 		}
 	}
@@ -131,6 +134,10 @@ public class Application extends Controller {
 	}
 	
 	public static void testPage() {
+		render();
+	}
+	
+	public static void aboutPage() {
 		render();
 	}
 }
