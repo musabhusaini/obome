@@ -39,7 +39,7 @@
 		
         <properties>
             <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver" />
-            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost/trip_advisor" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost/obome_main_db" />
             <property name="javax.persistence.jdbc.user" value="java_user" />
             <property name="javax.persistence.jdbc.password" value="java_user_pwd" />
 
