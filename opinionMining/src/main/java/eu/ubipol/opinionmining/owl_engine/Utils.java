@@ -1,6 +1,5 @@
 package eu.ubipol.opinionmining.owl_engine;
 
-import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
