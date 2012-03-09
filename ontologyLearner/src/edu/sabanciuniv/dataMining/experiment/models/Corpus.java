@@ -46,22 +46,22 @@ public class Corpus extends IdentifiableObject {
 	}
 	
 	@OneToMany(mappedBy="corpus", cascade=CascadeType.ALL)
-	public List<OpinionDocument> getOpinionDocuments() {
-		return this.opinionDocuments;
-	}
-	
-	public Corpus setOpinionDocuments(List<OpinionDocument> opinionDocument) {
-		this.opinionDocuments = opinionDocument;
-		return this;
-	}
-	
-	@OneToMany(mappedBy="corpus", cascade=CascadeType.ALL)
 	public List<SetCover> getSetCovers() {
 		return this.setCovers;
 	}
 	
 	public Corpus setSetCovers(List<SetCover> setCovers) {
 		this.setCovers = setCovers;
+		return this;
+	}
+	
+	@OneToMany(mappedBy="corpus", cascade=CascadeType.ALL)
+	public List<OpinionDocument> getOpinionDocuments() {
+		return this.opinionDocuments;
+	}
+	
+	public Corpus setOpinionDocuments(List<OpinionDocument> opinionDocument) {
+		this.opinionDocuments = opinionDocument;
 		return this;
 	}
 }
