@@ -4,20 +4,22 @@
     <head>
         <title>OBOME</title>
         <meta charset="${_response_encoding}">
-        #{press.stylesheet 'ui-lightness/jquery-ui-1.8.16.css' /}
-        #{press.stylesheet 'main.css' /}
-        #{get 'moreStyles' /}
+        #{stylesheet "ui-lightness/jquery-ui-1.8.16.css" /}
+        #{press.stylesheet "main.css" /}
+        #{get "moreStyles" /}
+        #{press.compressed-stylesheet /}
         
         <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
         <link rel="spinner image" type="image/gif" href="@{'/public/images/spinner.gif'}">
         
-		#{press.script src:"jquery-1.7.1.min.js", compress:false /}
-		#{press.script src:"jquery-ui-1.8.16.min.js", compress:false /}
+		#{script "jquery-1.7.1.min.js" /}
+		#{script "jquery-ui-1.8.16.min.js" /}
 		#{press.script "ontologyLearner.js" /}
 		#{press.script "ontologyLearner.Util.js" /}
 		#{press.script src:"ontologyLearner.routes.js", render:true /}
 		#{press.script "widgets.spinner.js" /}
-        #{get 'moreScripts' /}
+        #{get "moreScripts" /}
+        #{press.compressed-script /}
         
         <script type="text/javascript">
         	(function(window, document, $, routes) {

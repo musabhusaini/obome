@@ -1,8 +1,8 @@
-#{extends 'main.html' /}
-#{set title:'' /}
+#{extends "main.html" /}
+#{set title:"" /}
 
-#{press.stylesheet 'browserPages.css' /}
-#{press.stylesheet 'aspectsBrowserPage.css' /}
+#{press.stylesheet "browserPages.css" /}
+#{press.stylesheet "aspectsBrowserPage.css" /}
 
 <div id="content">
 	<ul class="ui-sidebyside-controls-list">
@@ -19,35 +19,14 @@
 
 #{press.script "widgets.documentBrowser.js" /}
 #{press.script "widgets.aspectsBrowser.js" /}
+#{press.script "aspectsBrowserPage.html.js" /}
 
 <script type="text/javascript">
-	(function(window, document, $, ontologyLearner, routes) {
+	(function(window, document, $, ontologyLearner) {
 		$(document).ready(function() {
-			var docContainer = "#documentContainer";
-			var aspectsContainer = "#aspectsContainer";
-			var nextButton = "#btnNext";
-			
-			// Loaded from the controller.
-			var options = {
+			ontologyLearner.displayPage({
 				collection: $.parseJSON($("<div>").html("${collection}").text())
-			};
-
-			$(docContainer)
-				.documentBrowser($.extend(options, {
-					header: "Review Text",
-					featureClick: function(event, data) {
-						$(aspectsContainer).aspectsBrowser("addKeyword", data);
-					}
-				}));
-
-			$(aspectsContainer)
-				.aspectsBrowser(options);
-			
-			$(nextButton)
-				.button()
-				.click(function() {
-					window.location.href = routes.OpinionCollections.opinionsBrowserPage({ collection: options.collection.uuid });
-				});
+			});
 		});
-	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
+	})(window, window.document, window.jQuery, window.ontologyLearner)
 </script>

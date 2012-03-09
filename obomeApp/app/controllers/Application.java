@@ -55,10 +55,7 @@ public class Application extends Controller {
 
 		@Override
 		public T apply(String uuid) {
-			System.out.println(uuid);
-			UUID uuidObj = IdentifiableObject.createUuid(uuid);
-			System.out.println(uuidObj.toString());
-			T obj = em.find(this.clazz, IdentifiableObject.getUuidBytes(uuidObj));
+			T obj = em.find(this.clazz, IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(uuid)));
 			return obj;
 		}
 	}
