@@ -37,12 +37,9 @@ public class OrphanCorporaCleaner extends Job<Object> {
 		Date staleDate = new DateTime().minusSeconds(CORPUS_TIMEOUT).toDate();
 		
 		for (Corpus corpus : corpora) {
-			Logger.debug("Let's see if " + corpus.getName() + " needs to be removed");
 			SessionViewModel session = SessionViewModel.findById(corpus.getOwnerSessionId());
 			if (session == null || session.lastActivity.before(staleDate)) {
-				Logger.debug("Yep, let's remove it!");
 				em.remove(corpus);
-				Logger.debug("Yay!");
 			}
 		}
 
