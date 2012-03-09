@@ -18,26 +18,18 @@
 		#{press.script "ontologyLearner.Util.js" /}
 		#{press.script src:"ontologyLearner.routes.js", render:true /}
 		#{press.script "widgets.spinner.js" /}
+		#{press.script "main.html.js" /}
         #{get "moreScripts" /}
         #{press.compressed-script /}
         
         <script type="text/javascript">
-        	(function(window, document, $, routes) {
-        		var pingInterval = 60000;
-        		
+        	(function(window, document, $) {
         		$(document).ready(function() {
-        			function pingDelayed() {
-        				window.setTimeout(ping, pingInterval);
-        			}
-        			
-        			function ping() {
-        				$.post(routes.Application.Session.ping())
-        					.success(pingDelayed);
-        			}
-        			
-        			pingDelayed();
+        			ontologyLearner.displayMainPage({
+        				pingInterval: 60000 * 5
+        			});
         		});
-        	})(window, window.document, window.jQuery, window.ontologyLearner.routes);
+        	})(window, window.document, window.jQuery);
 		</script>
     </head>
     <body>
