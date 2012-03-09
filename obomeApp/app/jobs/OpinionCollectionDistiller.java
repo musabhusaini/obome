@@ -71,7 +71,6 @@ public class OpinionCollectionDistiller extends Job<SetCover> {
 		
 		for (index=0; index<items.size(); index++) {
 			double coverage = cumulativeUtlity / (double)totalUtility;
-			System.out.println("Cumut: " + cumulativeUtlity + ", threshold: " + threshold * 100);
 			
 			if (coverage >= 1 - threshold) {
 				break;
@@ -81,15 +80,9 @@ public class OpinionCollectionDistiller extends Job<SetCover> {
 			cumulativeUtlity += items.get(index).getUtilityScore();
 		}
 		
-		System.out.println("Done at index " + index);
-		
 		for (; index<items.size(); index++) {
 			SetCoverItem item = items.get(index);
-			
-			System.out.println("Excluding utility: " + item.getUtilityScore());
-			
 			em.remove(item);
-			
 			em.flush();
 			
 			this.progress = (index + 1) / (double)items.size();

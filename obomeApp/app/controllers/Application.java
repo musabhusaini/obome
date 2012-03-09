@@ -1,13 +1,19 @@
 package controllers;
 
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import javax.persistence.EntityManager;
 
+import org.apache.log4j.lf5.util.DateFormatManager;
+
 import models.SessionViewModel;
+import play.Logger;
 import play.cache.Cache;
 import play.mvc.After;
 import play.mvc.Before;
+import play.mvc.Catch;
 import play.mvc.Controller;
 
 import com.google.common.base.Function;
@@ -18,12 +24,44 @@ import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 
 public class Application extends Controller {
 
+	protected static String constructGenericLogMessage(String message) {
+		DateFormatManager dfm = new DateFormatManager(TimeZone.getDefault());
+		
+		return String.format("Message=%s while executing request-type=%s method=%s action=%s made-on=%s through-url=%s from-client=%s",
+				message,
+				request.isAjax() ? "ajax" : "browser",
+				request.method,
+				request.action,
+				dfm.format(request.date),
+				request.url,
+				request.remoteAddress);
+	}
+	
 	protected static EntityManager em;
 
+	@Before
+	static void logActionBegin() {
+		Logger.info(constructGenericLogMessage("began"));
+	}
+	
 	@Before
 	static void initializeEntityManager() {
 		em = OntologyLearnerProgram.em();
 		em.getTransaction().begin();
+	}
+		
+	@After
+	static void rekindleSession() {
+		SessionViewModel sessionViewModel = SessionViewModel.findById(session.getId());
+		
+		if (sessionViewModel == null) {
+			sessionViewModel = new SessionViewModel();
+			sessionViewModel.setIdentifier(session.getId()); 
+		}
+		
+		sessionViewModel.keepAlive();
+		
+		Logger.info("Session %s being kept alive", session.getId());
 	}
 	
 	@After
@@ -35,15 +73,13 @@ public class Application extends Controller {
 	}
 	
 	@After
-	static void rekindleSession() {
-		SessionViewModel sessionViewModel = SessionViewModel.findById(session.getId());
-		
-		if (sessionViewModel == null) {
-			sessionViewModel = new SessionViewModel();
-			sessionViewModel.setIdentifier(session.getId()); 
-		}
-		
-		sessionViewModel.keepAlive();
+	static void logActionEnd() {
+		Logger.info(constructGenericLogMessage("finished"));
+	}
+	
+	@Catch(Throwable.class)
+	static void logGenericException(Throwable throwable) {
+		Logger.error(throwable, constructGenericLogMessage("error"));
 	}
 	
 	static class EMFetch<T> implements Function<String,T> {
@@ -75,7 +111,7 @@ public class Application extends Controller {
 	public static <T extends Identifiable> T fetch(Class<T> clazz, String uuid, String idAppendage, Function<String,T> fallback) {
 		Boolean bypassCache = true; //params.get("bypassCache", Boolean.class);
 		if (bypassCache != null && bypassCache) {
-			System.out.println("Bypassing cache as requested.");
+//			System.out.println("Bypassing cache as requested.");
 			
 			return fallback.apply(uuid);
 		}
@@ -83,7 +119,7 @@ public class Application extends Controller {
 		String cacheId = uuid + idAppendage;
 		T obj = Cache.get(cacheId, clazz);
 		if (obj == null) {
-			System.out.println("Couldn't find " + clazz.getSimpleName() + " in cache, looking up in DB.");
+//			System.out.println("Couldn't find " + clazz.getSimpleName() + " in cache, looking up in DB.");
 			
 			obj = fallback.apply(uuid);
 			
@@ -91,7 +127,7 @@ public class Application extends Controller {
 				throw new IllegalArgumentException("No such item exists.");
 			}
 		} else {
-			System.out.println("Found " + clazz.getSimpleName() + " from cache.");
+//			System.out.println("Found " + clazz.getSimpleName() + " from cache.");
 		}
 		
 		encache(obj, idAppendage);

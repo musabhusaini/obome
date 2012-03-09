@@ -30,6 +30,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import play.Logger;
 import play.libs.F.Promise;
 
 import com.google.common.collect.Lists;
@@ -129,7 +130,7 @@ public class OpinionCollections extends Application {
 			}
 
 			for (String filename : streamMap.keySet()) {
-				System.out.println("Saving file: " + filename);
+				Logger.info(constructGenericLogMessage("saving file " + filename));
 				
 				InputStream stream = streamMap.get(filename);
 				
@@ -148,7 +149,6 @@ public class OpinionCollections extends Application {
 						if (!StringUtils.isEmpty(content)) {
 							content = StringEscapeUtils.unescapeXml(content);
 							insertToCorpus(content, dbCorpus);
-							System.out.println("Saved document with text: " + content);
 						}
 					}
 				} else if (filename.endsWith(".txt") || filename.endsWith(".csv")) {
@@ -156,7 +156,6 @@ public class OpinionCollections extends Application {
 					while (scanner.hasNext()) {
 						String content = scanner.nextLine();
 						insertToCorpus(content, dbCorpus);
-						System.out.println("Saved document with text: " + content);
 					}
 				}
 			}
@@ -366,7 +365,7 @@ public class OpinionCollections extends Application {
     	SetCoverItem scReview = fetch(SetCoverItem.class, item);
     	scReview.setSeen(true);
     	
-    	System.out.println("Seeing item " + item);
+    	Logger.info(constructGenericLogMessage("seeing item " + item));
     	scReview = em.merge(scReview);
     	em.flush();
     	encache(scReview);

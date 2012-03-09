@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import play.Logger;
+
 import models.DocumentViewModel;
 
 import com.google.common.base.Function;
@@ -62,7 +64,7 @@ public class Documents extends Application {
 	    	try {
 	    		ft = FeatureType.valueOf(featureType.toUpperCase());
 	    	} catch(Exception e) {
-	    		System.out.println("No feature type called " + featureType);
+	    		Logger.error(constructGenericLogMessage("no feature type called \"" + featureType + "\""));
 	    	}
     	}
     	

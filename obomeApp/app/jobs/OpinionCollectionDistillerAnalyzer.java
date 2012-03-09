@@ -69,9 +69,6 @@ public class OpinionCollectionDistillerAnalyzer extends Job<Map<Double, Double>>
 				double coverage = cumulativeUtlity / (double)totalUtility;
 				if (coverage >= 1 - threshold) {
 					map.put(threshold * 100, reduction * 100);
-
-					System.out.println("Cumut: " + cumulativeUtlity + ", threshold: " + threshold * 100 +
-							", reduction: " + (1 - ((index + 1)/(double)corpusSize)) * 100);
 					break;
 				}
 				
