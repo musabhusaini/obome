@@ -20,7 +20,7 @@ import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 @Every(OrphanCorporaCleaner.FREQUENCY + "h")
 public class OrphanCorporaCleaner extends Job<Object> {
 	
-	public static final int CORPUS_TIMEOUT=30;
+	public static final int CORPUS_TIMEOUT=12;
 	public static final int FREQUENCY=1;
 	
 	@Override
@@ -34,7 +34,7 @@ public class OrphanCorporaCleaner extends Job<Object> {
 		List<Corpus> corpora = em.createQuery("SELECT c FROM Corpus c WHERE c.ownerSessionId!=null", Corpus.class)
 				.getResultList();
 		
-		Date staleDate = new DateTime().minusSeconds(CORPUS_TIMEOUT).toDate();
+		Date staleDate = new DateTime().minusHours(CORPUS_TIMEOUT).toDate();
 		
 		for (Corpus corpus : corpora) {
 			SessionViewModel session = SessionViewModel.findById(corpus.getOwnerSessionId());
