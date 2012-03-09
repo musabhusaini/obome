@@ -9,6 +9,7 @@ body {
 	font-size: 70%;
 	font-family: "Arial", "Helvetica", "Verdana", "sans-serif";
 	background: lightgray;
+	height: 100%;
 }
 
 html, body {
@@ -82,11 +83,11 @@ ul.ui-controls-list > li {
 	margin: 0 auto;
 	width: 70%;
 	min-height: 100%;
-	height: auto !important;
-	height: 100%;
+	height: 100%
 }
 
 #content-wrapper {
+	padding-bottom: 6em;		// Should be the same as footer height.
 }
 
 #banner {
@@ -112,5 +113,8 @@ ul.ui-controls-list > li {
 }
 
 #footer {
-	height: 10em;
+   position: absolute;
+   bottom: 0;
+   width: 70%;
+   height: 6em;	// Should be the same as content-wrapper padding.
 }
