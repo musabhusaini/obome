@@ -1,8 +1,8 @@
 #{extends "main.html" /}
 #{set title:"" /}
 
+#{stylesheet "plupload/css/jquery.ui.plupload.css" /}
 #{press.stylesheet "landingPage.css" /}
-#{press.stylesheet "plupload/css/jquery.ui.plupload.css" /}
 
 <div id="content">
 	<div id="acrdnNav">
@@ -43,10 +43,10 @@
 	<div id="btnNext" class="ui-float-right">Next</div>
 </div>
 
-#{press.script src:"plupload/plupload.js", compress:false /}
-#{press.script src:"plupload/plupload.html5.js", compress:false /}
-#{press.script src:"plupload/plupload.html4.js", compress:false /}
-#{press.script src:"plupload/jquery.ui.plupload.js", compress:false /}
+#{script "plupload/plupload.js" /}
+#{script "plupload/plupload.html5.js" /}
+#{script "plupload/plupload.html4.js" /}
+#{script "plupload/jquery.ui.plupload.js" /}
 #{press.script "landingPage.html.js" /}
 
 <script type="text/javascript">

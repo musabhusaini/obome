@@ -1,13 +1,13 @@
 #{extends "main.html" /}
 #{set title:"" /}
 
+#{stylesheet "jqplot/jquery.jqplot.min.css" /}
 #{press.stylesheet "collectionSynthesizerPage.css" /}
-#{press.stylesheet src:"jqplot/jquery.jqplot.min.css", compress:false /}
 
-#{press.script src:"jqplot/jquery.jqplot.min.js", compress:false /} 
-#{press.script src:"jqplot/plugins/jqplot.canvasTextRenderer.min.js", compress:false /}
-#{press.script src:"jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js", compress:false /}
-#{press.script src:"jqplot/plugins/jqplot.highlighter.min.js", compress:false /}
+#{script "jqplot/jquery.jqplot.min.js" /} 
+#{script "jqplot/plugins/jqplot.canvasTextRenderer.min.js" /}
+#{script "jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js" /}
+#{script "jqplot/plugins/jqplot.highlighter.min.js" /}
 
 <div id="content">
 	<div id="cntnrProperties">
