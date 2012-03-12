@@ -3,6 +3,7 @@
 
 #{press.stylesheet 'browserPages.css' /}
 #{press.stylesheet 'opinionsBrowserPage.css' /}
+#{stylesheet "jqplot/jquery.jqplot.min.css" /}
 
 <div id="content">
 	<ul class="ui-sidebyside-controls-list ui-widget">
@@ -23,17 +24,30 @@
 			<ul class="ui-controls-list">
 				<li>
 					<div class="ui-widget-header ui-corner-top ol-header"><span>Opinion Summary</span></div>
-					<div id="cntnrOpinionSummary" class="ui-widget-content op-summary-box"></div>
+					<div id="cntnrOpinionSummary" class="ui-widget-content op-summary-box">
+						<table id="tblOpinionSummary">
+						</table>
+					</div>
 				</li>
 				<li class="ui-controls-list-item-spaced">
 					<div class="ui-widget-header ui-corner-top ol-header"><span>Aspect Polarity Association</span></div>
-					<div id="cntnrOpinionGraph" class="ui-widget-content op-summary-box"></div>
+					<div id="cntnrOpinionGraph" class="ui-widget-content op-summary-box">
+						<div id="cnvsOpinionGraph">
+						</div>
+					</div>
 				</li>
 			</ul>
 		</li>
 	</ul>
 	<div class="ui-helper-clearfix"></div>
 </div>
+
+#{script "jqplot/jquery.jqplot.min.js" /} 
+#{script "jqplot/plugins/jqplot.barRenderer.min.js" /}
+#{script "jqplot/plugins/jqplot.categoryAxisRenderer.min.js" /}
+#{script "jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js" /}
+#{script "jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js" /}
+#{script "jqplot/plugins/jqplot.canvasTextRenderer.min.js" /}
 
 #{press.script "widgets.documentBrowser.js" /}
 #{press.script "opinionsBrowserPage.html.js" /}

@@ -4,3 +4,16 @@
 	font-size: 1.1em;
 	padding: .5em;
 }
+
+th {
+	text-align: left;
+}
+
+td {
+	padding-right: 1.2em;
+}
+
+#cnvsOpinionGraph {
+	width: 100%;
+	height: 100%;
+}

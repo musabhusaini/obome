@@ -7,8 +7,7 @@
 		var progressContainer = "#cntnrProgress";
 		var progressBar = "#pbarProgress";
 		var distillerContainer = "#cntnrDistiller";
-		var distillerStatsGraphId = "grphDistillerStats"
-		var distillerStatsGraph = "#" + distillerStatsGraphId;
+		var distillerStatsGraph = "#grphDistillerStats"
 		var thresholdTextbox = "#txtThreshold";
 		var messageContainer = "#cntnrMessage";
 		var nextButton = "#btnNext";
@@ -99,6 +98,10 @@
 
 						$(distillerContainer)
 							.show();
+						
+						var distillerStatsGraphId = $(distillerStatsGraph)
+							.empty()
+							.attr("id");
 						
 						var plot = $.jqplot(distillerStatsGraphId, [ data ], {
 							title: "Select your threshold",
