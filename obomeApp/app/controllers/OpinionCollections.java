@@ -80,17 +80,21 @@ public class OpinionCollections extends Application {
 				.setParameter("sessionId", session.getId())
 				.getResultList();
 		
-		if (corpora != null && corpora.size() > 0) {
-			
+		if (corpora != null) {
 			for (Corpus corpus : corpora) {
-				viewModels.add(new OpinionCorpusViewModel(corpus));
+				OpinionCorpusViewModel viewModel = new OpinionCorpusViewModel(corpus);
+				viewModel.size = getCorpusSize(corpus);
+				viewModels.add(viewModel);
 			}
-			
-			List<SetCover> setCovers = em.createQuery("SELECT sc FROM SetCover sc WHERE sc.corpus IN :corpora", SetCover.class)
-					.setParameter("corpora", corpora)
-					.getResultList();
+		}
+		
+		List<SetCover> setCovers = em.createQuery("SELECT sc FROM SetCover sc WHERE sc.ownerSessionId=null OR " +
+				"sc.ownerSessionId=:sessionId", SetCover.class)
+				.setParameter("sessionId", session.getId())
+				.getResultList();
+		
+		if (setCovers != null) {
 			for (SetCover sc : setCovers) {
-//				encache(sc);
 				OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
 				viewModel.size = getCollectionSize(sc);
 				viewModels.add(viewModel);
@@ -187,7 +191,7 @@ public class OpinionCollections extends Application {
 	
 	public static void synthesize(String corpus) {
 		Corpus c = fetch(Corpus.class, corpus);
-		Promise<SetCover> promise = new OpinionCollectionSynthesizer(c).now();
+		Promise<SetCover> promise = new OpinionCollectionSynthesizer(c, session).now();
 		SetCover setCover = await(promise);
 		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(setCover);
 		viewModel.size = em.createQuery("SELECT COUNT(item) FROM SetCoverItem item WHERE item.setCover=:sc", Long.class)

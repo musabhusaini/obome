@@ -14,6 +14,7 @@ import play.jobs.Every;
 import play.jobs.Job;
 import play.jobs.OnApplicationStart;
 import edu.sabanciuniv.dataMining.experiment.models.Corpus;
+import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 
 @OnApplicationStart
@@ -40,6 +41,16 @@ public class OrphanCorporaCleaner extends Job<Object> {
 			SessionViewModel session = SessionViewModel.findById(corpus.getOwnerSessionId());
 			if (session == null || session.lastActivity.before(staleDate)) {
 				em.remove(corpus);
+			}
+		}
+		
+		List<SetCover> setCovers = em.createQuery("SELECT sc FROM SetCover sc WHERE sc.ownerSessionId!=null", SetCover.class)
+				.getResultList();
+		
+		for (SetCover setCover : setCovers) {
+			SessionViewModel session = SessionViewModel.findById(setCover.getOwnerSessionId());
+			if (session == null || session.lastActivity.before(staleDate)) {
+				em.remove(setCover);
 			}
 		}
 

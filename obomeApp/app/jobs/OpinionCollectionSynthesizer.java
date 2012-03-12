@@ -18,6 +18,7 @@ import edu.sabanciuniv.dataMining.experiment.models.setcover.builder.EagerSetCov
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 import edu.sabanciuniv.dataMining.util.LargeTypedQuery;
 import play.jobs.Job;
+import play.mvc.Scope.Session;
 
 public class OpinionCollectionSynthesizer extends Job<SetCover> {
 	
@@ -32,9 +33,11 @@ public class OpinionCollectionSynthesizer extends Job<SetCover> {
 	
 	private Corpus corpus;
 	private double progress;
+	private Session session;
 	
-	public OpinionCollectionSynthesizer(Corpus corpus) {
+	public OpinionCollectionSynthesizer(Corpus corpus, Session session) {
 		this.corpus = corpus;
+		this.session = session;
 		
 		registry.put(corpus.getIdentifier().toString(), this);
 	}
@@ -72,8 +75,9 @@ public class OpinionCollectionSynthesizer extends Job<SetCover> {
 		setCover.setCoverOffset(0);
 		setCover.setCorpus(this.corpus);
 		setCover.setCoverSize((int)corpusSize);
-		setCover.setName(this.corpus.getName() + " collection " + new Random().nextInt(1000));
+		setCover.setName(this.corpus.getName() + " collection");
 		setCover.setErrorTolerance(0.0);
+		setCover.setOwnerSessionId(this.session.getId());
 		
 //		// Delete all other set covers (for now, we'll only support one set cover per corpus).
 //		List<SetCover> existingSetCovers = em.createQuery("SELECT sc FROM SetCover sc WHERE sc.corpus=:corpus", SetCover.class)

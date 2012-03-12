@@ -3,6 +3,7 @@ package jobs;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.persistence.EntityManager;
 
@@ -51,6 +52,7 @@ public class OpinionCollectionDistiller extends Job<SetCover> {
 		
 		this.setCover = em.find(SetCover.class, this.setCover.getId());
 		this.setCover.setErrorTolerance(this.threshold);
+		this.setCover.setName(this.setCover.getCorpus().getName() + " collection " + new Random().nextInt(1000));
 		this.setCover = em.merge(this.setCover);
 		
 		em.flush();
