@@ -64,23 +64,23 @@
 			.click(function() {
 				$(nextButton).button("disable");
 				$(nextButton).spinner();
-				
+
+				function redirectToSynthesizer(corpus) {
+					if (corpus) {
+						window.location.href = routes.OpinionCollections.synthesizerPage({ corpus: corpus.uuid });
+					}
+				}
+
 				var active = $(navigationAccordion).accordion("option", "active");
 				if (active === 0) {
 					// Upload.
-					function redirectToSynthesizer() {
-						var corpus = $(uploaderContainer).data("corpus");
-						if (corpus) {
-							window.location.href = routes.OpinionCollections.synthesizerPage({ corpus: corpus.uuid });
-						}
-					}
 					
 			        // Files in queue upload them first.
 			        if (uploader.files.length > 0) {
 			            // When all files are uploaded submit form.
 			            uploader.bind("StateChanged", function() {
 			                if (uploader.files.length === (uploader.total.uploaded + uploader.total.failed)) {
-			                	redirectToSynthesizer();
+			                	redirectToSynthesizer($(uploaderContainer).data("corpus"));
 			                }
 			            });
 			                
@@ -92,7 +92,14 @@
 			        }
 				} else if (active === 1) {
 					// Load.
-					window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: $(collectionsList).val() });
+					var collection = $(collectionsList).find(":selected")
+						.data("value");
+					
+					if (collection.corpusName) {
+						window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: $(collectionsList).val() });
+					} else {
+						redirectToSynthesizer(collection);
+					}
 				} else if (active === 2) {
 					// Retrieve.
 					$.getJSON(routes.OpinionCollections.single({ collection: $(keyTextbox).val() }))
@@ -120,15 +127,15 @@
 				$(collectionsList)
 					.empty()
 					.change(function(event) {
-						var collection = $(event.target)
-							.find(":selected")
+						var collection = $(event.target).find(":selected")
 							.data("value");
 						$(collectionInfoContainer)
 							.empty()
-							.append($("<div>").text("Corpus: " + collection.corpusName))
-							.append($("<div>").text("Corpus size: " + collection.corpusSize))
-							.append($("<div>").text("Collection size: " + collection.size))
-							.append($("<div>").text("Error tolerance: " + collection.errorTolerance));
+							.append(!collection.corpusName && $("<div>").text("Corpus size: " + collection.size))
+							.append(!!collection.corpusName && $("<div>").text("Corpus: " + collection.corpusName))
+							.append(!!collection.corpusName && $("<div>").text("Corpus size: " + collection.corpusSize))
+							.append(!!collection.corpusName && $("<div>").text("Collection size: " + collection.size))
+							.append(!!collection.corpusName && $("<div>").text("Error tolerance: " + collection.errorTolerance));
 					});
 				$.each(collections, function(index,collection) {
 					$(collectionsList)

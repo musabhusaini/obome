@@ -20,9 +20,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import jobs.OpinionCollectionDistiller;
 import jobs.OpinionCollectionDistillerAnalyzer;
 import jobs.OpinionCollectionSynthesizer;
+import jobs.OrphanCorporaCleaner;
 import models.OpinionCollectionItemViewModel;
 import models.OpinionCollectionViewModel;
 import models.OpinionCorpusViewModel;
+import models.ViewModel;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -71,18 +73,24 @@ public class OpinionCollections extends Application {
 	}
 	
 	public static void list() {
-		List<OpinionCollectionViewModel> viewModels = Lists.newArrayList();
+		List<ViewModel> viewModels = Lists.newArrayList();
 		
-		List<Corpus> corpora = em.createQuery("SELECT c FROM Corpus c WHERE c.ownerSessionId=null OR c.ownerSessionId=:sessionId", Corpus.class)
+		List<Corpus> corpora = em.createQuery("SELECT c FROM Corpus c WHERE c.ownerSessionId=null OR " +
+				"c.ownerSessionId=:sessionId", Corpus.class)
 				.setParameter("sessionId", session.getId())
 				.getResultList();
 		
 		if (corpora != null && corpora.size() > 0) {
+			
+			for (Corpus corpus : corpora) {
+				viewModels.add(new OpinionCorpusViewModel(corpus));
+			}
+			
 			List<SetCover> setCovers = em.createQuery("SELECT sc FROM SetCover sc WHERE sc.corpus IN :corpora", SetCover.class)
 					.setParameter("corpora", corpora)
 					.getResultList();
 			for (SetCover sc : setCovers) {
-				encache(sc);
+//				encache(sc);
 				OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
 				viewModel.size = getCollectionSize(sc);
 				viewModels.add(viewModel);
@@ -97,9 +105,8 @@ public class OpinionCollections extends Application {
 		
 		// If it's a new one, we create it, otherwise, we get from DB.
 		if ("new".equals(corpus)) {
-			Random rand = new Random();
 			dbCorpus = new Corpus();
-			dbCorpus.setName("Corpus " + rand.nextInt(1000));
+			dbCorpus.setName("Corpus " + new Random().nextInt(1000));
 			dbCorpus.setOwnerSessionId(session.getId());
 			em.persist(dbCorpus);
 		} else {
