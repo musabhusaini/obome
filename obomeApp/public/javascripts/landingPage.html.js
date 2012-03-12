@@ -31,9 +31,9 @@
 			.plupload({
 				runtimes: "html5,html4",
 				url: routes.OpinionCollections.upload({ corpus: "new" }),
-				max_file_size: "100mb",
+				max_file_size: "50mb",
 				max_file_count: 20,
-				chunk_size: "1mb",
+				chunk_size: "51mb",
 				unique_names : true,
 				multiple_queues : true,
 
@@ -49,6 +49,7 @@
 					{title: "Zip files", extensions: "zip"},
 					{title: "Text files", extensions: "txt,csv"}
 				],
+				
 				headers: {}
 			});
 		

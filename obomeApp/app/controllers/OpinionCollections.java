@@ -172,7 +172,7 @@ public class OpinionCollections extends Application {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new IllegalArgumentException("Error with the files.");
+			throw new IllegalArgumentException("Error with the files.", e);
 		}
 		
 		OpinionCorpusViewModel viewModel = new OpinionCorpusViewModel(dbCorpus);
@@ -194,9 +194,7 @@ public class OpinionCollections extends Application {
 		Promise<SetCover> promise = new OpinionCollectionSynthesizer(c, session).now();
 		SetCover setCover = await(promise);
 		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(setCover);
-		viewModel.size = em.createQuery("SELECT COUNT(item) FROM SetCoverItem item WHERE item.setCover=:sc", Long.class)
-				.setParameter("sc", setCover)
-				.getSingleResult();
+		viewModel.size = getCollectionSize(setCover);
 		renderJSON(viewModel);
 	}
 	
@@ -238,11 +236,23 @@ public class OpinionCollections extends Application {
 	
 	public static void rename(String corpus, String name) {
 		Corpus c = fetch(Corpus.class, corpus);
+		
 		if (c == null) {
 			SetCover sc = fetch(SetCover.class, corpus);
+			
+			if (sc == null || !session.getId().equals(sc.getOwnerSessionId())) {
+				renderJSON(false);
+				return;
+			}
+			
 			sc.setName(name);
 			em.merge(sc);
 		} else {
+			if (!session.getId().equals(c.getOwnerSessionId())) {
+				renderJSON(false);
+				return;
+			}
+			
 			c.setName(name);
 			List<SetCover> setCovers = c.getSetCovers();
 			if (setCovers != null && setCovers.size() == 1) {
@@ -252,6 +262,8 @@ public class OpinionCollections extends Application {
 			}
 			em.merge(c);
 		}
+		
+		renderJSON(true);
 	}
 	
 	public static void opinionsBrowserPage(String collection) {

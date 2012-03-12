@@ -16,7 +16,16 @@
 		var collection;
 		
 		function renameCorpus(name) {
-			$.post(routes.OpinionCollections.rename({ corpus: corpus.uuid }), { name: name });
+			$.post(routes.OpinionCollections.rename({ corpus: corpus.uuid }), { name: name })
+				.success(function(success) {
+					if (success) {
+						corpus.name = name;
+					} else {
+						$(nameTextbox).val(corpus.name);
+					}
+					
+					$(nameTextbox).effect("highlight", {}, 500);
+				});
 		}
 		
 		$(nameTextbox)
@@ -45,7 +54,7 @@
 				
 				$.post(routes.OpinionCollections.distill({ collection: collection.uuid }), { threshold: $(thresholdTextbox).val() })
 					.success(function(collection) {
-						$(messageContainer).spinner("destroy");
+						$(nextButton).spinner("destroy");
 						window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: collection.uuid });
 					});
 			});
