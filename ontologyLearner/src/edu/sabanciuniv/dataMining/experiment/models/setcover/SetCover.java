@@ -37,6 +37,7 @@ public class SetCover extends IdentifiableObject {
 	private Date timestamp;
 	private List<Aspect> aspects;
 	private Corpus corpus;
+	private String ownerSessionId;
 	
 	@Column(nullable=false)
 	public String getName() {
@@ -111,5 +112,15 @@ public class SetCover extends IdentifiableObject {
 
 	public void setCorpus(Corpus corpus) {
 		this.corpus = corpus;
+	}
+	
+	@Column(name="owner_session_id")
+	public String getOwnerSessionId() {
+		return this.ownerSessionId;
+	}
+	
+	public SetCover setOwnerSessionId(String ownerSession) {
+		this.ownerSessionId = ownerSession;
+		return this;
 	}
 }
