@@ -52,7 +52,7 @@ public class OpinionCollectionDistiller extends Job<SetCover> {
 		
 		this.setCover = em.find(SetCover.class, this.setCover.getId());
 		this.setCover.setErrorTolerance(this.threshold);
-		this.setCover.setName(this.setCover.getCorpus().getName() + " collection " + new Random().nextInt(1000));
+		this.setCover.setName(this.setCover.getCorpus().getName() + "-filtered-" + new Random().nextInt(1000));
 		this.setCover = em.merge(this.setCover);
 		
 		em.flush();

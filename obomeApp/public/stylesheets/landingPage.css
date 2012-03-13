@@ -2,6 +2,14 @@ input[type='text'].ol-uuid {
 	width: 20em;
 }
 
+th {
+	text-align: left;
+}
+
+td {
+	padding-right: 1.2em;
+}
+
 #cntnrMessage {
 	padding: .25em;
 }

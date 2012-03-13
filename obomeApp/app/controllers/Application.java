@@ -33,7 +33,7 @@ public class Application extends Controller implements EnhancedForContinuations 
 	protected static String constructGenericLogMessage(String message) {
 		DateFormatManager dfm = new DateFormatManager(TimeZone.getDefault());
 		
-		return String.format("Message=%s while executing request-type=%s method=%s action=%s made-on=%s through-url=%s in-session from-client=%s",
+		return String.format("Message=%s while executing request-type=%s method=%s action=%s made-on=%s through-url=%s in-session=%s from-client=%s",
 				message,
 				request.isAjax() ? "ajax" : "browser",
 				request.method,

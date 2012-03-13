@@ -133,11 +133,22 @@
 							.data("value");
 						$(collectionInfoContainer)
 							.empty()
-							.append(!collection.corpusName && $("<div>").text("Corpus size: " + collection.size))
-							.append(!!collection.corpusName && $("<div>").text("Corpus: " + collection.corpusName))
-							.append(!!collection.corpusName && $("<div>").text("Corpus size: " + collection.corpusSize))
-							.append(!!collection.corpusName && $("<div>").text("Collection size: " + collection.size))
-							.append(!!collection.corpusName && $("<div>").text("Error tolerance: " + collection.errorTolerance));
+							.append($("<table>")
+								.append("<tr><th>Property</th><th>Value</th></tr>")
+								.append("<tr><td>Collection type</td><td>" + (!!collection.corpusName ? "Filtered collection" : "Raw corpus") + "</td></tr>")
+								.append(!!collection.corpusName &&
+										"<tr><td>Master corpus</td><td>" + collection.corpusName + "</td></tr>")
+								.append(!collection.corpusName &&
+										"<tr><td>Corpus size</td><td>" + collection.size + "</td></tr>")
+								.append(!!collection.corpusName &&
+										"<tr><td>Master corpus size</td><td>" + collection.corpusSize + "</td></tr>")
+								.append(!!collection.corpusName &&
+										"<tr><td>Filtered collection size</td><td>" + collection.size + "</td></tr>")
+								.append(!!collection.corpusName &&
+										"<tr><td>Error tolerance</td><td>" + collection.errorTolerance + "</td></tr>"));
+
+//							.append(!!collection.corpusName && $("<div>").text("Collection size: " + collection.size))
+//							.append(!!collection.corpusName && $("<div>").text("Error tolerance: " + collection.errorTolerance));
 					});
 				$.each(collections, function(index,collection) {
 					$(collectionsList)
