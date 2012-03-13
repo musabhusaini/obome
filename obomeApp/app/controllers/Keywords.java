@@ -36,7 +36,7 @@ public class Keywords extends Application {
 		
 		// No duplicates.
 		Aspect a = fetch(Aspect.class, aspect);
-		if (em.createQuery("SELECT k FROM Keyword k WHERE k.aspect=:a AND k.label=:label", Keyword.class)
+		if (em().createQuery("SELECT k FROM Keyword k WHERE k.aspect=:a AND k.label=:label", Keyword.class)
 				.setParameter("a", a)
 				.setParameter("label", keywordView.label)
 				.getResultList().size() > 0) {
@@ -55,7 +55,7 @@ public class Keywords extends Application {
 			
 			k.setLabel(keywordView.label);
 			
-			k = em.merge(k);
+			k = em().merge(k);
 		} else {
 			if (StringUtils.isEmpty(aspect)) {
 				throw new IllegalArgumentException("Must provide a aspect to add to.");
@@ -64,7 +64,7 @@ public class Keywords extends Application {
 			k = new Keyword(a, keywordView.label);
 			k.setIdentifier(keywordView.uuid);
 			
-			em.persist(k);
+			em().persist(k);
 		}
 		
 //		if (k != null) {
@@ -85,7 +85,7 @@ public class Keywords extends Application {
 			}
 		}
 
-		em.remove(k);
+		em().remove(k);
 
 		decache(k.getAspect());
 		decache(k);

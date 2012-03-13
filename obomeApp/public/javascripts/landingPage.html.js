@@ -114,6 +114,7 @@
 								.show();
 							
 							$(nextButton).button("enable");
+				            $(nextButton).spinner("destroy");
 						});
 				}
 			});

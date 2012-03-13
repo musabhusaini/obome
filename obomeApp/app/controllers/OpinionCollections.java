@@ -51,14 +51,14 @@ public class OpinionCollections extends Application {
 
 	private static long getCollectionSize(SetCover sc) {
 		// We do it this way because getting this count from the property is costly.
-		return em.createQuery("SELECT COUNT(scr) FROM SetCoverItem scr WHERE scr.setCover=:sc", Long.class)
+		return em().createQuery("SELECT COUNT(scr) FROM SetCoverItem scr WHERE scr.setCover=:sc", Long.class)
 			.setParameter("sc", sc)
 			.getSingleResult();
 	}
 	
 	private static long getCorpusSize(Corpus corpus) {
 		// We do it this way because getting this count from the property is costly.
-		return em.createQuery("SELECT COUNT(doc) FROM OpinionDocument doc WHERE doc.corpus=:corpus", Long.class)
+		return em().createQuery("SELECT COUNT(doc) FROM OpinionDocument doc WHERE doc.corpus=:corpus", Long.class)
 				.setParameter("corpus", corpus)
 				.getSingleResult();
 	}
@@ -67,7 +67,7 @@ public class OpinionCollections extends Application {
 		OpinionDocument opinionDoc = new OpinionDocument();
 		opinionDoc.setContent(content);
 		opinionDoc.setCorpus(corpus);
-		em.persist(opinionDoc);
+		em().persist(opinionDoc);
 		
 		return opinionDoc;
 	}
@@ -75,7 +75,7 @@ public class OpinionCollections extends Application {
 	public static void list() {
 		List<ViewModel> viewModels = Lists.newArrayList();
 		
-		List<Corpus> corpora = em.createQuery("SELECT c FROM Corpus c WHERE c.ownerSessionId=null OR " +
+		List<Corpus> corpora = em().createQuery("SELECT c FROM Corpus c WHERE c.ownerSessionId=null OR " +
 				"c.ownerSessionId=:sessionId", Corpus.class)
 				.setParameter("sessionId", session.getId())
 				.getResultList();
@@ -88,7 +88,7 @@ public class OpinionCollections extends Application {
 			}
 		}
 		
-		List<SetCover> setCovers = em.createQuery("SELECT sc FROM SetCover sc WHERE sc.ownerSessionId=null OR " +
+		List<SetCover> setCovers = em().createQuery("SELECT sc FROM SetCover sc WHERE sc.ownerSessionId=null OR " +
 				"sc.ownerSessionId=:sessionId", SetCover.class)
 				.setParameter("sessionId", session.getId())
 				.getResultList();
@@ -112,9 +112,9 @@ public class OpinionCollections extends Application {
 			dbCorpus = new Corpus();
 			dbCorpus.setName("Corpus " + new Random().nextInt(1000));
 			dbCorpus.setOwnerSessionId(session.getId());
-			em.persist(dbCorpus);
+			em().persist(dbCorpus);
 		} else {
-			dbCorpus = em.find(Corpus.class, IdentifiableObject.getUuidBytes(UUID.fromString(corpus)));
+			dbCorpus = em().find(Corpus.class, IdentifiableObject.getUuidBytes(UUID.fromString(corpus)));
 			if (dbCorpus == null || !dbCorpus.getOwnerSessionId().equals(session.getId())) {
 				throw new IllegalArgumentException("Invalid corpus.");
 			}
@@ -222,7 +222,7 @@ public class OpinionCollections extends Application {
 		Promise<SetCover> promise = new OpinionCollectionDistiller(sc, threshold).now();
 		sc = await(promise);
 		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
-		viewModel.size = em.createQuery("SELECT COUNT(item) FROM SetCoverItem item WHERE item.setCover=:sc", Long.class)
+		viewModel.size = em().createQuery("SELECT COUNT(item) FROM SetCoverItem item WHERE item.setCover=:sc", Long.class)
 				.setParameter("sc", sc)
 				.getSingleResult();
 		renderJSON(viewModel);
@@ -246,7 +246,7 @@ public class OpinionCollections extends Application {
 			}
 			
 			sc.setName(name);
-			em.merge(sc);
+			em().merge(sc);
 		} else {
 			if (!session.getId().equals(c.getOwnerSessionId())) {
 				renderJSON(false);
@@ -258,9 +258,9 @@ public class OpinionCollections extends Application {
 			if (setCovers != null && setCovers.size() == 1) {
 				SetCover sc = setCovers.get(0);
 				sc.setName(name);
-				em.merge(sc);
+				em().merge(sc);
 			}
-			em.merge(c);
+			em().merge(c);
 		}
 		
 		renderJSON(true);
@@ -273,7 +273,7 @@ public class OpinionCollections extends Application {
 		collection = new Gson().toJson(viewModel, OpinionCollectionViewModel.class);
 		
 		Corpus corpus = sc.getCorpus();
-		List<String> documents = em.createQuery("SELECT HEX(doc.id) FROM OpinionDocument doc WHERE doc.corpus=:corpus", String.class)
+		List<String> documents = em().createQuery("SELECT HEX(doc.id) FROM OpinionDocument doc WHERE doc.corpus=:corpus", String.class)
 				.setParameter("corpus", corpus)
 				.getResultList();
 		
@@ -283,9 +283,9 @@ public class OpinionCollections extends Application {
 	public static void opinionMiner(String collection, String document) {
 		String commentText = fetch(OpinionDocument.class, document).getContent();
 		byte[] uuid = IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(collection));
-		String url = em.getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.url").toString();
-		String user = em.getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.user").toString();
-		String pwd = em.getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.password").toString();
+		String url = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.url").toString();
+		String user = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.user").toString();
+		String pwd = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.password").toString();
 		String connectionString = url + "?user=" + user + "&password=" + pwd;
 		
 		Map<Long, Float> aspectSummaryRaw;
@@ -298,7 +298,7 @@ public class OpinionCollections extends Application {
 		
 		Map<String, Float> aspectSummary = Maps.newHashMap();
 		for (Long key : aspectSummaryRaw.keySet()) {
-			String label = (String)em.createNativeQuery("SELECT label FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
+			String label = (String)em().createNativeQuery("SELECT label FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
 					.setParameter("key", key)
 					.getSingleResult();
 			
@@ -336,7 +336,7 @@ public class OpinionCollections extends Application {
 	}
 	
 	public static void seenItems(String collection) {
-		List<SetCoverItem> items = em.createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=true", SetCoverItem.class)
+		List<SetCoverItem> items = em().createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=true", SetCoverItem.class)
 				.setParameter("sc", fetch(SetCover.class, collection))
 				.getResultList();
 		
@@ -348,7 +348,7 @@ public class OpinionCollections extends Application {
 	}
 
 	public static void unseenItems(String collection) {
-		List<SetCoverItem> items = em.createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=false", SetCoverItem.class)
+		List<SetCoverItem> items = em().createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=false", SetCoverItem.class)
 				.setParameter("sc", fetch(SetCover.class, collection))
 				.getResultList();
 		
@@ -367,13 +367,13 @@ public class OpinionCollections extends Application {
     	SetCoverItem scReview;
     	
     	try {
-	    	scReview = em.createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=false " +
+	    	scReview = em().createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc AND scr.seen=false " +
 	    			"ORDER BY scr.utilityScore DESC", SetCoverItem.class)
 	    			.setParameter("sc", fetch(SetCover.class, collection))
 	    			.setMaxResults(1)
 	    			.getSingleResult();
     	} catch (NoResultException e) {
-    		scReview = em.createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc ORDER BY scr.utilityScore ASC", SetCoverItem.class)
+    		scReview = em().createQuery("SELECT scr FROM SetCoverItem scr WHERE scr.setCover=:sc ORDER BY scr.utilityScore ASC", SetCoverItem.class)
     				.setParameter("sc", fetch(SetCover.class, collection))
     				.setMaxResults(1)
     				.getSingleResult();
@@ -389,8 +389,8 @@ public class OpinionCollections extends Application {
     	scReview.setSeen(true);
     	
     	Logger.info(constructGenericLogMessage("seeing item " + item));
-    	scReview = em.merge(scReview);
-    	em.flush();
+    	scReview = em().merge(scReview);
+    	em().flush();
     	encache(scReview);
     	
     	renderJSON(new OpinionCollectionItemViewModel(scReview));

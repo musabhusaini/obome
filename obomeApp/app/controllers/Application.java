@@ -1,6 +1,7 @@
 package controllers;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.UUID;
 
@@ -11,34 +12,54 @@ import org.apache.log4j.lf5.util.DateFormatManager;
 import models.SessionViewModel;
 import play.Logger;
 import play.cache.Cache;
+import play.classloading.enhancers.EnhancedForContinuations;
+import play.libs.Codec;
 import play.mvc.After;
 import play.mvc.Before;
 import play.mvc.Catch;
 import play.mvc.Controller;
+import play.mvc.Finally;
+import play.mvc.Http.Request;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 
 import edu.sabanciuniv.dataMining.data.Identifiable;
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.program.OntologyLearnerProgram;
 
-public class Application extends Controller {
+public class Application extends Controller implements EnhancedForContinuations {
 
 	protected static String constructGenericLogMessage(String message) {
 		DateFormatManager dfm = new DateFormatManager(TimeZone.getDefault());
 		
-		return String.format("Message=%s while executing request-type=%s method=%s action=%s made-on=%s through-url=%s from-client=%s",
+		return String.format("Message=%s while executing request-type=%s method=%s action=%s made-on=%s through-url=%s in-session from-client=%s",
 				message,
 				request.isAjax() ? "ajax" : "browser",
 				request.method,
 				request.action,
 				dfm.format(request.date),
 				request.url,
+				session.getId(),
 				request.remoteAddress);
 	}
 	
-	protected static EntityManager em;
+	protected static EntityManager em() {
+		EntityManager em = entityManagers.get(request);
+		if (em == null) {
+			em = OntologyLearnerProgram.em();
+			entityManagers.put(request, em);
+		}
+		
+		return em;
+	}
+	
+	protected static Map<Request, EntityManager> entityManagers;
 
+	static {
+		entityManagers = Maps.newHashMap();
+	}
+	
 	@Before
 	static void logActionBegin() {
 		Logger.info(constructGenericLogMessage("began"));
@@ -46,8 +67,9 @@ public class Application extends Controller {
 	
 	@Before
 	static void initializeEntityManager() {
-		em = OntologyLearnerProgram.em();
-		em.getTransaction().begin();
+		if (!em().getTransaction().isActive()) {
+			em().getTransaction().begin();
+		}
 	}
 		
 	@After
@@ -66,10 +88,9 @@ public class Application extends Controller {
 	
 	@After
 	static void finalizeEntityManager() {
-		if (em.getTransaction().isActive()) {
-			em.getTransaction().commit();
+		if (em().getTransaction().isActive()) {
+			em().getTransaction().commit();
 		}
-		em.close();
 	}
 	
 	@After
@@ -80,6 +101,20 @@ public class Application extends Controller {
 	@Catch(Throwable.class)
 	static void logGenericException(Throwable throwable) {
 		Logger.error(throwable, constructGenericLogMessage("error"));
+		
+		if (em().getTransaction().isActive()) {
+			em().getTransaction().rollback();
+		}
+	}
+	
+	@Finally
+	static void closeEntityManager() {
+		if (em().isOpen()) {
+			em().close();
+		}
+		if (entityManagers.containsKey(request)) {
+			entityManagers.remove(request);
+		}
 	}
 	
 	static class EMFetch<T> implements Function<String,T> {
@@ -91,7 +126,7 @@ public class Application extends Controller {
 
 		@Override
 		public T apply(String uuid) {
-			T obj = em.find(this.clazz, IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(uuid)));
+			T obj = em().find(this.clazz, IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(uuid)));
 			return obj;
 		}
 	}

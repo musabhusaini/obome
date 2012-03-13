@@ -22,7 +22,7 @@ public class Aspects extends Application {
 		List<AspectViewModel> aspects = Lists.newArrayList();
 		for (Aspect aspect : sc.getAspects()) {
 			aspects.add(new AspectViewModel(aspect));
-			encache(aspect);
+//			encache(aspect);
 		}
 		
 		Collections.sort(aspects);
@@ -39,7 +39,7 @@ public class Aspects extends Application {
 
 		// No duplicates.
 		SetCover sc = fetch(SetCover.class, collection);
-		if (em.createQuery("SELECT a FROM Aspect a WHERE a.setCover=:sc AND a.label=:label", Aspect.class)
+		if (em().createQuery("SELECT a FROM Aspect a WHERE a.setCover=:sc AND a.label=:label", Aspect.class)
 				.setParameter("sc", sc)
 				.setParameter("label", aspectView.label)
 				.getResultList().size() > 0) {
@@ -58,7 +58,7 @@ public class Aspects extends Application {
 			
 			a.setLabel(aspectView.label);
 			
-			a = em.merge(a);
+			a = em().merge(a);
 		} else {
 			if (StringUtils.isEmpty(collection)) {
 				throw new IllegalArgumentException("Must provide a collection to add to.");
@@ -67,7 +67,7 @@ public class Aspects extends Application {
 			a = new Aspect(sc, aspectView.label);
 			a.setIdentifier(aspectView.uuid);
 			
-			em.persist(a);
+			em().persist(a);
 		}
 
 //		if (a != null) {
@@ -88,7 +88,7 @@ public class Aspects extends Application {
 			}
 		}
 
-		em.remove(a);
+		em().remove(a);
 		
 		decache(a.getSetCover());
 		decache(a);
