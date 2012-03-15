@@ -7,8 +7,6 @@ GET     /                				                       			Application.landingPage
 
 GET		/about															Application.aboutPage
 
-GET		/test															Application.testPage
-
 POST	/session														Application.ping
 
 GET		/collections													OpinionCollections.list

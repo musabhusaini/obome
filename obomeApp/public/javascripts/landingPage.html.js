@@ -146,9 +146,6 @@
 										"<tr><td>Filtered collection size</td><td>" + collection.size + "</td></tr>")
 								.append(!!collection.corpusName &&
 										"<tr><td>Error tolerance</td><td>" + collection.errorTolerance + "</td></tr>"));
-
-//							.append(!!collection.corpusName && $("<div>").text("Collection size: " + collection.size))
-//							.append(!!collection.corpusName && $("<div>").text("Error tolerance: " + collection.errorTolerance));
 					});
 				$.each(collections, function(index,collection) {
 					$(collectionsList)

@@ -2,16 +2,9 @@
 	padding: .25em;
 }
 
-.ol-document-text {
-	width: 35em;
-	height: 23.89em;
-	overflow: auto;
-	padding: .5em;
-}
-
 .ol-list {
-	width: 13em;
-	height: 25em;
+	width: 100%;
+	height: 31.3em;
 	overflow: auto;
 }
 

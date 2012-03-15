@@ -201,10 +201,6 @@ public class Application extends Controller implements EnhancedForContinuations 
 		renderText("Good deal!");
 	}
 	
-	public static void testPage() {
-		render();
-	}
-	
 	public static void aboutPage() {
 		render();
 	}

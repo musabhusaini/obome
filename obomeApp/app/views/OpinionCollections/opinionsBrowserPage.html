@@ -1,44 +1,49 @@
-#{extends 'main.html' /}
-#{set title:'' /}
+#{extends "main.html" /}
+#{set title:"Opinions Browser" /}
 
-#{press.stylesheet 'browserPages.css' /}
-#{press.stylesheet 'opinionsBrowserPage.css' /}
+#{press.stylesheet "browserPages.css" /}
+#{press.stylesheet "opinionsBrowserPage.css" /}
 #{stylesheet "jqplot/jquery.jqplot.min.css" /}
 
 <div id="content">
-	<ul class="ui-sidebyside-controls-list ui-widget">
-		<li>
+	<div class="ui-prominent ui-corner-all ui-distant ui-padded-message">
+		Now you can view each review/comment from your corpus and the polarity of opinion expressed within as it pertains to the various
+		aspects that you have previously identified.
+	</div>
+	<div class="ui-float-left ob-reviews-container">
+		<div class="ob-reviews-list-container ui-float-left">
 			<div class="ui-widget-header ui-corner-top ol-header"><span>Reviews</span></div>
-			<select id="lstReviews" class="ol-list ui-widget-content" size="20">
+			<select id="lstReviews" class="ol-list ui-widget-content ob-reviews-list" size="20">
 				%{ index = 0; }%
-				#{list items:documents, as:'document'}
+				#{list items:documents, as:"document"}
 					%{ index++; }%
-					<option value="${document}">Comment ${index}</option>
+					<option value="${document}">Review ${index}</option>
 				#{/list}
 			</select>
-		</li>
-		<li class="ui-sidebyside-controls-list-item-spaced">
+		</div>
+		<div class="ob-doc-container ui-float-right">
 			<div id="documentContainer"></div>
-		</li>
-		<li class="ui-sidebyside-controls-list-item-spaced">
-			<ul class="ui-controls-list">
-				<li>
-					<div class="ui-widget-header ui-corner-top ol-header"><span>Opinion Summary</span></div>
-					<div id="cntnrOpinionSummary" class="ui-widget-content op-summary-box">
-						<table id="tblOpinionSummary">
-						</table>
+		</div>		
+	</div>
+	<div class="ui-float-right ob-summary-container">
+		<div class="ob-summary-inner-container">
+			<div>
+				<div class="ui-widget-header ui-corner-top ol-header"><span>Opinion Summary</span></div>
+				<div id="cntnrOpinionSummary" class="ui-widget-content ob-summary-box">
+					<table id="tblOpinionSummary">
+					</table>
+				</div>
+			</div>
+			<div class="ui-controls-list-item-spaced">
+				<div class="ui-widget-header ui-corner-top ol-header"><span>Aspect Polarity Association</span></div>
+				<div id="cntnrOpinionGraph" class="ui-widget-content ob-summary-box">
+					<div id="cnvsOpinionGraph">
 					</div>
-				</li>
-				<li class="ui-controls-list-item-spaced">
-					<div class="ui-widget-header ui-corner-top ol-header"><span>Aspect Polarity Association</span></div>
-					<div id="cntnrOpinionGraph" class="ui-widget-content op-summary-box">
-						<div id="cnvsOpinionGraph">
-						</div>
-					</div>
-				</li>
-			</ul>
-		</li>
-	</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div class="ui-helper-clearfix"></div>
 </div>
 

@@ -9,15 +9,10 @@ body {
 	font-size: 70%;
 	font-family: "Arial", "Helvetica", "Verdana", "sans-serif";
 	background: lightgray;
-	height: 100%;
 }
 
 html, body {
 	height: 100%;
-}
-
-pre {
-	font-size: 1.1em;
 }
 
 ul.ui-sidebyside-controls-list, ul.ui-controls-list {
@@ -67,8 +62,16 @@ ul.ui-controls-list > li {
 	float: left;
 }
 
+.ui-half-width {
+	width: 50%;
+}
+
 .ui-vertical-space {
 	height: .75em;
+}
+
+.ui-horizontal-space {
+	width: .75em;
 }
 
 .ui-main-title {
@@ -77,6 +80,19 @@ ul.ui-controls-list > li {
 
 .ui-subtitle {
 	font-size: 1.2em;
+}
+
+.ui-distant {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+.ui-prominent {
+	background: lightyellow;
+}
+
+.ui-padded-message {
+	padding: 1em;
 }
 
 #wrapper {
@@ -88,6 +104,9 @@ ul.ui-controls-list > li {
 
 #content-wrapper {
 	padding-bottom: 6em;		// Should be the same as footer height.
+}
+
+#content {
 }
 
 #banner {
@@ -113,8 +132,8 @@ ul.ui-controls-list > li {
 }
 
 #footer {
-   position: absolute;
-   bottom: 0;
-   width: 70%;
+//   position: absolute;
+//   bottom: 0;
+//   width: 70%;
    height: 6em;	// Should be the same as content-wrapper padding.
 }

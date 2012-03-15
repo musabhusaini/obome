@@ -1,8 +1,8 @@
 #{extends "main.html" /}
-#{set title:"" /}
+#{set title:"Corpus Reducability Analysis" /}
 
 #{stylesheet "jqplot/jquery.jqplot.min.css" /}
-#{press.stylesheet "collectionSynthesizerPage.css" /}
+#{press.stylesheet "synthesizerPage.css" /}
 
 #{script "jqplot/jquery.jqplot.min.js" /} 
 #{script "jqplot/plugins/jqplot.canvasTextRenderer.min.js" /}
@@ -16,12 +16,18 @@
 			<input id="txtName" type="text" />
 		</div>
 	</div>
-	<div id="cntnrProgress">
-		<div>Your corpus is being processed. Please wait; this might take several minutes...</div>
-		<div id="pbarProgress"></div>
+	<div id="cntnrProgress" class="ui-distant">
+		<div>Your corpus is being processed. Please wait; this might take several minutes depending on the size of the corpus...</div>
+		<div id="pbarProgress" class="ui-distant"></div>
 	</div>
-	<div id="cntnrDistiller">
-		<div id="grphDistillerStats"></div>
+	<div id="cntnrDistiller" class="ui-distant">
+		<div class="ui-prominent ui-corner-all ui-distant ui-padded-message">
+			As determined by our algorithm, your corpus will follow the data reduction pattern given below. Here, you can choose the threshold
+			you would like to set for the data reduction step. A higher threshold means compromising a certain percentage of data quality to
+			achieve higher data reduction, which in turn means you will be asked to manually extract aspects and keywords from fewer documents.
+			Please press Next when you're done.
+		</div>
+		<div id="grphDistillerStats" class="ui-distant"></div>
 		<label for="txtThreshold">Selected threshold:</label>
 		<input type="text" id="txtThreshold" /><span>%</span>
 	</div>

@@ -1,8 +1,41 @@
-.op-summary-box {
-	width: 20em;
-	height: 9.2em;
+.ob-reviews-container {
+	width: 65%;
+}
+
+.ob-summary-container {
+	width: 35%;
+}
+
+.ob-reviews-list-container {
+	width: 20%;
+}
+
+.ob-doc-container {
+	width: 80%;
+}
+
+.ob-reviews-list {
+	height: 31.3em;
+}
+
+.ob-document-text {
+	height: 30.13em;
+	overflow: auto;
+	padding: .5em;
+}
+
+.ob-summary-inner-container {
+	margin-left: .75em;
+}
+
+.ob-summary-box {
+	height: 12.1em;
 	font-size: 1.1em;
 	padding: .5em;
+}
+
+#documentContainer {
+	margin-left: .5em;
 }
 
 th {

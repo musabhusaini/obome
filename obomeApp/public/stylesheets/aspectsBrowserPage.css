@@ -1,0 +1,17 @@
+.ab-doc-container {
+	width: 60%;
+}
+
+.ab-aspects-container {
+	width: 40%;
+}
+
+.ol-document-text {
+	height: 30.13em;
+	overflow: auto;
+	padding: .5em;
+}
+
+#documentContainer {
+	margin-right: .75em;
+}

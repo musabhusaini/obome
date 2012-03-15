@@ -14,7 +14,8 @@
 				header: "Review Text",
 				featureType: "none",
 				showNav: false,
-				showCounter: false
+				showCounter: false,
+				documentContainerClass: "ob-document-text"
 			});
 		
 		$(reviewsList)
@@ -48,11 +49,15 @@
 							data.push([key, value]);
 						});
 						
+						if (!data.length) {
+							$(summaryTable).empty();
+						}
+						
 						var graphCanvasId = $(graphCanvas)
 							.empty()
 							.attr("id");
 						
-						var plot = $.jqplot(graphCanvasId, [ data ], {
+						var plot = data.length && $.jqplot(graphCanvasId, [ data ], {
 							axesDefaults: {
 //								labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 							},
@@ -66,6 +71,7 @@
 //							        label: "Aspect",
 							        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
 							        tickOptions: {
+							        	angle: -30,
 							        	fontFamily: "Courier New",
 							        	fontSize: "9pt"
 								    }

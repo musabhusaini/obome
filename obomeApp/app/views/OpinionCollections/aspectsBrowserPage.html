@@ -1,18 +1,22 @@
 #{extends "main.html" /}
-#{set title:"" /}
+#{set title:"Aspects/Keywords Extraction" /}
 
 #{press.stylesheet "browserPages.css" /}
 #{press.stylesheet "aspectsBrowserPage.css" /}
 
 <div id="content">
-	<ul class="ui-sidebyside-controls-list">
-		<li>
-			<ul class="ui-sidebyside-controls-list">
-				<li><div id="documentContainer"></div></li>
-				<li><div class="ui-sidebyside-controls-list-item-spaced" id="aspectsContainer"></div></li>
-			</ul>
-		</li>
-	</ul>
+	<div class="ui-prominent ui-corner-all ui-distant ui-padded-message">
+		Please go through these documents and extract domain aspects and related keywords. Words that are likely to be keywords have been
+		highlighted for your convenience. Highlighted words can be dragged and dropped into either of the boxes or clicked to be marked as
+		keywords. Please collect as many keywords for your domain aspects as you can (more keywords will yield better opinion mining results)
+		and press Next.
+	</div>
+	<div class="ui-float-left ab-doc-container">
+		<div id="documentContainer"></div>
+	</div>
+	<div class="ui-float-right ab-aspects-container">
+		<div id="aspectsContainer"></div>
+	</div>
 	<div class="ui-helper-clearfix"></div>
 	<div id="btnNext" class="ui-float-right">Next</div>
 </div>

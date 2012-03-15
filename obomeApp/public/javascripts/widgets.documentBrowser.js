@@ -11,8 +11,6 @@
 	var bypassCacheToggle = "dw_bypassCacheToggle";
 	var smartNounsToggle = "dw_smartNounsToggle";
 	
-	var olButtonClass = "ol-button";
-
 	// Helpers to make things easier.
 	var makeId = function(domIdPrefix, id) {
 		return domIdPrefix + "_" + id;
@@ -30,7 +28,9 @@
 			bypassCache: false,
 			featureType: "nouns",
 			showNav: true,
-			showCounter: true
+			showCounter: true,
+			documentContainerClass: "ol-document-text",
+			navButtonsClass: "ol-button"
 		},
 		
 		_id: null,
@@ -243,7 +243,7 @@
 					.append($("<div>")
 						.addClass("ui-widget-content")
 						.attr("id", makeId(textContainer, id))
-						.addClass("ol-document-text")))
+						.addClass(me.options.documentContainerClass)))
 				// Controls container.
 				.append(me.options.showNav && $("<li>")
 					.addClass("ui-controls-list-item-spaced")
@@ -253,7 +253,7 @@
 						// Previous button.
 						.append($("<li>")
 							.attr("id", makeId(prevButton, id))
-							.addClass(olButtonClass)
+							.addClass(me.options.navButtonsClass)
 							.button({
 								disabled: true,
 								text: false,
@@ -265,7 +265,7 @@
 						// Next button.
 						.append($("<li>")
 							.attr("id", makeId(nextButton, id))
-							.addClass(olButtonClass)
+							.addClass(me.options.navButtonsClass)
 							.addClass("ui-sidebyside-controls-list-item-spaced")
 							.button({
 								disabled: true,

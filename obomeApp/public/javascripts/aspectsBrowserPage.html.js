@@ -19,6 +19,7 @@
 		$(nextButton)
 			.button()
 			.click(function() {
+				$(nextButton).spinner();
 				window.location.href = routes.OpinionCollections.opinionsBrowserPage({ collection: options.collection.uuid });
 			});
 	};

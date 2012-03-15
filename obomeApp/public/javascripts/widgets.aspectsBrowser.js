@@ -502,23 +502,28 @@
 			var keywordContainer;
 			
 			// Define the container that will keep everything else.
-			me._container = $("<ul>")
+			me._container = $("<div>")
+				.css("width", "100%")
 				.addClass("ui-widget")
-				.addClass("ui-sidebyside-controls-list")
-				.append($("<li>")
-					.append(aspectsContainer = $(createEditableList({
-						me: me,
-						id: id,
-						typeName: "Aspect",
-						header: "Aspects",
-						listId: makeId(aspectsListId, id),
-						listSize: 20,
-						changeHandler: changeAspect,
-						addHandlers: me._addAspectHandlers,
-						deleteHandlers: me._deleteAspectHandlers
-					}))))
-				.append($("<li>")
-					.addClass("ui-sidebyside-controls-list-item-spaced")
+				.append($("<div>")
+					.css("float", "left")
+					.css("width", "50%")
+					.append($("<div>")
+						.css("padding-right", ".5em")
+						.append(aspectsContainer = $(createEditableList({
+							me: me,
+							id: id,
+							typeName: "Aspect",
+							header: "Aspects",
+							listId: makeId(aspectsListId, id),
+							listSize: 20,
+							changeHandler: changeAspect,
+							addHandlers: me._addAspectHandlers,
+							deleteHandlers: me._deleteAspectHandlers
+						})))))
+				.append($("<div>")
+					.css("float", "right")
+					.css("width", "50%")
 					.append(keywordContainer = $(createEditableList({
 						me: me,
 						id: id,

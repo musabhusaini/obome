@@ -113,7 +113,7 @@
 							.attr("id");
 						
 						var plot = $.jqplot(distillerStatsGraphId, [ data ], {
-							title: "Select your threshold",
+//							title: "Select your threshold",
 							
 							axesDefaults: {
 								labelRenderer: $.jqplot.CanvasAxisLabelRenderer
