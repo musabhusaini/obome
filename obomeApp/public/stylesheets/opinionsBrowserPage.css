@@ -28,8 +28,12 @@
 	margin-left: .75em;
 }
 
+.ob-summary-graph-container {
+	margin-top: .5em;
+}
+
 .ob-summary-box {
-	height: 12.1em;
+	height: 12.02em;
 	font-size: 1.1em;
 	padding: .5em;
 }
