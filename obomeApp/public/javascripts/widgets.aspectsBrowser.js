@@ -80,7 +80,9 @@
 			var value = {
 				label: $(form).find("input[type='text'][id|='" + dialogOptions.fieldName.toLowerCase() + "']").val()
 			};
-			window.setTimeout(dialogOptions.operate(value), 0);
+			window.setTimeout(function() {
+				dialogOptions.operate(value);
+			}, 0);
 			closeDialog();			
 		}
 		
