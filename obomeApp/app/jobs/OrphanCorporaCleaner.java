@@ -24,6 +24,9 @@ public class OrphanCorporaCleaner extends Job<Object> {
 	public static final int CORPUS_TIMEOUT=12;
 	public static final int FREQUENCY=1;
 	
+	// A session id value for which we won't delete the corpus and set cover, but won't show it to everyone either.
+	public static String specialSessionId = "special";
+	
 	@Override
 	public void doJob() {
 		// Delete all orphan corpora.
@@ -32,7 +35,9 @@ public class OrphanCorporaCleaner extends Job<Object> {
 		EntityManager em = OntologyLearnerProgram.em();
 		em.getTransaction().begin();
 		
-		List<Corpus> corpora = em.createQuery("SELECT c FROM Corpus c WHERE c.ownerSessionId!=null", Corpus.class)
+		List<Corpus> corpora = em.createQuery("SELECT c FROM Corpus c WHERE c.ownerSessionId!=null AND c.ownerSessionId!=:special",
+				Corpus.class)
+				.setParameter("special", specialSessionId)
 				.getResultList();
 		
 		Date staleDate = new DateTime().minusHours(CORPUS_TIMEOUT).toDate();
@@ -44,7 +49,9 @@ public class OrphanCorporaCleaner extends Job<Object> {
 			}
 		}
 		
-		List<SetCover> setCovers = em.createQuery("SELECT sc FROM SetCover sc WHERE sc.ownerSessionId!=null", SetCover.class)
+		List<SetCover> setCovers = em.createQuery("SELECT sc FROM SetCover sc WHERE sc.ownerSessionId!=null AND sc.ownerSessionId!=:special",
+				SetCover.class)
+				.setParameter("special", specialSessionId)
 				.getResultList();
 		
 		for (SetCover setCover : setCovers) {
