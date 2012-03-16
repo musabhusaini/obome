@@ -57,12 +57,12 @@ public class OrphanCorporaCleaner extends Job<Object> {
 		em.getTransaction().commit();
 		em.close();
 		
-		// Delete all orphan sessions as well.
-		List<SessionViewModel> sessions = SessionViewModel.find("SELECT s FROM models.SessionViewModel s WHERE s.lastActivity < ?", staleDate)
-				.fetch();
-		for (SessionViewModel session : sessions) {
-			session.delete();
-		}
+//		// Delete all orphan sessions as well.
+//		List<SessionViewModel> sessions = SessionViewModel.find("SELECT s FROM models.SessionViewModel s WHERE s.lastActivity < ?", staleDate)
+//				.fetch();
+//		for (SessionViewModel session : sessions) {
+//			session.delete();
+//		}
 		
 		Logger.info("Finished cleaning orphan corpora");
 	}

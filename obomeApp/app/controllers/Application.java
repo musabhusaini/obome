@@ -77,8 +77,7 @@ public class Application extends Controller implements EnhancedForContinuations 
 		SessionViewModel sessionViewModel = SessionViewModel.findById(session.getId());
 		
 		if (sessionViewModel == null) {
-			sessionViewModel = new SessionViewModel();
-			sessionViewModel.setIdentifier(session.getId()); 
+			sessionViewModel = new SessionViewModel(session, request);
 		}
 		
 		sessionViewModel.keepAlive();

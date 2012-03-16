@@ -41,12 +41,25 @@
 							.append("<tr><th>Aspect</th><th>Polarity</th></tr>");
 						
 						var data = [];
+						var max = 0;
 						
 						$.each(map, function(key, value) {
 							$(summaryTable)
 								.append("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
 							
+							// Can't put very long labels.
+							var maxLength = 12;
+							if (key.length > maxLength) {
+								var end = key.search(/\s+/);
+								end = (end >= 0 && end <= maxLength) ? end : maxLength-3;
+								key = key.substring(0, end) + "...";
+							}
 							data.push([key, value]);
+							
+							var absVal = window.Math.abs(value);
+							if (max < absVal) {
+								max = absVal;
+							}
 						});
 						
 						if (!data.length) {
@@ -71,13 +84,17 @@
 //							        label: "Aspect",
 							        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
 							        tickOptions: {
-							        	angle: -30,
+//							        	angle: -30,
 							        	fontFamily: "Courier New",
 							        	fontSize: "9pt"
 								    }
 								},
 								yaxis: {
 //									label: "Polarity",
+									min: -max * 1.1,
+									max: max * 1.1,
+									tickOptions: {
+									}
 								}
 							}
 						});

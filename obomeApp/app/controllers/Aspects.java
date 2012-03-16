@@ -22,7 +22,6 @@ public class Aspects extends Application {
 		List<AspectViewModel> aspects = Lists.newArrayList();
 		for (Aspect aspect : sc.getAspects()) {
 			aspects.add(new AspectViewModel(aspect));
-//			encache(aspect);
 		}
 		
 		Collections.sort(aspects);
@@ -70,12 +69,6 @@ public class Aspects extends Application {
 			em().persist(a);
 		}
 
-//		if (a != null) {
-//			em.refresh(a);
-//			decache(a.getSetCover());
-//			encache(a);
-//		}
-
 		renderJSON(aspectView);
 	}
 	
@@ -89,9 +82,6 @@ public class Aspects extends Application {
 		}
 
 		em().remove(a);
-		
-		decache(a.getSetCover());
-		decache(a);
 		
 		renderJSON(new AspectViewModel(a));
 	}
