@@ -36,6 +36,7 @@
 		},
 		Aspects: {
 			list: #{jsAction @Aspects.list(':collection') /},
+			downloadableTextFile: #{jsAction @Aspects.downloadableTextFile(':collection') /},
 			single: #{jsAction @Aspects.single(':collection', ':aspect') /},
 		},
 		Keywords: {

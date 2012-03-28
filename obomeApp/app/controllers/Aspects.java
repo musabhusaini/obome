@@ -1,17 +1,28 @@
 package controllers;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import models.AspectViewModel;
 
 import org.apache.commons.lang.StringUtils;
+
+import play.Logger;
+import play.Play;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import edu.sabanciuniv.dataMining.experiment.models.Aspect;
+import edu.sabanciuniv.dataMining.experiment.models.Keyword;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 
 public class Aspects extends Application {
@@ -26,6 +37,31 @@ public class Aspects extends Application {
 		
 		Collections.sort(aspects);
 		renderJSON(aspects);
+	}
+	
+	public static void downloadableTextFile(String collection) {
+		SetCover sc = fetch(SetCover.class, collection);
+		
+		try {
+			File directory = new File(new File(Play.configuration.getProperty("play.tmp", "tmp")),
+					Play.configuration.getProperty("obome.download", "downloads"));
+			File outputFile = File.createTempFile("aspects-" + collection + "-", ".txt", directory);
+			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
+			
+			for (Aspect aspect : sc.getAspects()) {
+				writer.write("<" + aspect.getLabel() + ">\t");
+				for (Keyword keyword : aspect.getKeywords()) {
+					writer.write(keyword.getLabel() + "\t");
+				}
+				
+				writer.write("\r\n");
+			}
+			writer.close();
+			
+			renderBinary(outputFile, "ontology.txt");
+		} catch (IOException e) {
+			throw new IllegalStateException("Could not write file");
+		}
 	}
 	
 	public static void single(String collection, String aspect) {

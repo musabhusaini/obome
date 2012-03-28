@@ -3,20 +3,21 @@
 	ontologyLearner.displayPage = function(options) {
 		
 		var docContainer = "#documentContainer";
+		var docTextContainer = "#documentTextContainer";
 		var reviewsList = "#lstReviews";
 		var summaryContainer = "#cntnrOpinionSummary";
 		var summaryTable = "#tblOpinionSummary";
 		var graphContainer = "#cntnrOpinionGraph";
 		var graphCanvas = "#cnvsOpinionGraph";
 		
-		$(docContainer)
-			.documentBrowser({
-				header: "Review Text",
-				featureType: "none",
-				showNav: false,
-				showCounter: false,
-				documentContainerClass: "ob-document-text"
-			});
+//		$(docContainer)
+//			.documentBrowser({
+//				header: "Review Text",
+//				featureType: "none",
+//				showNav: false,
+//				showCounter: false,
+//				documentContainerClass: "ob-document-text"
+//			});
 		
 		$(reviewsList)
 			.change(function(event) {
@@ -25,15 +26,25 @@
 					return false;
 				}
 				
-				$(docContainer).documentBrowser("option", { uuid: uuid });
+				//$(docContainer).documentBrowser("option", { uuid: uuid });
+				
+				$(docTextContainer)
+					.empty()
+					.spinner();
 				
 				$(summaryTable).empty();
 				$(summaryContainer).spinner();
+				
 				$(graphCanvas).empty();
 				$(graphContainer).spinner();
 				
 				$.getJSON(routes.OpinionCollections.opinionMiner({ collection: options.collection.uuid, document: uuid }))
-					.success(function(map) {
+					.success(function(result) {
+						
+						$(docTextContainer)
+							.spinner("destroy")
+							.html(result.document.text);
+						
 						$(summaryContainer).spinner("destroy");
 						$(graphContainer).spinner("destroy");
 						
@@ -43,7 +54,7 @@
 						var data = [];
 						var max = 0;
 						
-						$.each(map, function(key, value) {
+						$.each(result.aspectOpinionMap, function(key, value) {
 							$(summaryTable)
 								.append("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
 							
@@ -63,7 +74,9 @@
 						});
 						
 						if (!data.length) {
-							$(summaryTable).empty();
+							$(summaryTable)
+								.empty()
+								.text("Not enough data available to generate a summary");
 						}
 						
 						var graphCanvasId = $(graphCanvas)

@@ -19,7 +19,15 @@ public abstract class ViewModel extends GenericModel implements Identifiable {
 	public String uuid;
 	
 	public ViewModel() {
-		this.setIdentifier(UUID.randomUUID());
+		this(UUID.randomUUID());
+	}
+	
+	public ViewModel(String uuid) {
+		this(UUID.fromString(uuid));
+	}
+	
+	public ViewModel(UUID uuid) {
+		this.setIdentifier(uuid);
 	}
 	
 	public String getId() {

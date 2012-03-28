@@ -21,9 +21,11 @@ import jobs.OpinionCollectionDistiller;
 import jobs.OpinionCollectionDistillerAnalyzer;
 import jobs.OpinionCollectionSynthesizer;
 import jobs.OrphanCorporaCleaner;
+import models.DocumentViewModel;
 import models.OpinionCollectionItemViewModel;
 import models.OpinionCollectionViewModel;
 import models.OpinionCorpusViewModel;
+import models.OpinionMinerResultViewModel;
 import models.ViewModel;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -281,7 +283,11 @@ public class OpinionCollections extends Application {
 	}
 	
 	public static void opinionMiner(String collection, String document) {
-		String commentText = fetch(OpinionDocument.class, document).getContent();
+		OpinionMinerResultViewModel result = new OpinionMinerResultViewModel();
+		
+		OpinionDocument opinDoc = fetch(OpinionDocument.class, document);
+		result.document = new DocumentViewModel(opinDoc);
+		
 		byte[] uuid = IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(collection));
 		String url = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.url").toString();
 		String user = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.user").toString();
@@ -290,22 +296,23 @@ public class OpinionCollections extends Application {
 		
 		Map<Long, Float> aspectSummaryRaw;
 		try {
-			// Call opinion mining engine.
-			aspectSummaryRaw = demoPage.GetScoreOfAComment(commentText, connectionString, uuid);
+			// Call the opinion mining engine.
+			aspectSummaryRaw = demoPage.GetScoreOfAComment(result.document.text, connectionString, uuid);
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
 		
-		Map<String, Float> aspectSummary = Maps.newHashMap();
+		result.aspectOpinionMap = Maps.newHashMap();
 		for (Long key : aspectSummaryRaw.keySet()) {
-			String label = (String)em().createNativeQuery("SELECT label FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
+			String label = (String)em().createNativeQuery("SELECT label " +
+					"FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
 					.setParameter("key", key)
 					.getSingleResult();
 			
-			aspectSummary.put(label, aspectSummaryRaw.get(key));
+			result.aspectOpinionMap.put(label, aspectSummaryRaw.get(key));
 		}
 		
-		renderJSON(aspectSummary);
+		renderJSON(result);
 	}
 	
 	public static void single(String collection) {

@@ -3,6 +3,7 @@
 	ontologyLearner.displayPage = function(options) {
 		var docContainer = "#documentContainer";
 		var aspectsContainer = "#aspectsContainer";
+		var downloadButton = "#btnDownload";
 		var nextButton = "#btnNext";
 		
 		$(docContainer)
@@ -15,6 +16,12 @@
 
 		$(aspectsContainer)
 			.aspectsBrowser(options);
+		
+		$(downloadButton)
+			.button()
+			.click(function() {
+				window.open(routes.Aspects.downloadableTextFile({ collection: options.collection.uuid }));
+			});
 		
 		$(nextButton)
 			.button()

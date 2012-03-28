@@ -37,6 +37,8 @@ GET		/collections/{collection}/opinion/{document}					OpinionCollections.opinion
 
 GET		/collections/{collection}/aspects								Aspects.list
 
+GET		/collections/{collection}/aspects/download.txt					Aspects.downloadableTextFile
+
 GET		/collections/{collection}/aspects/{aspect}						Aspects.single
 
 POST    /collections/{collection}/aspects/{aspect}						Aspects.postSingle
