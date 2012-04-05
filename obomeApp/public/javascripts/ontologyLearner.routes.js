@@ -2,6 +2,11 @@
 	ontologyLearner.routes = ontologyLearner.routes || {};
 	
 	ontologyLearner.routes = $.extend(ontologyLearner.routes, {
+		StaticContent: {
+			Images: {
+				spinner: "/public/images/spinner.gif"
+			}
+		},
 		Application: {
 			landingPage: #{jsAction @Application.landingPage() /},
 			aboutPage: #{jsAction @Application.aboutPage() /},
@@ -37,6 +42,7 @@
 		Aspects: {
 			list: #{jsAction @Aspects.list(':collection') /},
 			downloadableTextFile: #{jsAction @Aspects.downloadableTextFile(':collection') /},
+			uploadFile: #{jsAction @Aspects.uploadFile(':collection') /},
 			single: #{jsAction @Aspects.single(':collection', ':aspect') /},
 		},
 		Keywords: {

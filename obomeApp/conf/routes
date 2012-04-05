@@ -29,15 +29,17 @@ POST	/collections/{collection}/distiller								OpinionCollections.distill
 
 GET		/collections/{collection}/distiller/progress					OpinionCollections.distillerProgress
 
-GET		/collections/{collection}/aspectsBrowser						OpinionCollections.aspectsBrowserPage
+GET		/collections/{collection}/opinions/browser						OpinionCollections.opinionsBrowserPage
 
-GET		/collections/{collection}/opinionsBrowser						OpinionCollections.opinionsBrowserPage
-
-GET		/collections/{collection}/opinion/{document}					OpinionCollections.opinionMiner
+GET		/collections/{collection}/opinions/{document}					OpinionCollections.opinionMiner
 
 GET		/collections/{collection}/aspects								Aspects.list
 
 GET		/collections/{collection}/aspects/download.txt					Aspects.downloadableTextFile
+
+POST	/collections/{collection}/aspects/upload						Aspects.uploadFile
+
+GET		/collections/{collection}/aspects/browser						OpinionCollections.aspectsBrowserPage
 
 GET		/collections/{collection}/aspects/{aspect}						Aspects.single
 

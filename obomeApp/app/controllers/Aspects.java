@@ -4,19 +4,17 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
+import java.util.Scanner;
 
 import models.AspectViewModel;
 
 import org.apache.commons.lang.StringUtils;
 
-import play.Logger;
 import play.Play;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -44,7 +42,7 @@ public class Aspects extends Application {
 		
 		try {
 			File directory = new File(new File(Play.configuration.getProperty("play.tmp", "tmp")),
-					Play.configuration.getProperty("obome.download", "downloads"));
+					Play.configuration.getProperty("obome.downloads", "downloads"));
 			File outputFile = File.createTempFile("aspects-" + collection + "-", ".txt", directory);
 			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 			
@@ -62,6 +60,53 @@ public class Aspects extends Application {
 		} catch (IOException e) {
 			throw new IllegalStateException("Could not write file");
 		}
+	}
+	
+	public static void uploadFile(String collection, File file) {
+		SetCover sc = fetch(SetCover.class, collection);
+		
+		try {
+			if (file.getName().endsWith(".txt")) {
+				Scanner scanner = new Scanner(file);
+				
+				String lastToken = scanner.next();
+				while (scanner.hasNext()) {
+					if (!lastToken.endsWith(">")) {
+						String rest = scanner.findInLine(".+?>");
+						lastToken += " " + rest;
+					}
+					lastToken = lastToken.replaceAll("[<>]", "");
+					
+					Aspect aspect = Iterables.getFirst(em().createQuery("SELECT a FROM Aspect a WHERE a.setCover=:sc AND a.label=:label", Aspect.class)
+							.setParameter("sc", sc)
+							.setParameter("label", lastToken)
+							.setMaxResults(1)
+							.getResultList(), null);
+					if (aspect == null) {
+						aspect = new Aspect(sc, lastToken);
+						em().persist(aspect);
+					}
+					
+					while (scanner.hasNext() && !(lastToken = scanner.next()).matches("<.+?")) {
+						Keyword keyword = Iterables.getFirst(em().createQuery("SELECT k FROM Keyword k WHERE k.aspect=:aspect AND k.label=:label", Keyword.class)
+								.setParameter("aspect", aspect)
+								.setParameter("label", lastToken)
+								.setMaxResults(1)
+								.getResultList(), null);
+						
+						if (keyword == null) {
+							keyword = new Keyword(aspect, lastToken);
+							em().persist(keyword);
+						}
+					}
+				}
+			}
+		} catch (RuntimeException | IOException e) {
+			// TODO Auto-generated catch block
+			throw new IllegalStateException("Could not read file");
+		}
+		
+		renderJSON("{'success': true}");
 	}
 	
 	public static void single(String collection, String aspect) {

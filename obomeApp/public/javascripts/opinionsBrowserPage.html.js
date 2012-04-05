@@ -10,14 +10,7 @@
 		var graphContainer = "#cntnrOpinionGraph";
 		var graphCanvas = "#cnvsOpinionGraph";
 		
-//		$(docContainer)
-//			.documentBrowser({
-//				header: "Review Text",
-//				featureType: "none",
-//				showNav: false,
-//				showCounter: false,
-//				documentContainerClass: "ob-document-text"
-//			});
+		var opinionDependentClass = ".opinion-dependent";
 		
 		$(reviewsList)
 			.change(function(event) {
@@ -26,30 +19,20 @@
 					return false;
 				}
 				
-				//$(docContainer).documentBrowser("option", { uuid: uuid });
-				
-				$(docTextContainer)
-					.empty()
-					.spinner();
-				
+				$(docTextContainer).empty();
 				$(summaryTable).empty();
-				$(summaryContainer).spinner();
-				
 				$(graphCanvas).empty();
-				$(graphContainer).spinner();
+				
+				$(opinionDependentClass).spinner();
 				
 				$.getJSON(routes.OpinionCollections.opinionMiner({ collection: options.collection.uuid, document: uuid }))
 					.success(function(result) {
 						
-						$(docTextContainer)
-							.spinner("destroy")
-							.html(result.document.text);
+						$(opinionDependentClass).spinner("destroy");
 						
-						$(summaryContainer).spinner("destroy");
-						$(graphContainer).spinner("destroy");
+						$(docTextContainer).html(result.document.text);
 						
-						$(summaryTable)
-							.append("<tr><th>Aspect</th><th>Polarity</th></tr>");
+						$(summaryTable).append("<tr><th>Aspect</th><th>Polarity</th></tr>");
 						
 						var data = [];
 						var max = 0;
@@ -85,7 +68,6 @@
 						
 						var plot = data.length && $.jqplot(graphCanvasId, [ data ], {
 							axesDefaults: {
-//								labelRenderer: $.jqplot.CanvasAxisLabelRenderer
 							},
 							seriesDefaults: {
 								renderer: $.jqplot.BarRenderer,
@@ -94,16 +76,13 @@
 							axes: {
 								xaxis: {
 							        renderer: $.jqplot.CategoryAxisRenderer,
-//							        label: "Aspect",
 							        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
 							        tickOptions: {
-//							        	angle: -30,
 							        	fontFamily: "Courier New",
 							        	fontSize: "9pt"
 								    }
 								},
 								yaxis: {
-//									label: "Polarity",
 									min: -max * 1.1,
 									max: max * 1.1,
 									tickOptions: {

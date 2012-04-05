@@ -24,7 +24,7 @@
 		<div class="ob-doc-container ui-float-right">
 			<div id="documentContainer">
 				<div class="ui-widget-header ui-corner-top ol-header"><span>Reviews Text</span></div>
-				<div id="documentTextContainer" class="ob-document-text ui-widget-content">
+				<div id="documentTextContainer" class="ob-document-text ui-widget-content opinion-dependent">
 				</div>
 			</div>
 		</div>		
@@ -33,22 +33,20 @@
 		<div class="ob-summary-inner-container">
 			<div class="ob-summary-text-container">
 				<div class="ui-widget-header ui-corner-top ol-header"><span>Opinion Summary</span></div>
-				<div id="cntnrOpinionSummary" class="ui-widget-content ob-summary-box">
+				<div id="cntnrOpinionSummary" class="ui-widget-content ob-summary-box opinion-dependent">
 					<table id="tblOpinionSummary">
 					</table>
 				</div>
 			</div>
 			<div class="ob-summary-graph-container">
 				<div class="ui-widget-header ui-corner-top ol-header"><span>Aspect Polarity Association</span></div>
-				<div id="cntnrOpinionGraph" class="ui-widget-content ob-summary-box">
+				<div id="cntnrOpinionGraph" class="ui-widget-content ob-summary-box opinion-dependent">
 					<div id="cnvsOpinionGraph">
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<div class="ui-helper-clearfix"></div>
 </div>
 
 #{script "jqplot/jquery.jqplot.min.js" /} 

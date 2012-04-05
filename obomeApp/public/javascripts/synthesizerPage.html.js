@@ -54,7 +54,6 @@
 				
 				$.post(routes.OpinionCollections.distill({ collection: collection.uuid }), { threshold: $(thresholdTextbox).val() })
 					.success(function(collection) {
-						$(nextButton).spinner("destroy");
 						window.location.href = routes.OpinionCollections.aspectsBrowserPage({ collection: collection.uuid });
 					});
 			});

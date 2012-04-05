@@ -15,4 +15,3 @@ call mvn install:install-file -Dfile=owlapi-bin.jar -DgroupId=owlapi -DartifactI
 cd..
 cd obomeApp
 call play mvn:up
-call play ec

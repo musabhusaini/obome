@@ -18,12 +18,18 @@
 		<div id="aspectsContainer"></div>
 	</div>
 	<div class="ui-helper-clearfix"></div>
+	<div class="ui-vertical-space"></div>
 	<div class="ui-float-right">
-		<div id="btnDownload">Download</div>
-		<div id="btnNext">Next</div>
+		<div id="btnUpload" class="main-button">Upload</div>
+		<div id="btnDownload" class="main-button">Download</div>
+		<div id="btnNext" class="main-button">Next</div>
 	</div>
 </div>
 
+#{script "plupload/plupload.js" /}
+#{script "plupload/plupload.html5.js" /}
+#{script "plupload/plupload.html4.js" /}
+#{script "plupload/jquery.ui.plupload.js" /}
 #{press.script "widgets.documentBrowser.js" /}
 #{press.script "widgets.aspectsBrowser.js" /}
 #{press.script "aspectsBrowserPage.html.js" /}

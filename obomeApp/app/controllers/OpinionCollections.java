@@ -20,7 +20,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import jobs.OpinionCollectionDistiller;
 import jobs.OpinionCollectionDistillerAnalyzer;
 import jobs.OpinionCollectionSynthesizer;
-import jobs.OrphanCorporaCleaner;
 import models.DocumentViewModel;
 import models.OpinionCollectionItemViewModel;
 import models.OpinionCollectionViewModel;
@@ -42,7 +41,6 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 
 import demoPackage.demoPage;
-
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Corpus;
 import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
@@ -309,7 +307,12 @@ public class OpinionCollections extends Application {
 					.setParameter("key", key)
 					.getSingleResult();
 			
-			result.aspectOpinionMap.put(label, aspectSummaryRaw.get(key));
+			float score = aspectSummaryRaw.get(key);
+			if (Float.isNaN(score)) {
+				score = 0;
+			}
+			
+			result.aspectOpinionMap.put(label, score);
 		}
 		
 		renderJSON(result);
