@@ -1,7 +1,7 @@
-(function(window, document, $, ontologyLearner) {
-	ontologyLearner.Util = ontologyLearner.Util || {};
+(function(window, document, $, obome) {
+	obome.Utils = obome.Utils || {};
 
-	ontologyLearner.Util.displayMessage = function(options) {
+	obome.Utils.displayMessage = function(options) {
 		var container = $("<div>")
 			.attr("title", options.title || "Message")
 			.html(options.message)
@@ -19,4 +19,4 @@
 			});
 	};
 	
-})(window, window.document, window.jQuery, window.ontologyLearner);
+})(window, window.document, window.jQuery, window.obome);

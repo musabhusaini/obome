@@ -125,7 +125,12 @@ public class Application extends Controller implements EnhancedForContinuations 
 
 		@Override
 		public T apply(String uuid) {
-			T obj = em().find(this.clazz, IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(uuid)));
+			T obj = null;
+			try {
+				obj = em().find(this.clazz, IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(uuid)));
+			} catch (IllegalArgumentException e) {
+				obj = null;
+			}
 			return obj;
 		}
 	}
@@ -144,24 +149,17 @@ public class Application extends Controller implements EnhancedForContinuations 
 	
 	public static <T extends Identifiable> T fetch(Class<T> clazz, String uuid, String idAppendage, Function<String,T> fallback) {
 		Boolean bypassCache = true; //params.get("bypassCache", Boolean.class);
-		if (bypassCache != null && bypassCache) {
-//			System.out.println("Bypassing cache as requested.");
-			
-			return fallback.apply(uuid);
-		}
+		T obj = null;
 		
 		String cacheId = uuid + idAppendage;
-		T obj = Cache.get(cacheId, clazz);
+		
+		if (bypassCache == null || !bypassCache) {
+			obj = Cache.get(cacheId, clazz);
+		}
+		
 		if (obj == null) {
-//			System.out.println("Couldn't find " + clazz.getSimpleName() + " in cache, looking up in DB.");
-			
 			obj = fallback.apply(uuid);
-			
-			if (obj == null) {
-				throw new IllegalArgumentException("No such item exists.");
-			}
-		} else {
-//			System.out.println("Found " + clazz.getSimpleName() + " from cache.");
+			notFoundIfNull(obj, request.url);
 		}
 		
 		encache(obj, idAppendage);
@@ -197,7 +195,7 @@ public class Application extends Controller implements EnhancedForContinuations 
 	}
 	
 	public static void ping() {
-		renderText("Good deal!");
+		renderJSON(true);
 	}
 	
 	public static void aboutPage() {

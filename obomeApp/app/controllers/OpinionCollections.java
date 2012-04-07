@@ -35,6 +35,7 @@ import org.w3c.dom.NodeList;
 
 import play.Logger;
 import play.libs.F.Promise;
+import play.mvc.results.NotFound;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -182,7 +183,6 @@ public class OpinionCollections extends Application {
 	
 	public static void synthesizerPage(String corpus) {
 		Corpus c = fetch(Corpus.class, corpus);
-		
 		OpinionCorpusViewModel viewModel = new OpinionCorpusViewModel(c);
 		viewModel.size = getCorpusSize(c);
 		corpus = new Gson().toJson(viewModel, OpinionCorpusViewModel.class);
@@ -235,22 +235,11 @@ public class OpinionCollections extends Application {
 	}
 	
 	public static void rename(String corpus, String name) {
-		Corpus c = fetch(Corpus.class, corpus);
-		
-		if (c == null) {
-			SetCover sc = fetch(SetCover.class, corpus);
+		try {
+			Corpus c = fetch(Corpus.class, corpus);
 			
-			if (sc == null || !session.getId().equals(sc.getOwnerSessionId())) {
-				renderJSON(false);
-				return;
-			}
-			
-			sc.setName(name);
-			em().merge(sc);
-		} else {
 			if (!session.getId().equals(c.getOwnerSessionId())) {
 				renderJSON(false);
-				return;
 			}
 			
 			c.setName(name);
@@ -261,6 +250,15 @@ public class OpinionCollections extends Application {
 				em().merge(sc);
 			}
 			em().merge(c);
+		} catch(NotFound e) {
+			SetCover sc = fetch(SetCover.class, corpus);
+			
+			if (sc == null || !session.getId().equals(sc.getOwnerSessionId())) {
+				renderJSON(false);
+			}
+			
+			sc.setName(name);
+			em().merge(sc);			
 		}
 		
 		renderJSON(true);

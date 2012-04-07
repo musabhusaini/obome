@@ -1,4 +1,4 @@
-(function(window, document, $, routes, Util) {
+(function(window, document, $, routes, Utils) {
 
 	var headerContainer = "dw_headerContainer";
 	var headerLabel = "dw_headerLabel";
@@ -343,4 +343,4 @@
 		}
 	});
 	
-})(window, window.document, window.jQuery, window.ontologyLearner.routes, window.ontologyLearner.Util);
+})(window, window.document, window.jQuery, window.obome.routes, window.obome.Utils);

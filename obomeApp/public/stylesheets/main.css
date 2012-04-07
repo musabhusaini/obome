@@ -44,6 +44,7 @@ ul.ui-controls-list > li {
 	width: 36px;
 	height: 36px;
 	background-image: url(/public/images/spinner.gif);
+	background-repeat: no-repeat;
 }
 
 .ui-fit-horizontal {

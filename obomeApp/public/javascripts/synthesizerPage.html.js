@@ -1,6 +1,6 @@
-(function(window, document, $, ontologyLearner, routes) {
+(function(window, document, $, obome, routes) {
 
-	ontologyLearner.displayPage = function(options) {
+	obome.displayPage = function(options) {
 		
 		var propertiesContainer = "#cntnrProperties";
 		var nameTextbox = "#txtName";
@@ -169,4 +169,4 @@
 			ratio: 0.75
 		});
 	};
-})(window, window.document, window.jQuery, window.ontologyLearner, window.ontologyLearner.routes)
+})(window, window.document, window.jQuery, window.obome, window.obome.routes)

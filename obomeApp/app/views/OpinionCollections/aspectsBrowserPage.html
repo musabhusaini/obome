@@ -35,11 +35,11 @@
 #{press.script "aspectsBrowserPage.html.js" /}
 
 <script type="text/javascript">
-	(function(window, document, $, ontologyLearner) {
+	(function(window, document, $, obome) {
 		$(document).ready(function() {
-			ontologyLearner.displayPage({
+			obome.displayPage({
 				collection: $.parseJSON($("<div>").html("${collection}").text())
 			});
 		});
-	})(window, window.document, window.jQuery, window.ontologyLearner)
+	})(window, window.document, window.jQuery, window.obome)
 </script>

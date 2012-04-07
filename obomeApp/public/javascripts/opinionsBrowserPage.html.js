@@ -1,6 +1,6 @@
-(function(window, document, $, ontologyLearner, routes) {
+(function(window, document, $, obome, routes) {
 
-	ontologyLearner.displayPage = function(options) {
+	obome.displayPage = function(options) {
 		
 		var docContainer = "#documentContainer";
 		var docTextContainer = "#documentTextContainer";
@@ -97,4 +97,4 @@
 		
 		$(reviewsList).change();
 	};
-})(window, window.document, window.jQuery, window.ontologyLearner, window.ontologyLearner.routes)
+})(window, window.document, window.jQuery, window.obome, window.obome.routes)

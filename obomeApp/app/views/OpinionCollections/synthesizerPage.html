@@ -39,11 +39,11 @@
 #{press.script "synthesizerPage.html.js" /}
 
 <script type="text/javascript">
-	(function(window, document, $, ontologyLearner, routes) {
+	(function(window, document, $, obome, routes) {
 		$(document).ready(function() {
-			ontologyLearner.displayPage({
+			obome.displayPage({
 				corpus: $.parseJSON($("<div>").html("${corpus}").text())
 			});
 		});
-	})(window, window.document, window.jQuery, window.ontologyLearner, ontologyLearner.routes)
+	})(window, window.document, window.jQuery, window.obome, window.obome.routes)
 </script>

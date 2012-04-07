@@ -1,4 +1,4 @@
-(function(window, document, JSON, $, routes, Util) {
+(function(window, document, JSON, $, routes, Utils) {
 
 	var aspectsListId = "ab_aspects_list";
 	var keywordsListId = "ab_keywords_list";
@@ -16,7 +16,7 @@
 
 	function callAndDisplay(handlers, value, errorMessage, context, list) {
 		if (!value) {
-			Util.displayMessage({
+			Utils.displayMessage({
 				title: "No Value",
 				message: "Nothing to do anything with."
 			});
@@ -33,7 +33,7 @@
 				}
 			})
 			.error(function() {
-				Util.displayMessage(errorMessage);
+				Utils.displayMessage(errorMessage);
 			});
 	}
 	
@@ -588,4 +588,4 @@
 		}
 	});
 
-})(window, window.document, window.JSON, window.jQuery, window.ontologyLearner.routes, window.ontologyLearner.Util);
+})(window, window.document, window.JSON, window.jQuery, window.obome.routes, window.obome.Utils);

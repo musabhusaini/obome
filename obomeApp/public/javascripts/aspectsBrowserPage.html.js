@@ -1,6 +1,6 @@
-(function(window, document, $, ontologyLearner, routes) {
+(function(window, document, $, obome, routes) {
 
-	ontologyLearner.displayPage = function(options) {
+	obome.displayPage = function(options) {
 		var docContainer = "#documentContainer";
 		var aspectsContainer = "#aspectsContainer";
 		var uploadButton = "#btnUpload";
@@ -65,4 +65,4 @@
 				window.location.href = routes.OpinionCollections.opinionsBrowserPage({ collection: options.collection.uuid });
 			});
 	};
-})(window, window.document, window.jQuery, window.ontologyLearner, window.ontologyLearner.routes)
+})(window, window.document, window.jQuery, window.obome, window.obome.routes)

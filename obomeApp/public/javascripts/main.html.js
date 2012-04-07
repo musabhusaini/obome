@@ -1,6 +1,6 @@
-(function(window, document, $, ontologyLearner, routes) {
+(function(window, document, $, obome, routes) {
 
-	ontologyLearner.displayMainPage = function(options) {
+	obome.displayMainPage = function(options) {
 		function pingDelayed() {
 			window.setTimeout(ping, options.pingInterval);
 		}
@@ -12,4 +12,4 @@
 		
 		pingDelayed();
 	};
-})(window, window.document, window.jQuery, window.ontologyLearner, window.ontologyLearner.routes)
+})(window, window.document, window.jQuery, window.obome, window.obome.routes)

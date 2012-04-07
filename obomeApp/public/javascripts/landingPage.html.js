@@ -1,4 +1,4 @@
-(function(window, document, $, ontologyLearner, routes) {
+(function(window, document, $, obome, routes) {
 	var navigationAccordion = "#acrdnNav";
 	var accordionOptionUpload = "#acrdnOptUpload";
 	var accordionOptionLoad = "#acrdnOptLoad";
@@ -10,7 +10,7 @@
 	var messageContainer = "#cntnrMessage";
 	var nextButton = "#btnNext";
 
-	ontologyLearner.displayPage = function(options) {
+	obome.displayPage = function(options) {
 		
 		function accordionChange(ui) {
 			$(ui)
@@ -160,4 +160,4 @@
 				}
 			});
 	};
-})(window, window.document, window.jQuery, window.ontologyLearner, window.ontologyLearner.routes)
+})(window, window.document, window.jQuery, window.obome, window.obome.routes)

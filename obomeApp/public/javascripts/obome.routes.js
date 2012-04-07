@@ -1,7 +1,6 @@
-(function(window, $, ontologyLearner) {
-	ontologyLearner.routes = ontologyLearner.routes || {};
-	
-	ontologyLearner.routes = $.extend(ontologyLearner.routes, {
+(function(window, $, obome) {
+
+	obome.routes = $.extend(obome.routes || {}, {
 		StaticContent: {
 			Images: {
 				spinner: "/public/images/spinner.gif"
@@ -50,4 +49,4 @@
 			single: #{jsAction @Keywords.single(':collection', ':aspect', ':keyword')/}
 		}
 	});
-})(window, window.jQuery, window.ontologyLearner);
+})(window, window.jQuery, window.obome);
