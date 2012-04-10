@@ -27,7 +27,7 @@ class SentenceStanford extends Sentence {
     processedSentence = sentence;
     for (CoreLabel token : processedSentence.get(TokensAnnotation.class)) {
       tokens.add(new TokenStanford(token.get(TextAnnotation.class), Utils.GetWordType(token
-          .get(PartOfSpeechAnnotation.class)), ont));
+          .get(PartOfSpeechAnnotation.class)), ont, token.beginPosition()));
     }
     SemanticGraph dependencies = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
     String[] result = dependencies.toList().split("\n");
@@ -49,16 +49,19 @@ class SentenceStanford extends Sentence {
         {
           word1.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word1.addModifierToken(word2);
           word2.SetAsUsed();
         } else if (dependencyType.equals("advmod")) // adverbial modifier
         {
           word1.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word1.addModifierToken(word2);
           word2.SetAsUsed();
         } else if (dependencyType.equals("amod")) // adjectival modifier
         {
           word1.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word1.addModifierToken(word2);
           word2.SetAsUsed();
         } else if (dependencyType.equals("ccomp")) // clausal complement
         {
@@ -69,44 +72,54 @@ class SentenceStanford extends Sentence {
         } else if (dependencyType.equals("neg")) // negation modifier
         {
           word1.SetScore(word1.GetScore() * -1);
+          word1.addModifierToken(word2);
         } else if (dependencyType.equals("npadvmod")) // noun phrase as adverbial modifier
         {
           word2.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word2.addModifierToken(word1);
           word1.SetAsUsed();
         } else if (dependencyType.equals("nsubj")) // nominal subject
         {
           word2.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word2.addModifierToken(word1);
           word1.SetAsUsed();
         } else if (dependencyType.equals("nsubjpass")) // passive nominal subject
         {
           word2.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word2.addModifierToken(word1);
           word1.SetAsUsed();
         } else if (dependencyType.equals("partmod")) // participial modifier
         {
           word1.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word1.addModifierToken(word2);
           word2.SetAsUsed();
         } else if (dependencyType.equals("punct")) // punctuation
         {
-          if (word2.GetOriginal().equals("!"))
+          if (word2.GetOriginal().equals("!")) {
             word1.SetWeight(word1.GetWeight() + 1);
+            word1.addModifierToken(word2);
+          }
         } else if (dependencyType.equals("rcmod")) // relative clause modifier
         {
           word1.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word1.addModifierToken(word2);
           word2.SetAsUsed();
         } else if (dependencyType.equals("rel")) // relative
         {
           word2.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word2.addModifierToken(word1);
           word1.SetAsUsed();
         } else if (dependencyType.equals("xcomp")) // open clausal complement
         {
           word2.UpdateScore(word1.GetScore(), word1.GetWeight(), word2.GetScore(),
               word2.GetWeight());
+          word2.addModifierToken(word1);
           word1.SetAsUsed();
         }
       }
@@ -122,16 +135,6 @@ class SentenceStanford extends Sentence {
     if (this.scoreList.containsKey(aspect)) {
       this.scoreList.put(aspect, (scoreList.get(aspect) * weightList.get(aspect) + score * weight)
           / (weight + weightList.get(aspect)));
-      weightList.put(aspect, weightList.get(aspect) + weight);
-    } else {
-      this.scoreList.put(aspect, score);
-      weightList.put(aspect, weight);
-    }
-  }
-
-  private void AddAspectScore2(Long aspect, float score, int weight) {
-    if (this.scoreList.containsKey(aspect) && Math.abs(scoreList.get(aspect)) < Math.abs(score)) {
-      scoreList.put(aspect, score);
       weightList.put(aspect, weightList.get(aspect) + weight);
     } else {
       this.scoreList.put(aspect, score);

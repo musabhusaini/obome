@@ -1,72 +1,79 @@
 package eu.ubipol.opinionmining.nlp_engine;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import eu.ubipol.opinionmining.owl_engine.OntologyHandler;
 import eu.ubipol.opinionmining.owl_engine.Utils;
-import eu.ubipol.opinionmining.stemmer.EnglishStemmer;
+import eu.ubipol.opinionmining.stem_engine.Stemmer;
 
 class TokenStanford extends Token {
   private String original;
+  private String tokenRoot;
   private int tokenType;
   private float score;
   private int weight;
   private Long aspect;
   private boolean isModified;
   private boolean isUsed;
+  private List<Token> preTokens;
+  private int tokenIndex;
 
-  public TokenStanford(String word, int type, OntologyHandler ont) throws Exception {
+  public TokenStanford(String word, int type, OntologyHandler ont, int index) throws Exception {
+    tokenIndex = index;
+    preTokens = new ArrayList<Token>();
     original = word.trim();
     tokenType = type;
     isModified = false;
     isUsed = false;
-    // Stemmer stemmer = new Stemmer("C:\\Users\\akocyigit\\Desktop\\Ubipol\\stemrules.txt",
-    // "C:\\Users\\akocyigit\\Desktop\\Ubipol\\en_US.aff",
-    // "C:\\Users\\akocyigit\\Desktop\\Ubipol\\en_US.dic");
-    // aspect = new Long(-1);
-    // List<String> stems = stemmer.GetStems(original.toLowerCase());
-    // for (int i = 0; i < stems.size() && aspect == -1; i++) {
-    // aspect = ont.GetFeatureOfAWord(stems.get(i));
-    // }
-    //
-    // score = -2;
-    // if (tokenType == Utils.ADJECTIVE_ID || tokenType == Utils.ADVERB_ID) {
-    // for (int i = 0; i < stems.size() && aspect == -1; i++) {
-    // score = ont.GetWordScore(stems.get(i), tokenType);
-    // }
-    //
-    // if (score == -2)
-    // weight = 0;
-    // else
-    // weight = 1;
-    // } else {
-    // for (int i = 0; i < stems.size() && aspect == -1; i++) {
-    // score = ont.GetWordScore(stems.get(i), tokenType);
-    // }
-    //
-    // if (score == -2)
-    // weight = 0;
-    // else
-    // weight = 1;
-    // }
-    EnglishStemmer stemmer = new EnglishStemmer();
-    stemmer.setCurrent(original.toLowerCase());
-    stemmer.stem();
-    aspect = ont.GetFeatureOfAWord(stemmer.getCurrent());
+    Stemmer stemmer = new Stemmer("stemrules.txt", "en_US.aff", "en_US.dic", "h,p,s");
+    aspect = new Long(-1);
+    List<String> stems = stemmer.GetStems(original.toLowerCase());
+    stems.add(0, original.toLowerCase());
+    if (stems.size() > 0)
+      tokenRoot = stems.get(0);
+    else
+      tokenRoot = original.toLowerCase();
+    for (int i = 0; i < stems.size() && aspect == -1; i++) {
+      aspect = ont.GetFeatureOfAWord(stems.get(i));
+      if (aspect != -1)
+        tokenRoot = stems.get(i);
+    }
+
     String typeString = "";
     if (tokenType == Utils.ADJECTIVE_ID)
-      typeString = "a";
-    else if (tokenType == Utils.VERB_ID)
-      typeString = "v";
+      typeString = "_a";
     else if (tokenType == Utils.ADVERB_ID)
-      typeString = "r";
+      typeString = "_r";
     else if (tokenType == Utils.NOUN_ID)
-      typeString = "n";
+      typeString = "_n";
+    else if (tokenType == Utils.VERB_ID)
+      typeString = "_v";
+    score = -2;
+    if (tokenType == Utils.ADJECTIVE_ID || tokenType == Utils.ADVERB_ID) {
+      for (int i = 0; i < stems.size() && score == -2; i++) {
+        if (eu.ubipol.opinionmining.nlp_engine.Utils.GetScoreList().containsKey(
+            stems.get(i) + typeString))
+          score = eu.ubipol.opinionmining.nlp_engine.Utils.GetScoreList().get(
+              stems.get(i) + typeString);
+      }
 
-    if (Utils.GetScores().containsKey(stemmer.getCurrent() + "_" + typeString)) {
-      score = Utils.GetScores().get(stemmer.getCurrent() + "_" + typeString);
-      weight = 1;
+      if (score == -2)
+        weight = 0;
+      else
+        weight = 1;
     } else {
-      score = 0;
-      weight = 0;
+      for (int i = 0; i < stems.size() && score == -2; i++) {
+        if (eu.ubipol.opinionmining.nlp_engine.Utils.GetScoreList().containsKey(
+            stems.get(i) + typeString))
+          score = eu.ubipol.opinionmining.nlp_engine.Utils.GetScoreList().get(
+              stems.get(i) + typeString);
+      }
+
+      if (score == -2)
+        weight = 0;
+      else
+        weight = 1;
     }
   }
 
@@ -78,13 +85,14 @@ class TokenStanford extends Token {
     isModified = true;
   }
 
-  public void UpdateScore2(float score1, int weight1, float score2, int weight2) {
-    if (Math.abs(score1) < Math.abs(score2) && Math.abs(score) < Math.abs(score2))
-      score = score2;
-    else if (Math.abs(score) < Math.abs(score1))
-      score = score1;
-    weight = weight1 + weight2;
-    isModified = true;
+  @Override
+  public void addModifierToken(Token preToken) {
+    preTokens.add(preToken);
+  }
+
+  @Override
+  public List<Token> GetModifiers() {
+    return preTokens;
   }
 
   @Override
@@ -140,5 +148,15 @@ class TokenStanford extends Token {
   @Override
   public String toString() {
     return original;
+  }
+
+  @Override
+  public String GetRoot() {
+    return tokenRoot;
+  }
+
+  @Override
+  public int GetTokenIndex() {
+    return tokenIndex;
   }
 }

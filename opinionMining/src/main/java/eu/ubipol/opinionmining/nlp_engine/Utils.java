@@ -1,22 +1,12 @@
 package eu.ubipol.opinionmining.nlp_engine;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
-import opennlp.tools.chunker.ChunkerME;
-import opennlp.tools.chunker.ChunkerModel;
-import opennlp.tools.postag.POSModel;
-import opennlp.tools.postag.POSTaggerME;
-import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.tokenize.TokenizerME;
-import opennlp.tools.tokenize.TokenizerModel;
-
-import com.sun.media.sound.InvalidFormatException;
-
+import reader.OpinionWordReader;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import eu.ubipol.opinionmining.stem_engine.Stemmer;
 
 public class Utils {
   public static enum TokenType {
@@ -29,6 +19,31 @@ public class Utils {
   public static int VERB_PHRASE = 4;
 
   private static StanfordCoreNLP pipeline;
+
+  private static Map<String, Float> wordScores;
+
+  public static Map<String, Float> GetScoreList() throws Exception {
+    if (wordScores == null) {
+      wordScores = new HashMap<String, Float>();
+      OpinionWordReader opinionReader = new OpinionWordReader("sentiwordnet_processed.txt");
+      Stemmer stemmer = new Stemmer(null, null, null, "s");
+      while (opinionReader.HasNextLine()) {
+        String word = stemmer.GetStems(opinionReader.GetNext()).get(0);
+        if (opinionReader.GetCurrentType() == eu.ubipol.opinionmining.owl_engine.Utils.ADJECTIVE_ID)
+          word = word + "_a";
+        else if (opinionReader.GetCurrentType() == eu.ubipol.opinionmining.owl_engine.Utils.ADVERB_ID)
+          word = word + "_r";
+        else if (opinionReader.GetCurrentType() == eu.ubipol.opinionmining.owl_engine.Utils.NOUN_ID)
+          word = word + "_n";
+        else if (opinionReader.GetCurrentType() == eu.ubipol.opinionmining.owl_engine.Utils.VERB_ID)
+          word = word + "_v";
+        if (!wordScores.containsKey(word)) {
+          wordScores.put(word, Float.parseFloat(Double.toString(opinionReader.GetCurrentScore())));
+        }
+      }
+    }
+    return wordScores;
+  }
 
   public static int GetWordType(String typeString) {
     if (typeString.length() < 2)
@@ -55,25 +70,5 @@ public class Utils {
       pipeline = new StanfordCoreNLP(props);
     }
     return pipeline;
-  }
-
-  protected static SentenceDetectorME GetSentenceDetector() throws InvalidFormatException,
-      FileNotFoundException, IOException {
-    return new SentenceDetectorME(new SentenceModel(new FileInputStream("NlpModels/en-sent.bin")));
-  }
-
-  protected static ChunkerME GetChunker() throws InvalidFormatException, FileNotFoundException,
-      IOException {
-    return new ChunkerME(new ChunkerModel(new FileInputStream("NlpModels/en-chunker.bin")));
-  }
-
-  protected static TokenizerME GetTokenizer() throws InvalidFormatException, FileNotFoundException,
-      IOException {
-    return new TokenizerME(new TokenizerModel(new FileInputStream("NlpModels/en-token.bin")));
-  }
-
-  protected static POSTaggerME GetPosTagger() throws InvalidFormatException, FileNotFoundException,
-      IOException {
-    return new POSTaggerME(new POSModel(new FileInputStream("NlpModels/en-pos-maxent.bin")));
   }
 }

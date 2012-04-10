@@ -49,16 +49,6 @@ class ParagraphStanford extends Paragraph {
     }
   }
 
-  private void AddASpectScore2(Long aspect, float score, int weight) {
-    if (this.scoreList.containsKey(aspect) && Math.abs(scoreList.get(aspect)) < Math.abs(score)) {
-      scoreList.put(aspect, score);
-      weightList.put(aspect, weightList.get(aspect) + weight);
-    } else {
-      this.scoreList.put(aspect, score);
-      weightList.put(aspect, weight);
-    }
-  }
-
   @Override
   public Map<Long, Float> GetScoreInfo() {
     if (scoreList == null) {

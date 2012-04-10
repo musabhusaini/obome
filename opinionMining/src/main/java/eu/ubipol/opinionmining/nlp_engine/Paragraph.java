@@ -11,11 +11,6 @@ public abstract class Paragraph {
     return new ParagraphStanford(text, ont);
   }
 
-  public static Paragraph GetParagraphInstanceForOpenNlp(String text, OntologyHandler ont)
-      throws Exception {
-    return new ParagraphOpenNlp(text, ont);
-  }
-
   public abstract List<Sentence> GetSentences();
 
   public abstract String toString();

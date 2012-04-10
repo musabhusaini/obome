@@ -12,11 +12,6 @@ public abstract class Sentence {
     return new SentenceStanford(sentence, ont);
   }
 
-  public static Sentence GetSentenceInstanceForOpenNlp(String sentence, OntologyHandler ont)
-      throws Exception {
-    return new SentenceOpenNlp(sentence, ont);
-  }
-
   public abstract List<Token> GetTokens();
 
   protected abstract int GetWeightOfAnAspect(Long aspect);
