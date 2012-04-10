@@ -12,6 +12,7 @@ import java.util.Vector;
  * Class: Paice * * Purpose: Stemming Algorithm *
  ****************************************/
 public class PaiceStemmer {
+  @SuppressWarnings("rawtypes")
   private Vector ruleTable; // array of rules
   private int[] ruleIndex; // index to above
   private boolean preStrip;
@@ -20,6 +21,7 @@ public class PaiceStemmer {
   /********************************
    * Method: Paice * * Purpose: init *
    ********************************/
+  @SuppressWarnings("rawtypes")
   public PaiceStemmer(String rules, String pre) {
     ruleTable = new Vector();
     ruleIndex = new int[26];
@@ -36,6 +38,7 @@ public class PaiceStemmer {
    * enters them * into ruleTable, ruleIndex is set up to provide * faster access to relevant rules.
    * *
    ************************************************************************/
+  @SuppressWarnings("unchecked")
   private void ReadRules(String stemRules) {
     int ruleCount = 0;
     int j = 0;

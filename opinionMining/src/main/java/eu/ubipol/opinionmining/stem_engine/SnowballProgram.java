@@ -1,4 +1,4 @@
-package eu.ubipol.opinionmining.stemmer;
+package eu.ubipol.opinionmining.stem_engine;
 
 import java.lang.reflect.InvocationTargetException;
 

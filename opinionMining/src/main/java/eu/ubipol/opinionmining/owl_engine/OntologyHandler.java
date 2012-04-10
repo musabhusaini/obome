@@ -4,8 +4,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import eu.ubipol.opinionmining.Feature;
-
 public abstract class OntologyHandler {
   public static OntologyHandler CreateOntologyHandler(String ontologyId, String ontologyName,
       String path) {
@@ -47,9 +45,6 @@ public abstract class OntologyHandler {
   public abstract Long AddPolarityWord(int wordType, float score, String word) throws Exception;
 
   public abstract void AddScoreCardItem(Long commentId, Long featureId, float score, int weight)
-      throws Exception;
-
-  public abstract List<Feature> GetOrderedFeatures(Date startDate, Date endDate, int k)
       throws Exception;
 
   public abstract Map<Long, Integer> GetFeatureCountBetweenDates(Date startDate, Date endDate)

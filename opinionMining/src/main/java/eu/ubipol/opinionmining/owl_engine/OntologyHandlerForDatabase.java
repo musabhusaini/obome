@@ -11,11 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import eu.ubipol.opinionmining.Domain;
-import eu.ubipol.opinionmining.Feature;
-import eu.ubipol.opinionmining.polarity_analyzer.DomainImpl;
-import eu.ubipol.opinionmining.polarity_analyzer.FeatureImpl;
-
 public class OntologyHandlerForDatabase extends OntologyHandler {
   private Connection conn;
   private Long domainId;
@@ -255,25 +250,6 @@ public class OntologyHandlerForDatabase extends OntologyHandler {
     stmt.setDate(3, new java.sql.Date(date.getTime()));
     stmt.execute();
     stmt.close();
-  }
-
-  @Override
-  public List<Feature> GetOrderedFeatures(Date startDate, Date endDate, int k) throws Exception {
-    List<Feature> features = new ArrayList<Feature>();
-    PreparedStatement stmt = conn
-        .prepareStatement("Select FEATURES.featureId, featureName, count(*) as counts from SCORECARDS inner join FEATURES on FEATURES.featureId = SCORECARDS.featureId inner join COMMENTS on COMMENTS.commentId = SCORECARDS.commentId where FEATURES.domainId = ? and COMMENTS.commentDate >= ? and COMMENTS.commentDate <= ? group by FEATURES.featureId, featureName order by counts desc LIMIT "
-            + Integer.toString(k));
-    stmt.setLong(1, domainId);
-    stmt.setDate(2, new java.sql.Date(startDate.getTime()));
-    stmt.setDate(3, new java.sql.Date(endDate.getTime()));
-    ResultSet set = stmt.executeQuery();
-    Domain d = new DomainImpl(domainId, GetDomainName());
-    while (set.next()) {
-      features.add(new FeatureImpl(set.getLong("featureId"), set.getString("featureName"), d));
-    }
-    set.close();
-    stmt.close();
-    return features;
   }
 
   @Override

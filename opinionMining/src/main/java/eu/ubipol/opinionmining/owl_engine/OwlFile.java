@@ -42,7 +42,7 @@ class OwlFile {
       return (new OwlFile(file, ontologyName));
     else {
       System.out.println("Don't have an owl file : " + path);
-      return null;
+      return new OwlFile(ontologyName, path);
     }
     // return (new OwlFile(ontologyName, ontologyId));
   }
@@ -56,7 +56,8 @@ class OwlFile {
 
     String ontologyIRIString = "http://www.co-ode.org/ontologies/" + ontologyName + ".owl";
     ontologyIRI = IRI.create(ontologyIRIString);
-    documentIRI = IRI.create(path);
+    File file = new File(path);
+    documentIRI = IRI.create(file.toURI());
     SimpleIRIMapper mapper = new SimpleIRIMapper(ontologyIRI, documentIRI);
 
     manager.addIRIMapper(mapper);
@@ -68,13 +69,14 @@ class OwlFile {
     this.AddClass(Utils.GetDomainString(ontologyName));
     this.AddSubClass(Utils.GetDomainString(ontologyName), Utils.POLARITY_KEYWORD);
     this.AddSubClass(Utils.GetDomainString(ontologyName), Utils.ASPECT_KEYWORD);
-    this.AddSubClass(Utils.GetDomainString(ontologyName), Utils.COMMENT_KEYWORD);
-    this.AddSubClass(Utils.GetDomainString(ontologyName), Utils.SCORECARD_KEYWORD);
+    // this.AddSubClass(Utils.GetDomainString(ontologyName), Utils.COMMENT_KEYWORD);
+    // this.AddSubClass(Utils.GetDomainString(ontologyName), Utils.SCORECARD_KEYWORD);
 
     this.AddSubClass(Utils.POLARITY_KEYWORD, Utils.ADJECTIVE_KEYWORD);
     this.AddSubClass(Utils.POLARITY_KEYWORD, Utils.ADVERB_KEYWORD);
     this.AddSubClass(Utils.POLARITY_KEYWORD, Utils.VERB_KEYWORD);
     this.AddSubClass(Utils.POLARITY_KEYWORD, Utils.NOUN_KEYWORD);
+
   }
 
   private OwlFile(File owlfile, String ontologyName) throws OWLOntologyCreationException {

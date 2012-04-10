@@ -1,11 +1,5 @@
 package eu.ubipol.opinionmining.owl_engine;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-
-import eu.ubipol.opinionmining.stemmer.EnglishStemmer;
-
 public class Utils {
   // [start] Ontology Keywords
   public final static String ASPECT_KEYWORD = "Aspects";
@@ -39,25 +33,6 @@ public class Utils {
   public static int VERB_ID = 3;
   public static int NOUN_ID = 4;
 
-  private static Map<String, Float> scores;
-
-  public static Map<String, Float> GetScores() throws Exception {
-    if (scores == null) {
-      scores = new HashMap<String, Float>();
-      EnglishStemmer stemmer = new EnglishStemmer();
-      Scanner reader = new Scanner(Utils.class.getResourceAsStream("sentiwordnet_processed.txt"));
-      while (reader.hasNextLine()) {
-        String[] line = reader.nextLine().split("\t");
-        stemmer.setCurrent(line[0].trim());
-        stemmer.stem();
-        if (!scores.containsKey(stemmer.getCurrent() + "_" + line[1]))
-          scores.put(stemmer.getCurrent() + "_" + line[1], Float.parseFloat(line[2]));
-      }
-      reader.close();
-    }
-    return scores;
-  }
-
   // [start] Ontology String Preparations
   protected static String GetAspectString(String aspect) {
     return ASPECT_PREFIX + aspect.trim().replace(' ', '_');
@@ -72,7 +47,7 @@ public class Utils {
   }
 
   protected static String GetPolarityWordString(String word, String prefix) {
-    return prefix + word.trim().toLowerCase();
+    return prefix + word.trim().replace(" ", "_").toLowerCase();
   }
 
   protected static String GetGroupString(String groupId) {
