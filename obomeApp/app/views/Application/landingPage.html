@@ -1,25 +1,32 @@
 #{extends "main.html" /}
 #{set title:"Home" /}
 
-#{stylesheet "plupload/css/jquery.ui.plupload.css" /}
-#{press.stylesheet "landingPage.css" /}
+#{set "moreStyles"}
+	#{stylesheet "plupload/css/jquery.ui.plupload.css" /}
+	#{press.stylesheet "landingPage.css" /}
+#{/set}
+
+#{set "moreScripts"}
+	#{script "plupload/plupload.js" /}
+	#{script "plupload/plupload.html5.js" /}
+	#{script "plupload/plupload.html4.js" /}
+	#{script "plupload/jquery.ui.plupload.js" /}
+	
+	#{press.script "landingPage.html.js" /}
+	
+	<script type="text/javascript">
+		(function(window, document, $, obome) {
+			$(document).ready(function() {
+				obome.displayPage({ });
+			});
+		})(window, window.document, window.jQuery, window.obome);
+	</script>
+#{/set}
 
 <div id="content">
 	<div id="acrdnNav">
 		<h3><a href="#">Upload a corpus</a></h3>
  		<div id="acrdnOptUpload">
-<!--			<div>You can upload your corpus contained in XML or ZIP files. The ZIP file must contain several XML files.
-			Each XML file must be in a format similar to:
-				<pre>&lt;root&gt;
-	&lt;document&gt;
-		some content
-	&lt;&#47;document&gt;
-	&lt;document&gt;
-		some more content
-	&lt;&#47;document&gt;
-	...
-&lt;&#47;root&gt;</pre>
-			</div> -->
 			<div id="cntnrUploader"></div>
 		</div>
 		<h3><a href="#">Load an existing corpus</a></h3>
@@ -42,17 +49,3 @@
 	<div id="cntnrMessage" class="ui-corner-all ui-float-left"></div>
 	<div id="btnNext" class="ui-float-right">Next</div>
 </div>
-
-#{script "plupload/plupload.js" /}
-#{script "plupload/plupload.html5.js" /}
-#{script "plupload/plupload.html4.js" /}
-#{script "plupload/jquery.ui.plupload.js" /}
-#{press.script "landingPage.html.js" /}
-
-<script type="text/javascript">
-	(function(window, document, $, obome) {
-		$(document).ready(function() {
-			obome.displayPage({ });
-		});
-	})(window, window.document, window.jQuery, window.obome);
-</script>

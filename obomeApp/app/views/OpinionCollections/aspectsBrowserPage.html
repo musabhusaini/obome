@@ -1,8 +1,31 @@
 #{extends "main.html" /}
 #{set title:"Aspects/Keywords Extraction" /}
 
-#{press.stylesheet "browserPages.css" /}
-#{press.stylesheet "aspectsBrowserPage.css" /}
+#{set "moreStyles"}
+	#{press.stylesheet "browserPages.css" /}
+	#{press.stylesheet "aspectsBrowserPage.css" /}
+#{/set}
+
+#{set "moreScripts"}
+	#{script "plupload/plupload.js" /}
+	#{script "plupload/plupload.html5.js" /}
+	#{script "plupload/plupload.html4.js" /}
+	#{script "plupload/jquery.ui.plupload.js" /}
+	
+	#{press.script "widgets.documentBrowser.js" /}
+	#{press.script "widgets.aspectsBrowser.js" /}
+	#{press.script "aspectsBrowserPage.html.js" /}
+
+	<script type="text/javascript">
+		(function(window, document, $, obome) {
+			$(document).ready(function() {
+				obome.displayPage({
+					collection: $.parseJSON($("<div>").html("${collection}").text())
+				});
+			});
+		})(window, window.document, window.jQuery, window.obome)
+	</script>
+#{/set}
 
 <div id="content">
 	<div class="ui-prominent ui-corner-all ui-distant ui-padded-message">
@@ -25,21 +48,3 @@
 		<div id="btnNext" class="main-button">Next</div>
 	</div>
 </div>
-
-#{script "plupload/plupload.js" /}
-#{script "plupload/plupload.html5.js" /}
-#{script "plupload/plupload.html4.js" /}
-#{script "plupload/jquery.ui.plupload.js" /}
-#{press.script "widgets.documentBrowser.js" /}
-#{press.script "widgets.aspectsBrowser.js" /}
-#{press.script "aspectsBrowserPage.html.js" /}
-
-<script type="text/javascript">
-	(function(window, document, $, obome) {
-		$(document).ready(function() {
-			obome.displayPage({
-				collection: $.parseJSON($("<div>").html("${collection}").text())
-			});
-		});
-	})(window, window.document, window.jQuery, window.obome)
-</script>

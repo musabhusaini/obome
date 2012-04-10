@@ -14,11 +14,13 @@
         
 		#{script "jquery-1.7.1.min.js" /}
 		#{script "jquery-ui-1.8.16.min.js" /}
+		
 		#{press.script "obome.js" /}
 		#{press.script "obome.Utils.js" /}
 		#{press.script src:"obome.routes.js", render:true /}
 		#{press.script "widgets.spinner.js" /}
 		#{press.script "main.html.js" /}
+		
         #{get "moreScripts" /}
         #{press.compressed-script /}
         
@@ -43,8 +45,6 @@
     				#{a @Application.landingPage()}Ontology-Based Opinion Mining Engine#{/a}
     			</div>
     			<div class="ui-subtitle">#{get 'title' /}</div>
-	    		<div id="banner-bottom" class="ui-vertical-space">
-	    		</div>
     		</div>
     		<div id="content-wrapper">
         		#{doLayout /}

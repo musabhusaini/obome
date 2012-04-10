@@ -1,9 +1,34 @@
 #{extends "main.html" /}
 #{set title:"Opinions Browser" /}
 
-#{press.stylesheet "browserPages.css" /}
-#{press.stylesheet "opinionsBrowserPage.css" /}
-#{stylesheet "jqplot/jquery.jqplot.min.css" /}
+#{set "moreStyles"}
+	#{stylesheet "jqplot/jquery.jqplot.min.css" /}
+	
+	#{press.stylesheet "browserPages.css" /}
+	#{press.stylesheet "opinionsBrowserPage.css" /}
+#{/set}
+
+#{set "moreScripts"}
+	#{script "jqplot/jquery.jqplot.min.js" /} 
+	#{script "jqplot/plugins/jqplot.barRenderer.min.js" /}
+	#{script "jqplot/plugins/jqplot.categoryAxisRenderer.min.js" /}
+	#{script "jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js" /}
+	#{script "jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js" /}
+	#{script "jqplot/plugins/jqplot.canvasTextRenderer.min.js" /}
+	
+	#{press.script "widgets.documentBrowser.js" /}
+	#{press.script "opinionsBrowserPage.html.js" /}
+
+	<script type="text/javascript">
+		(function(window, document, $, obome, routes) {
+			$(document).ready(function() {
+				obome.displayPage({
+					collection: $.parseJSON($("<div>").html("${collection}").text())
+				});
+			});
+		})(window, window.document, window.jQuery, window.obome, window.obome.routes)
+	</script>
+#{/set}
 
 <div id="content">
 	<div class="ui-prominent ui-corner-all ui-distant ui-padded-message">
@@ -48,23 +73,3 @@
 		</div>
 	</div>
 </div>
-
-#{script "jqplot/jquery.jqplot.min.js" /} 
-#{script "jqplot/plugins/jqplot.barRenderer.min.js" /}
-#{script "jqplot/plugins/jqplot.categoryAxisRenderer.min.js" /}
-#{script "jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js" /}
-#{script "jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js" /}
-#{script "jqplot/plugins/jqplot.canvasTextRenderer.min.js" /}
-
-#{press.script "widgets.documentBrowser.js" /}
-#{press.script "opinionsBrowserPage.html.js" /}
-
-<script type="text/javascript">
-	(function(window, document, $, obome, routes) {
-		$(document).ready(function() {
-			obome.displayPage({
-				collection: $.parseJSON($("<div>").html("${collection}").text())
-			});
-		});
-	})(window, window.document, window.jQuery, window.obome, window.obome.routes)
-</script>

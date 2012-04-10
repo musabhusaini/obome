@@ -1,13 +1,30 @@
 #{extends "main.html" /}
 #{set title:"Corpus Reducability Analysis" /}
 
-#{stylesheet "jqplot/jquery.jqplot.min.css" /}
-#{press.stylesheet "synthesizerPage.css" /}
+#{set "moreStyles"}
+	#{stylesheet "jqplot/jquery.jqplot.min.css" /}
+	
+	#{press.stylesheet "synthesizerPage.css" /}
+#{/set}
 
-#{script "jqplot/jquery.jqplot.min.js" /} 
-#{script "jqplot/plugins/jqplot.canvasTextRenderer.min.js" /}
-#{script "jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js" /}
-#{script "jqplot/plugins/jqplot.highlighter.min.js" /}
+#{set "moreScripts"}
+	#{script "jqplot/jquery.jqplot.min.js" /} 
+	#{script "jqplot/plugins/jqplot.canvasTextRenderer.min.js" /}
+	#{script "jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js" /}
+	#{script "jqplot/plugins/jqplot.highlighter.min.js" /}
+	
+	#{press.script "synthesizerPage.html.js" /}
+	
+	<script type="text/javascript">
+		(function(window, document, $, obome, routes) {
+			$(document).ready(function() {
+				obome.displayPage({
+					corpus: $.parseJSON($("<div>").html("${corpus}").text())
+				});
+			});
+		})(window, window.document, window.jQuery, window.obome, window.obome.routes)
+	</script>
+#{/set}
 
 <div id="content">
 	<div id="cntnrProperties">
@@ -35,15 +52,3 @@
 	<div id="cntnrMessage" class="ui-corner-all ui-float-left"></div>
 	<div id="btnNext" class="ui-float-right">Next</div>
 </div>
-
-#{press.script "synthesizerPage.html.js" /}
-
-<script type="text/javascript">
-	(function(window, document, $, obome, routes) {
-		$(document).ready(function() {
-			obome.displayPage({
-				corpus: $.parseJSON($("<div>").html("${corpus}").text())
-			});
-		});
-	})(window, window.document, window.jQuery, window.obome, window.obome.routes)
-</script>
