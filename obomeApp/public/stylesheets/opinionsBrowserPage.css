@@ -38,6 +38,14 @@
 	padding: .5em;
 }
 
+.ob-modified {
+	color: red;
+}
+
+.ob-modifier {
+	color: green;
+}
+
 #documentContainer {
 	margin-left: .5em;
 }

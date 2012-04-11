@@ -26,7 +26,10 @@ class TokenStanford extends Token {
     tokenType = type;
     isModified = false;
     isUsed = false;
-    Stemmer stemmer = new Stemmer("stemrules.txt", "en_US.aff", "en_US.dic", "h,p,s");
+    Stemmer stemmer = new Stemmer(this.getClass().getResourceAsStream("resources/stemrules.txt"),
+    		this.getClass().getResourceAsStream("resources/en_US.aff"),
+    		this.getClass().getResourceAsStream("resources/en_US.dic"),
+    		"h,p,s");
     aspect = new Long(-1);
     List<String> stems = stemmer.GetStems(original.toLowerCase());
     stems.add(0, original.toLowerCase());

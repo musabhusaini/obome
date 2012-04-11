@@ -30,19 +30,27 @@
 						
 						$(opinionDependentClass).spinner("destroy");
 						
-						$(docTextContainer).html(result.document.text);
+						var text = result.document.text;
+						text = text.replace(/\\modifier\{(.+?)\}/g, "<span class='ob-modifier'>$1</span>");
+						text = text.replace(/\\modified\{(.+?)\}/g, "<span class='ob-modified'>$1</span>");
+						$(docTextContainer).html(text);
 						
 						$(summaryTable).append("<tr><th>Aspect</th><th>Polarity</th></tr>");
 						
 						var data = [];
 						var max = 0;
+						var count = 0;
 						
-						$.each(result.aspectOpinionMap, function(key, value) {
+						$.each(result.scorecard, function(key, value) {
+							count++;
+						});
+						
+						$.each(result.scorecard, function(key, value) {
 							$(summaryTable)
 								.append("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
 							
 							// Can't put very long labels.
-							var maxLength = 12;
+							var maxLength = 40/count;
 							if (key.length > maxLength) {
 								var end = key.search(/\s+/);
 								end = (end >= 0 && end <= maxLength) ? end : maxLength-3;

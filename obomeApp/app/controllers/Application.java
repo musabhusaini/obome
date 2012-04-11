@@ -23,6 +23,7 @@ import play.mvc.Http.Request;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
+import com.google.gson.JsonPrimitive;
 
 import edu.sabanciuniv.dataMining.data.Identifiable;
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
@@ -196,6 +197,10 @@ public class Application extends Controller implements EnhancedForContinuations 
 	
 	public static void ping() {
 		renderJSON(true);
+	}
+	
+	public static void test(String callback) {
+		renderJSON(callback + "()");
 	}
 	
 	public static void aboutPage() {

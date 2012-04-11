@@ -5,7 +5,10 @@ package eu.ubipol.opinionmining.stem_engine;
  comments: 	The Paice/Husk Stemmer Translated from Pascal*/
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Vector;
 
 /****************************************
@@ -16,13 +19,18 @@ public class PaiceStemmer {
   private Vector ruleTable; // array of rules
   private int[] ruleIndex; // index to above
   private boolean preStrip;
-  private String filerules;
+  private InputStream filerules;
 
   /********************************
-   * Method: Paice * * Purpose: init *
+   * Method: Paice * * Purpose: init 
+ * @throws FileNotFoundException *
    ********************************/
+  public PaiceStemmer(String rules, String pre) throws FileNotFoundException {
+	  this(new FileInputStream(rules), pre);
+  }
+  
   @SuppressWarnings("rawtypes")
-  public PaiceStemmer(String rules, String pre) {
+  public PaiceStemmer(InputStream rules, String pre) {
     ruleTable = new Vector();
     ruleIndex = new int[26];
     preStrip = false;
@@ -39,13 +47,13 @@ public class PaiceStemmer {
    * *
    ************************************************************************/
   @SuppressWarnings("unchecked")
-  private void ReadRules(String stemRules) {
+  private void ReadRules(InputStream stemRules) {
     int ruleCount = 0;
     int j = 0;
 
     // Acquire each rule in turn. They each take up one line
     try {
-      FileReader fr = new FileReader(stemRules);
+      InputStreamReader fr = new InputStreamReader(stemRules);
       BufferedReader br = new BufferedReader(fr);
       String line = " ";
       try {

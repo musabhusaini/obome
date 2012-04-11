@@ -2,6 +2,7 @@ package reader;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Scanner;
 
 import eu.ubipol.opinionmining.owl_engine.Utils;
@@ -11,8 +12,12 @@ public class OpinionWordReader {
   private double curScore = 0;
   private int wordType;
 
+  public OpinionWordReader(InputStream stream) {
+	reader = new Scanner(stream);
+  }
+  
   public OpinionWordReader(String filePath) throws FileNotFoundException {
-    reader = new Scanner(new FileInputStream(filePath));
+    this(new FileInputStream(filePath));
   }
 
   public boolean HasNextLine() {

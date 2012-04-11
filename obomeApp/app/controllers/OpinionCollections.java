@@ -36,20 +36,39 @@ import org.w3c.dom.NodeList;
 import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.results.NotFound;
+import web_package.CommentResult;
+import web_package.ModifierItem;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 
-import demoPackage.demoPage;
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Corpus;
 import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
+import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticText;
+import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
 public class OpinionCollections extends Application {
 
+	private static class IsPartyToModification implements Predicate<ModifierItem> {
+
+		private int index;
+		public IsPartyToModification(int index) {
+			this.index = index;
+		}
+		
+		@Override
+		public boolean apply(ModifierItem item) {
+			return item.GetModifiedIndex() == this.index || item.GetModifierIndex() == this.index;
+		}
+	}
+	
 	private static long getCollectionSize(SetCover sc) {
 		// We do it this way because getting this count from the property is costly.
 		return em().createQuery("SELECT COUNT(scr) FROM SetCoverItem scr WHERE scr.setCover=:sc", Long.class)
@@ -282,7 +301,7 @@ public class OpinionCollections extends Application {
 		OpinionMinerResultViewModel result = new OpinionMinerResultViewModel();
 		
 		OpinionDocument opinDoc = fetch(OpinionDocument.class, document);
-		result.document = new DocumentViewModel(opinDoc);
+		StringBuffer docText = new StringBuffer(opinDoc.getContent());
 		
 		byte[] uuid = IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(collection));
 		String url = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.url").toString();
@@ -290,28 +309,45 @@ public class OpinionCollections extends Application {
 		String pwd = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.password").toString();
 		String connectionString = url + "?user=" + user + "&password=" + pwd;
 		
-		Map<Long, Float> aspectSummaryRaw;
+		CommentResult commentResult;
 		try {
 			// Call the opinion mining engine.
-			aspectSummaryRaw = demoPage.GetScoreOfAComment(result.document.text, connectionString, uuid);
+			commentResult = new CommentResult(docText.toString(), uuid, connectionString);
+			
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
 		
-		result.aspectOpinionMap = Maps.newHashMap();
-		for (Long key : aspectSummaryRaw.keySet()) {
+		Map<Long, Float> rawScorecard = commentResult.GetScoreCard();
+		result.scorecard = Maps.newHashMap();
+		for (Long key : rawScorecard.keySet()) {
 			String label = (String)em().createNativeQuery("SELECT label " +
 					"FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
 					.setParameter("key", key)
 					.getSingleResult();
 			
-			float score = aspectSummaryRaw.get(key);
+			float score = rawScorecard.get(key);
 			if (Float.isNaN(score)) {
 				score = 0;
 			}
 			
-			result.aspectOpinionMap.put(label, score);
+			result.scorecard.put(label, score);
 		}
+		
+		LinguisticText lingText = new LinguisticText(docText.toString());
+		List<ModifierItem> modifierItems = commentResult.GetModifierList();
+		
+		for (LinguisticToken token : Lists.reverse(Lists.newArrayList(lingText.getTokens()))) {
+			int index = token.getAbsoluteBeginPosition();
+			ModifierItem item = Iterables.find(modifierItems, new IsPartyToModification(index), null);
+			if (item != null) {
+				String mod = "modifie" + (item.GetModifiedIndex() == index ? "d" : "r");
+				docText.replace(token.getAbsoluteBeginPosition(), token.getAbsoluteEndPosition(),
+						String.format("\\%s{%s}", mod, token.getText()));
+			}
+		}
+		
+		result.document = new DocumentViewModel(opinDoc.getIdentifier(), docText.toString());
 		
 		renderJSON(result);
 	}

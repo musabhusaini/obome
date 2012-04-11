@@ -6,8 +6,10 @@
         <meta charset="${_response_encoding}">
         #{stylesheet "ui-lightness/jquery-ui-1.8.16.css" /}
         #{press.stylesheet "main.css" /}
-        #{get "moreStyles" /}
+        
         #{press.compressed-stylesheet /}
+        
+        #{get "moreStyles" /}
         
         <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
         <link rel="spinner image" type="image/gif" href="@{'/public/images/spinner.gif'}">
@@ -21,8 +23,9 @@
 		#{press.script "widgets.spinner.js" /}
 		#{press.script "main.html.js" /}
 		
+		#{press.compressed-script /}
+		
         #{get "moreScripts" /}
-        #{press.compressed-script /}
         
         <script type="text/javascript">
         	(function(window, document, $) {

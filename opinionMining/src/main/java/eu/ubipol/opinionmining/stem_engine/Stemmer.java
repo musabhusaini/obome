@@ -1,6 +1,5 @@
 package eu.ubipol.opinionmining.stem_engine;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -17,14 +16,19 @@ public class Stemmer {
 
   public Stemmer(String rulesFile, String affFile, String dicFile, String stemmerOptions)
       throws Exception {
+	  this(rulesFile != null ? new FileInputStream(rulesFile) : (InputStream)null,
+			  affFile != null ? new FileInputStream(affFile) : null,
+			  dicFile != null ? new FileInputStream(dicFile) : null, stemmerOptions);
+  }
+  
+  public Stemmer(InputStream rules, InputStream aff, InputStream dic, String stemmerOptions)
+	      throws Exception {
     if (stemmerOptions.contains("h")) {
-      InputStream aff = new FileInputStream(new File(affFile));
-      InputStream dic = new FileInputStream(new File(dicFile));
       HunspellDictionary dictionary = new HunspellDictionary(aff, dic);
       hunspellStem = new HunspellStemmer(dictionary);
     }
     if (stemmerOptions.contains("p"))
-      paiceStem = new PaiceStemmer(rulesFile, "/p");
+      paiceStem = new PaiceStemmer(rules, "/p");
     if (stemmerOptions.contains("s"))
       snowballStem = new EnglishStemmer();
   }

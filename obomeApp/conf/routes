@@ -7,6 +7,8 @@ GET     /                				                       			Application.landingPage
 
 GET		/about															Application.aboutPage
 
+GET		/test.json														Application.test(format:'json')
+
 POST	/session														Application.ping
 
 GET		/collections													OpinionCollections.list

@@ -1,5 +1,6 @@
 package eu.ubipol.opinionmining.nlp_engine;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -25,8 +26,8 @@ public class Utils {
   public static Map<String, Float> GetScoreList() throws Exception {
     if (wordScores == null) {
       wordScores = new HashMap<String, Float>();
-      OpinionWordReader opinionReader = new OpinionWordReader("sentiwordnet_processed.txt");
-      Stemmer stemmer = new Stemmer(null, null, null, "s");
+      OpinionWordReader opinionReader = new OpinionWordReader(Utils.class.getResourceAsStream("resources/sentiwordnet_processed.txt"));
+      Stemmer stemmer = new Stemmer((InputStream)null, null, null, "s");
       while (opinionReader.HasNextLine()) {
         String word = stemmer.GetStems(opinionReader.GetNext()).get(0);
         if (opinionReader.GetCurrentType() == eu.ubipol.opinionmining.owl_engine.Utils.ADJECTIVE_ID)

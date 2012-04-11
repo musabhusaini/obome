@@ -15,5 +15,5 @@ public class OpinionMinerResultViewModel extends ViewModel {
 	public DocumentViewModel document;
 	
 	@ElementCollection
-	public Map<String, Float> aspectOpinionMap;
+	public Map<String, Float> scorecard;
 }
