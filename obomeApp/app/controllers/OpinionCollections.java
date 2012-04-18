@@ -3,6 +3,9 @@ package controllers;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,8 @@ import models.OpinionCollectionViewModel;
 import models.OpinionCorpusViewModel;
 import models.OpinionMinerResultViewModel;
 import models.ViewModel;
+import nlp_engine.ModifierItem;
+import nlp_engine.Token;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -37,7 +42,6 @@ import play.Logger;
 import play.libs.F.Promise;
 import play.mvc.results.NotFound;
 import web_package.CommentResult;
-import web_package.ModifierItem;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -56,16 +60,23 @@ import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
 public class OpinionCollections extends Application {
 
-	private static class IsPartyToModification implements Predicate<ModifierItem> {
-
-		private int index;
-		public IsPartyToModification(int index) {
-			this.index = index;
-		}
+	private static class TokenBeginEquals implements Predicate<Token> {
+		private Token token;
 		
+		public TokenBeginEquals(Token token) {
+			this.token = token;
+		}
+
 		@Override
-		public boolean apply(ModifierItem item) {
-			return item.GetModifiedIndex() == this.index || item.GetModifierIndex() == this.index;
+		public boolean apply(Token other) {
+			return other.GetBeginPosition() == this.token.GetBeginPosition();
+		}
+	}
+	
+	public static class TokenBeginComparer implements Comparator<Token> {
+		@Override
+		public int compare(Token token1, Token token2) {
+			return token1.GetBeginPosition() - token2.GetBeginPosition();
 		}
 	}
 	
@@ -318,7 +329,7 @@ public class OpinionCollections extends Application {
 			throw new IllegalStateException(e);
 		}
 		
-		Map<Long, Float> rawScorecard = commentResult.GetScoreCard();
+		Map<Long, Float> rawScorecard = commentResult.GetScoreMap();
 		result.scorecard = Maps.newHashMap();
 		for (Long key : rawScorecard.keySet()) {
 			String label = (String)em().createNativeQuery("SELECT label " +
@@ -334,17 +345,27 @@ public class OpinionCollections extends Application {
 			result.scorecard.put(label, score);
 		}
 		
-		LinguisticText lingText = new LinguisticText(docText.toString());
 		List<ModifierItem> modifierItems = commentResult.GetModifierList();
-		
-		for (LinguisticToken token : Lists.reverse(Lists.newArrayList(lingText.getTokens()))) {
-			int index = token.getAbsoluteBeginPosition();
-			ModifierItem item = Iterables.find(modifierItems, new IsPartyToModification(index), null);
-			if (item != null) {
-				String mod = "modifie" + (item.GetModifiedIndex() == index ? "d" : "r");
-				docText.replace(token.getAbsoluteBeginPosition(), token.getAbsoluteEndPosition(),
-						String.format("\\%s{%s}", mod, token.getText()));
+		List<Token> tokens = Lists.newArrayList();
+		for (ModifierItem item : modifierItems) {
+			Token token = Iterables.find(tokens, new TokenBeginEquals(item.GetModifiedToken()), null);
+			if (token == null) {
+				tokens.add(item.GetModifiedToken());
 			}
+			
+			if (item.HasModifier()) {
+				token = Iterables.find(tokens, new TokenBeginEquals(item.GetModifierToken()), null);
+				if (token == null) {
+					tokens.add(item.GetModifierToken());
+				}
+			}
+		}
+		
+		Collections.sort(tokens, Collections.reverseOrder(new TokenBeginComparer()));
+		for (Token token : tokens) {
+			String mod = "modifie" + (token.IsAKeyword() ? "d" : "r");
+			docText.insert(token.GetEndPosition(), "}");
+			docText.insert(token.GetBeginPosition(), String.format("\\%s{", mod));
 		}
 		
 		result.document = new DocumentViewModel(opinDoc.getIdentifier(), docText.toString());

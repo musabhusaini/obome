@@ -1,4 +1,4 @@
-package eu.ubipol.opinionmining.stem_engine;
+package stem_engine;
 
 /* 	author:   	Christopher O'Neill
  date:		Sep 2000

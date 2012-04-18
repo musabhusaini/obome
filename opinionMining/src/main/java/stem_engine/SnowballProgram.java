@@ -1,4 +1,4 @@
-package eu.ubipol.opinionmining.stem_engine;
+package stem_engine;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -31,7 +31,7 @@ class SnowballProgram {
     // the buffer size will not decrease, and we will risk wasting a large
     // amount of memory.
     // Thanks to Wolfram Esser for spotting this problem.
-    // current = new StringBuffer();
+//    current = new StringBuffer();
     return result;
   }
 

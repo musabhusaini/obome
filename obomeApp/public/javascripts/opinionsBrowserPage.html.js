@@ -12,6 +12,72 @@
 		
 		var opinionDependentClass = ".opinion-dependent";
 		
+		var lastResult = {};
+		
+		function updateSummary() {
+			var max = 0;
+			var count = 0;
+			var graphData = [];
+			
+			$.each(lastResult.scorecard, function(key, value) {
+				count++;
+			});
+
+			$(summaryTable)
+				.empty()
+				.append((count && "<tr><th>Aspect</th><th>Polarity</th></tr>") || "Not enough data available to generate a summary");
+			
+			$.each(lastResult.scorecard, function(key, value) {
+				$(summaryTable)
+					.append("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
+				
+				// Can't put very long labels.
+				var maxLength = 40/count;
+				if (key.length > maxLength) {
+					var end = key.search(/\s+/);
+					end = (end >= 0 && end <= maxLength) ? end : maxLength-3;
+					key = key.substring(0, end) + "...";
+				}
+				graphData.push([key, value]);
+				
+				var absVal = window.Math.abs(value);
+				if (max < absVal) {
+					max = absVal;
+				}
+			});
+			
+			var graphCanvasId = $(graphCanvas)
+				.empty()
+				.attr("id");
+			
+			graphData.length && $.jqplot(graphCanvasId, [ graphData ], {
+				axesDefaults: {
+				},
+				seriesDefaults: {
+					renderer: $.jqplot.BarRenderer,
+					rendererOptions: { fillToZero: true }
+				},
+				axes: {
+					xaxis: {
+				        renderer: $.jqplot.CategoryAxisRenderer,
+				        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+				        tickOptions: {
+				        	fontFamily: "Courier New",
+				        	fontSize: "9pt"
+					    }
+					},
+					yaxis: {
+						min: -max * 1.1,
+						max: max * 1.1,
+						tickOptions: {
+						}
+					}
+				}
+			});
+		}
+		
+		$(window).resize(updateSummary);
+		
 		$(reviewsList)
 			.change(function(event) {
 				var uuid = $(event.target).find(":selected:first").val();
@@ -35,69 +101,8 @@
 						text = text.replace(/\\modified\{(.+?)\}/g, "<span class='ob-modified'>$1</span>");
 						$(docTextContainer).html(text);
 						
-						$(summaryTable).append("<tr><th>Aspect</th><th>Polarity</th></tr>");
-						
-						var data = [];
-						var max = 0;
-						var count = 0;
-						
-						$.each(result.scorecard, function(key, value) {
-							count++;
-						});
-						
-						$.each(result.scorecard, function(key, value) {
-							$(summaryTable)
-								.append("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
-							
-							// Can't put very long labels.
-							var maxLength = 40/count;
-							if (key.length > maxLength) {
-								var end = key.search(/\s+/);
-								end = (end >= 0 && end <= maxLength) ? end : maxLength-3;
-								key = key.substring(0, end) + "...";
-							}
-							data.push([key, value]);
-							
-							var absVal = window.Math.abs(value);
-							if (max < absVal) {
-								max = absVal;
-							}
-						});
-						
-						if (!data.length) {
-							$(summaryTable)
-								.empty()
-								.text("Not enough data available to generate a summary");
-						}
-						
-						var graphCanvasId = $(graphCanvas)
-							.empty()
-							.attr("id");
-						
-						var plot = data.length && $.jqplot(graphCanvasId, [ data ], {
-							axesDefaults: {
-							},
-							seriesDefaults: {
-								renderer: $.jqplot.BarRenderer,
-								rendererOptions: { fillToZero: true }
-							},
-							axes: {
-								xaxis: {
-							        renderer: $.jqplot.CategoryAxisRenderer,
-							        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-							        tickOptions: {
-							        	fontFamily: "Courier New",
-							        	fontSize: "9pt"
-								    }
-								},
-								yaxis: {
-									min: -max * 1.1,
-									max: max * 1.1,
-									tickOptions: {
-									}
-								}
-							}
-						});
+						lastResult = result;
+						updateSummary();
 					});
 			})
 			.find("option:first")

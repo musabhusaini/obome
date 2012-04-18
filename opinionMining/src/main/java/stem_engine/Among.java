@@ -1,4 +1,4 @@
-package eu.ubipol.opinionmining.stem_engine;
+package stem_engine;
 
 import java.lang.reflect.Method;
 
