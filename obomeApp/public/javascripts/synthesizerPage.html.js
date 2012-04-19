@@ -133,7 +133,7 @@
 									}
 								},
 								yaxis: {
-									label: "Corpus Reduction (%)",
+									label: "Labeling Required (% of Corpus)",
 									tickOptions: {
 										formatString: "%2.0f"
 									}

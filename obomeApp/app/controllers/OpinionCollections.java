@@ -301,7 +301,8 @@ public class OpinionCollections extends Application {
 		collection = new Gson().toJson(viewModel, OpinionCollectionViewModel.class);
 		
 		Corpus corpus = sc.getCorpus();
-		List<String> documents = em().createQuery("SELECT HEX(doc.id) FROM OpinionDocument doc WHERE doc.corpus=:corpus", String.class)
+		List<String> documents = em().createQuery("SELECT HEX(doc.id) FROM OpinionDocument doc WHERE doc.corpus=:corpus " +
+				"ORDER BY doc.content ASC", String.class)
 				.setParameter("corpus", corpus)
 				.getResultList();
 		

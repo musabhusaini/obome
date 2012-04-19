@@ -11,6 +11,7 @@
 		var graphCanvas = "#cnvsOpinionGraph";
 		
 		var opinionDependentClass = ".opinion-dependent";
+		var summaryBoxClass = ".ob-summary-box";
 		
 		var lastResult = {};
 		
@@ -75,6 +76,9 @@
 				}
 			});
 		}
+		
+//		$(summaryBoxClass).resizable({
+//		});
 		
 		$(window).resize(updateSummary);
 		

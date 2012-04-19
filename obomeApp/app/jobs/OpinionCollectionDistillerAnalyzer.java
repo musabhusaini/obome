@@ -65,10 +65,10 @@ public class OpinionCollectionDistillerAnalyzer extends Job<Map<Double, Double>>
 		int index=0;
 		for (double threshold = 1.0; threshold>0 && index<items.size(); threshold-=step) {
 			for (; index<items.size(); index++) {
-				double reduction = (1 - ((index + 1)/(double)corpusSize));
+				double remaining = (index + 1)/(double)corpusSize;
 				double coverage = cumulativeUtlity / (double)totalUtility;
 				if (coverage >= 1 - threshold) {
-					map.put(threshold * 100, reduction * 100);
+					map.put(threshold * 100, remaining * 100);
 					break;
 				}
 				
@@ -77,7 +77,7 @@ public class OpinionCollectionDistillerAnalyzer extends Job<Map<Double, Double>>
 		}
 		
 		if (!map.containsKey(0.0 * 100)) {
-			map.put(0.0 * 100, (1 - items.size()/(double)corpusSize) * 100);
+			map.put(0.0 * 100, (items.size()/(double)corpusSize) * 100);
 		}
 		
 		em.getTransaction().commit();
