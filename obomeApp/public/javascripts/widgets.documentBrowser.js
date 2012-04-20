@@ -205,10 +205,11 @@
 						$.post(routes.OpinionCollections.Items.single({
 								collection: me.options.collection.uuid,
 								item: uuid
-							}), params);
+							}), params)
+							.success(callback);
+					} else {
+						callback();
 					}
-					
-					callback();
 				}
 			}
 			
