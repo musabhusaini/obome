@@ -43,6 +43,11 @@ public class Aspects extends Application {
 		try {
 			File directory = new File(new File(Play.configuration.getProperty("play.tmp", "tmp")),
 					Play.configuration.getProperty("obome.downloads", "downloads"));
+			
+			if (!directory.exists()) {
+				directory.mkdir();
+			}
+			
 			File outputFile = File.createTempFile("aspects-" + collection + "-", ".txt", directory);
 			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile));
 			
