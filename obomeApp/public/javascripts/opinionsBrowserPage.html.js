@@ -1,4 +1,4 @@
-(function(window, document, $, obome, routes) {
+(function(window, document, $, Math, obome, routes) {
 
 	obome.displayPage = function(options) {
 		
@@ -13,7 +13,16 @@
 		var opinionDependentClass = ".opinion-dependent";
 		var summaryBoxClass = ".ob-summary-box";
 		
+		options = $.extend({
+			scorePrecision: 3
+		}, options);
+		
 		var lastResult = {};
+		
+		function roundScore(score) {
+			var mult = Math.pow(10, options.scorePrecision);
+			return Math.round(score * mult) / mult;
+		}
 		
 		function updateSummary() {
 			var max = 0;
@@ -29,6 +38,8 @@
 				.append((count && "<tr><th>Aspect</th><th>Polarity</th></tr>") || "Not enough data available to generate a summary");
 			
 			$.each(lastResult.scorecard, function(key, value) {
+				value = roundScore(value);
+				
 				$(summaryTable)
 					.append("<tr><td>" + key + "</td><td>" + value + "</td></tr>");
 				
@@ -51,6 +62,7 @@
 				.empty()
 				.attr("id");
 			
+			max = roundScore(max * 1.1);
 			graphData.length && $.jqplot(graphCanvasId, [ graphData ], {
 				axesDefaults: {
 				},
@@ -68,8 +80,8 @@
 					    }
 					},
 					yaxis: {
-						min: -max * 1.1,
-						max: max * 1.1,
+						min: -max,
+						max: max,
 						tickOptions: {
 						}
 					}
@@ -101,8 +113,23 @@
 						$(opinionDependentClass).spinner("destroy");
 						
 						var text = result.document.text;
-						text = text.replace(/\\modifier\{(.+?)\}/g, "<span class='ob-modifier'>$1</span>");
-						text = text.replace(/\\modified\{(.+?)\}/g, "<span class='ob-modified'>$1</span>");
+						text = text.replace(/\\{(.+?)}\\/g, function(str, p1) {
+							var token = $.parseJSON(p1);
+							var span = $("<span>")
+								.addClass("ob-" + token.type)
+								.text(token.content);
+							
+							if (token.type === "modified") {
+								$(span).attr("title", "aspect: " + token.aspect);
+							} else if (token.type === "modifier") {
+								$(span).attr("title", "polarity: " + roundScore(token.polarity));
+							}
+							
+							return $("<div>")
+								.append(span)
+								.html();
+						});
+						
 						$(docTextContainer).html(text);
 						
 						lastResult = result;
@@ -114,4 +141,4 @@
 		
 		$(reviewsList).change();
 	};
-})(window, window.document, window.jQuery, window.obome, window.obome.routes)
+})(window, window.document, window.jQuery, window.Math, window.obome, window.obome.routes)

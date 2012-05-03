@@ -46,6 +46,10 @@
 	color: green;
 }
 
+.ob-irrelevant {
+	color: lightgray;
+}
+
 #documentContainer {
 	margin-left: .5em;
 }

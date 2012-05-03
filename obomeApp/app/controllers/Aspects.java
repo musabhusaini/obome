@@ -57,7 +57,7 @@ public class Aspects extends Application {
 					writer.write(keyword.getLabel() + "\t");
 				}
 				
-				writer.write("\r\n");
+				writer.newLine();
 			}
 			writer.close();
 			

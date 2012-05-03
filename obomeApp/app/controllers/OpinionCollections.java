@@ -49,12 +49,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Corpus;
 import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem;
+import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticSentence;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticText;
 import edu.sabanciuniv.dataMining.util.text.nlp.english.LinguisticToken;
 
@@ -315,12 +317,14 @@ public class OpinionCollections extends Application {
 		OpinionDocument opinDoc = fetch(OpinionDocument.class, document);
 		StringBuffer docText = new StringBuffer(opinDoc.getContent());
 		
+		// Set up connection string.
 		byte[] uuid = IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(collection));
 		String url = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.url").toString();
 		String user = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.user").toString();
 		String pwd = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.password").toString();
 		String connectionString = url + "?user=" + user + "&password=" + pwd;
 		
+		// Get opinion mining result from the engine.
 		CommentResult commentResult;
 		try {
 			// Call the opinion mining engine.
@@ -330,13 +334,16 @@ public class OpinionCollections extends Application {
 			throw new IllegalStateException(e);
 		}
 		
+		// Make sense of the score map.
 		Map<Long, Float> rawScorecard = commentResult.GetScoreMap();
+		Map<Long, String> aspectLongIdMap = Maps.newHashMap();
 		result.scorecard = Maps.newHashMap();
 		for (Long key : rawScorecard.keySet()) {
 			String label = (String)em().createNativeQuery("SELECT label " +
 					"FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
 					.setParameter("key", key)
 					.getSingleResult();
+			aspectLongIdMap.put(key, label);
 			
 			float score = rawScorecard.get(key);
 			if (Float.isNaN(score)) {
@@ -346,6 +353,7 @@ public class OpinionCollections extends Application {
 			result.scorecard.put(label, score);
 		}
 		
+		// Store all modified/modifier tokens.
 		List<ModifierItem> modifierItems = commentResult.GetModifierList();
 		List<Token> tokens = Lists.newArrayList();
 		for (ModifierItem item : modifierItems) {
@@ -362,11 +370,44 @@ public class OpinionCollections extends Application {
 			}
 		}
 		
+		// Indicate tokens on the output string.
 		Collections.sort(tokens, Collections.reverseOrder(new TokenBeginComparer()));
 		for (Token token : tokens) {
-			String mod = "modifie" + (token.IsAKeyword() ? "d" : "r");
-			docText.insert(token.GetEndPosition(), "}");
-			docText.insert(token.GetBeginPosition(), String.format("\\%s{", mod));
+			String tokenText = docText.substring(token.GetBeginPosition(), token.GetEndPosition());
+			JsonObject json = new JsonObject();
+			json.addProperty("content", tokenText);
+			
+			String mod;
+			if (token.IsAKeyword()) {
+				json.addProperty("aspect", aspectLongIdMap.get(token.GetAspectId()));
+				mod = "modified";
+			} else {
+				json.addProperty("polarity", token.GetScore());
+				mod = "modifier";
+			}
+			json.addProperty("type", mod);
+			
+			docText.replace(token.GetBeginPosition(), token.GetEndPosition(), String.format("\\{%s}\\", json.toString()));
+		}
+		
+		// Find all unused sentences and indicate in the output.
+		LinguisticText lingText = new LinguisticText(opinDoc.getContent());
+		int beginIndex = 0;
+		for (LinguisticSentence sentence : lingText.getSentences()) {
+			if (Iterables.size(sentence.getTokens()) < 4) {
+				continue;
+			}
+			
+			int newBeginIndex = docText.indexOf(sentence.getText(), beginIndex);
+			if (newBeginIndex > -1) {
+				beginIndex = newBeginIndex;
+				JsonObject json = new JsonObject();
+				json.addProperty("content", sentence.getText());
+				json.addProperty("type", "irrelevant");
+				
+				docText.replace(beginIndex, beginIndex + sentence.getText().length(), String.format("\\{%s}\\", json.toString()));
+				beginIndex += json.toString().length();
+			}
 		}
 		
 		result.document = new DocumentViewModel(opinDoc.getIdentifier(), docText.toString());

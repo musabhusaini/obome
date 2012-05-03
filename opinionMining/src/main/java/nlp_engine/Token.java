@@ -250,7 +250,7 @@ public class Token {
     return (aspect >= 0);
   }
 
-  protected Long GetAspectId() {
+  public Long GetAspectId() {
     return aspect;
   }
 
@@ -258,7 +258,7 @@ public class Token {
     return Aspects.GetAspectName(GetAspectId());
   }
 
-  protected Float GetScore() {
+  public Float GetScore() {
     return score;
   }
 
