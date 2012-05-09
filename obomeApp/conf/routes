@@ -69,7 +69,7 @@ GET		/collections/{collection}/items/{item}							OpinionCollections.singleItem
 
 POST	/collections/{collection}/items/{item}							OpinionCollections.seeItem
 
-GET     /documents/{document}		                      				Documents.single
+GET		/collections/{collection}/documents/{document}					Documents.single
 
 GET     /aspects/{aspect}	                   				    		Aspects.single(collection:'')
 

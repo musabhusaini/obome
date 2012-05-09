@@ -10,11 +10,13 @@ import edu.stanford.nlp.trees.semgraph.SemanticGraph;
 public class Sentence {
   private Token sentenceRoot;
 
-  protected Sentence(SemanticGraph dependencies, int indexStart, DatabaseAdapter adp) {
+  protected Sentence(SemanticGraph dependencies, int indexStart, DatabaseAdapter adp,
+      int beginPosition) {
+    System.out.println(dependencies);
     IndexedWord rootWord = dependencies.getFirstRoot();
     sentenceRoot = new Token(rootWord.lemma(), rootWord.tag(), null, null, rootWord.index()
-        + indexStart, rootWord.beginPosition(), rootWord.endPosition(), adp);
-    AddChildTokens(sentenceRoot, rootWord, dependencies, indexStart, adp);
+        + indexStart, rootWord.beginPosition(), rootWord.endPosition(), adp, beginPosition);
+    AddChildTokens(sentenceRoot, rootWord, dependencies, indexStart, adp, beginPosition);
     sentenceRoot.TransferScores();
     if (sentenceRoot.IsAKeyword())
       sentenceRoot.AddAspectScore(sentenceRoot.GetScore(), sentenceRoot.GetWeight(),
@@ -23,13 +25,13 @@ public class Sentence {
   }
 
   private void AddChildTokens(Token rootToken, IndexedWord currentRoot, SemanticGraph dependencies,
-      int indexStart, DatabaseAdapter adp) {
+      int indexStart, DatabaseAdapter adp, int beginPosition) {
     for (IndexedWord child : dependencies.getChildren(currentRoot)) {
       Token childToken = new Token(child.lemma(), child.tag(), rootToken, dependencies.getEdge(
           currentRoot, child).toString(), child.index() + indexStart, child.beginPosition(),
-          child.endPosition(), adp);
+          child.endPosition(), adp, beginPosition);
       rootToken.AddChildToken(childToken);
-      AddChildTokens(childToken, child, dependencies, indexStart, adp);
+      AddChildTokens(childToken, child, dependencies, indexStart, adp, beginPosition);
     }
   }
 

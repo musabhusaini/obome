@@ -1,10 +1,15 @@
 package edu.sabanciuniv.dataMining.program;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -14,10 +19,16 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.base.Joiner;
 
+import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.data.factory.QueryBasedObjectFactory;
 import edu.sabanciuniv.dataMining.data.text.TextDocument;
+import edu.sabanciuniv.dataMining.experiment.models.Aspect;
+import edu.sabanciuniv.dataMining.experiment.models.Corpus;
+import edu.sabanciuniv.dataMining.experiment.models.Keyword;
 import edu.sabanciuniv.dataMining.experiment.models.OpinionDocument;
 import edu.sabanciuniv.dataMining.experiment.models.factory.OpinionDocumentTaggedContentFactory;
 import edu.sabanciuniv.dataMining.experiment.models.setcover.SetCover;
@@ -44,8 +55,9 @@ public class OntologyLearnerProgram {
 	/**
 	 * Runs the ontology learner program.
 	 * @param args Arguments to run the program with.
+	 * @throws FileNotFoundException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 		
 		// Parse arguments.
 		Map<String,String> argMap = new HashMap<>();
@@ -109,24 +121,39 @@ public class OntologyLearnerProgram {
 			EntityManager em = em();
 			em.getTransaction().begin();
 
-			double minDataCoverage = 0.90;
-			EagerSetCoverBuilder eagerBuilder = new EagerSetCoverBuilder(em);
-			eagerBuilder.setMinDataCoverage(minDataCoverage);
 			LargeTypedQuery<OpinionDocument> query = new LargeTypedQuery<>(
-					em.createQuery("SELECT doc FROM OpinionDocument doc WHERE doc.corpusName=:corpusName", OpinionDocument.class)
-						.setParameter("corpusName", "LBH Survey"), 1000);
-			OpinionDocumentTaggedContentFactory factory = new OpinionDocumentTaggedContentFactory(new QueryBasedObjectFactory<>(query));
-			TextDocument document;
-			while ((document = factory.create()) != null) {
-				eagerBuilder.seeUniverseExample(document);
+					em.createQuery("SELECT doc FROM OpinionDocument doc WHERE doc.corpus.name=:corpusName", OpinionDocument.class)
+					.setMaxResults(50000)
+					.setParameter("corpusName", "Trip Advisor"), 5000);
+			
+			OpinionDocument doc = null;
+			while ((doc = query.getNextResult()) != null) {
+				File file = new File("C:\\Users\\SUUSER\\Dropbox\\Projects\\Eclipse Projects\\ontologyLearner\\large-dump\\" +
+					doc.getIdentifier().toString() + ".txt");
+				
+				BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+				writer.write(doc.getContent());
+				writer.close();
 			}
 			
-			SetCover setCover;
-			
-			setCover = eagerBuilder.build("Eager-LBH-" + Math.round(minDataCoverage * 100));
-			setCover.setCoverOffset(0);
-			setCover.setCoverSize(factory.getCount() - 1);
-			em.persist(setCover);
+//			double minDataCoverage = 0.90;
+//			EagerSetCoverBuilder eagerBuilder = new EagerSetCoverBuilder(em);
+//			eagerBuilder.setMinDataCoverage(minDataCoverage);
+//			LargeTypedQuery<OpinionDocument> query = new LargeTypedQuery<>(
+//					em.createQuery("SELECT doc FROM OpinionDocument doc WHERE doc.corpusName=:corpusName", OpinionDocument.class)
+//						.setParameter("corpusName", "LBH Survey"), 1000);
+//			OpinionDocumentTaggedContentFactory factory = new OpinionDocumentTaggedContentFactory(new QueryBasedObjectFactory<>(query));
+//			TextDocument document;
+//			while ((document = factory.create()) != null) {
+//				eagerBuilder.seeUniverseExample(document);
+//			}
+//			
+//			SetCover setCover;
+//			
+//			setCover = eagerBuilder.build("Eager-LBH-" + Math.round(minDataCoverage * 100));
+//			setCover.setCoverOffset(0);
+//			setCover.setCoverSize(factory.getCount() - 1);
+//			em.persist(setCover);
 			
 			em.getTransaction().commit();
 			

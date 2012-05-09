@@ -5,23 +5,27 @@ import java.util.Map;
 
 import nlp_engine.ModifierItem;
 import nlp_engine.Paragraph;
+import nlp_engine.SentenceObject;
 import database_connector.DatabaseAdapter;
 
 public class CommentResult {
-  private Map<Long, Float> scoreMap;
-  private List<ModifierItem> modifierList;
+	private Paragraph paragraph;
 
-  public CommentResult(String comment, byte[] uuid, String connectionString) throws Exception {
-    Paragraph p = new Paragraph(comment, new DatabaseAdapter(connectionString, uuid));
-    scoreMap = p.GetScoreMap();
-    modifierList = p.GetModifierList();
-  }
+	public CommentResult(String comment, byte[] uuid, String connectionString)
+			throws Exception {
+		this.paragraph = new Paragraph(comment, new DatabaseAdapter(
+				connectionString, uuid));
+	}
 
-  public Map<Long, Float> GetScoreMap() {
-    return scoreMap;
-  }
+	public Map<Long, Float> GetScoreMap() {
+		return this.paragraph.GetScoreMap();
+	}
 
-  public List<ModifierItem> GetModifierList() {
-    return modifierList;
-  }
+	public List<ModifierItem> GetModifierList() {
+		return this.paragraph.GetModifierList();
+	}
+	
+	public List<SentenceObject> GetSentences() {
+		return this.paragraph.GetSentenceMap();
+	}
 }

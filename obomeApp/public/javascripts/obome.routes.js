@@ -36,7 +36,7 @@
 			}
 		},
 		Documents: {
-			single: #{jsAction @Documents.single(':document') /}
+			single: #{jsAction @Documents.single(':collection', ':document') /}
 		},
 		Aspects: {
 			list: #{jsAction @Aspects.list(':collection') /},

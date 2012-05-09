@@ -11,6 +11,10 @@
 	var bypassCacheToggle = "dw_bypassCacheToggle";
 	var smartNounsToggle = "dw_smartNounsToggle";
 	
+	var unseenWordClass = "ol-unseen-word";
+	var seenWordClass = "ol-seen-word";
+	var seenKeywordClass = "ol-seen-keyword";
+	
 	// Helpers to make things easier.
 	var makeId = function(domIdPrefix, id) {
 		return domIdPrefix + "_" + id;
@@ -92,13 +96,40 @@
 
 			function displayDocument(item, params) {
 				$(me._container).find($$(textContainer, id)).spinner();
-				$.getJSON(routes.Documents.single({ document: item.document }), params || {})
+				$.getJSON(routes.Documents.single({
+						collection: collection.uuid,
+						document: item.document 
+					}), params || {})
 					.success(function(document) {
-						var pattern = /\\feature\{(.+?)\}/mg;
 						var text = document.text;
 						var match = null;
-						text = text.replace(pattern, "<span class='ol-feature-element'>$1</span>");
 						
+						text = text.replace(/\\{(.+?)}\\/g, function(str, p1) {
+							var token = $.parseJSON(p1);
+							
+							var css;
+							if (token.isKeyword) {
+								css = seenKeywordClass;
+							} else if (token.isSeen) {
+								css = seenWordClass;
+							} else {
+								css = unseenWordClass;
+							}
+
+							var span = $("<span>")
+								.text(token.content)
+								.attr("lemma", token.lemma)
+								.addClass(css);
+							
+							span = $("<span>")
+								.addClass("ol-feature-element")
+								.append(span);
+							
+							return $("<div>")
+								.append(span)
+								.html();
+						});
+
 						$(me._container).find($$(textContainer, id)).spinner("destroy");
 						$(me._container)
 							.find($$(textContainer, id))
@@ -116,11 +147,11 @@
 							})
 							.click(function(event) {
 								me._trigger("featureClick", event, {
-									label: $(event.target).text()
+									label: $(event.target).attr("lemma") ||$(event.target).text() 
 								});
 							});
 						
-						if (index >= uuids.length && index < collection.size-1) {
+						if (index >= uuids.length && index <= collection.size-1) {
 							me.options.offset = index = uuids.length;
 							uuids.push(item.uuid);
 						}
@@ -200,16 +231,30 @@
 					var params = {
 						bypassCache: me.options.bypassCache	
 					};
+
+					$(me._container).find($$(textContainer, id)).spinner();
+					$.post(routes.OpinionCollections.Items.single({
+							collection: me.options.collection.uuid,
+							item: uuid
+						}), params)
+						.success(function() {
+							$(me._container).find($$(textContainer, id)).spinner("destroy");
+							callback();
+						});
 					
-					if (me.options.offset >= me.options.collection.seenItems.length-1) {
-						$.post(routes.OpinionCollections.Items.single({
-								collection: me.options.collection.uuid,
-								item: uuid
-							}), params)
-							.success(callback);
-					} else {
-						callback();
-					}
+//					if (me.options.offset >= me.options.collection.seenItems.length-1) {
+//						$(me._container).find($$(textContainer, id)).spinner();
+//						$.post(routes.OpinionCollections.Items.single({
+//								collection: me.options.collection.uuid,
+//								item: uuid
+//							}), params)
+//							.success(function() {
+//								$(me._container).find($$(textContainer, id)).spinner("destroy");
+//								callback();
+//							});
+//					} else {
+//						callback();
+//					}
 				}
 			}
 			

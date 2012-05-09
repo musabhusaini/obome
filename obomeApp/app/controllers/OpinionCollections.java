@@ -23,6 +23,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import jobs.OpinionCollectionDistiller;
 import jobs.OpinionCollectionDistillerAnalyzer;
 import jobs.OpinionCollectionSynthesizer;
+import models.DisplayFeatureModel;
 import models.DocumentViewModel;
 import models.OpinionCollectionItemViewModel;
 import models.OpinionCollectionViewModel;
@@ -30,6 +31,7 @@ import models.OpinionCorpusViewModel;
 import models.OpinionMinerResultViewModel;
 import models.ViewModel;
 import nlp_engine.ModifierItem;
+import nlp_engine.SentenceObject;
 import nlp_engine.Token;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -339,13 +341,21 @@ public class OpinionCollections extends Application {
 		Map<Long, String> aspectLongIdMap = Maps.newHashMap();
 		result.scorecard = Maps.newHashMap();
 		for (Long key : rawScorecard.keySet()) {
-			String label = (String)em().createNativeQuery("SELECT label " +
-					"FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
+			String label;
+			float score;
+			
+			if (key >= 0) {
+				label = (String)em().createNativeQuery("SELECT label " +
+						"FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
 					.setParameter("key", key)
 					.getSingleResult();
+			} else {
+				label = "Overall";
+			}
+			
 			aspectLongIdMap.put(key, label);
 			
-			float score = rawScorecard.get(key);
+			score = rawScorecard.get(key);
 			if (Float.isNaN(score)) {
 				score = 0;
 			}
@@ -374,18 +384,17 @@ public class OpinionCollections extends Application {
 		Collections.sort(tokens, Collections.reverseOrder(new TokenBeginComparer()));
 		for (Token token : tokens) {
 			String tokenText = docText.substring(token.GetBeginPosition(), token.GetEndPosition());
-			JsonObject json = new JsonObject();
-			json.addProperty("content", tokenText);
+			DisplayFeatureModel featureModel = new DisplayFeatureModel();
+			featureModel.content = tokenText;
+			featureModel.type = token.IsAKeyword() ? "modified" : "modifier";
 			
-			String mod;
+			JsonObject json = featureModel.toJson();
+			
 			if (token.IsAKeyword()) {
 				json.addProperty("aspect", aspectLongIdMap.get(token.GetAspectId()));
-				mod = "modified";
 			} else {
 				json.addProperty("polarity", token.GetScore());
-				mod = "modifier";
 			}
-			json.addProperty("type", mod);
 			
 			docText.replace(token.GetBeginPosition(), token.GetEndPosition(), String.format("\\{%s}\\", json.toString()));
 		}
@@ -401,9 +410,11 @@ public class OpinionCollections extends Application {
 			int newBeginIndex = docText.indexOf(sentence.getText(), beginIndex);
 			if (newBeginIndex > -1) {
 				beginIndex = newBeginIndex;
-				JsonObject json = new JsonObject();
-				json.addProperty("content", sentence.getText());
-				json.addProperty("type", "irrelevant");
+
+				DisplayFeatureModel featureModel = new DisplayFeatureModel();
+				featureModel.content = sentence.getText();
+				featureModel.type = "irrelevant";
+				JsonObject json = featureModel.toJson();
 				
 				docText.replace(beginIndex, beginIndex + sentence.getText().length(), String.format("\\{%s}\\", json.toString()));
 				beginIndex += json.toString().length();
@@ -488,6 +499,8 @@ public class OpinionCollections extends Application {
     	
     	encache(scReview);
     	
+    	// TODO: make changes here to really send the next best one.
+    	
     	renderJSON(new OpinionCollectionItemViewModel(scReview));
     }
     
@@ -500,6 +513,6 @@ public class OpinionCollections extends Application {
     	em().flush();
     	encache(scReview);
     	
-    	renderJSON(new OpinionCollectionItemViewModel(scReview));
+    	redirect("Documents.seeDocument", item);
     }
 }

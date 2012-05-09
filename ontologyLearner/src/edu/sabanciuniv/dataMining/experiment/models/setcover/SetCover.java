@@ -18,6 +18,7 @@ import javax.persistence.Version;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
 import edu.sabanciuniv.dataMining.experiment.models.Aspect;
+import edu.sabanciuniv.dataMining.experiment.models.BacklogToken;
 import edu.sabanciuniv.dataMining.experiment.models.Corpus;
 
 @Entity
@@ -36,6 +37,7 @@ public class SetCover extends IdentifiableObject {
 	private List<SetCoverItem> items;
 	private Date timestamp;
 	private List<Aspect> aspects;
+	private List<BacklogToken> backlogTokens;
 	private Corpus corpus;
 	private String ownerSessionId;
 	
@@ -101,6 +103,15 @@ public class SetCover extends IdentifiableObject {
 	
 	public List<Aspect> setAspects(List<Aspect> aspects) {
 		return this.aspects = aspects;
+	}
+
+	@OneToMany(mappedBy="setCover", cascade=CascadeType.ALL)
+	public List<BacklogToken> getBacklogTokens() {
+		return this.backlogTokens;
+	}
+	
+	public List<BacklogToken> setBacklogTokens(List<BacklogToken> backlogTokens) {
+		return this.backlogTokens = backlogTokens;
 	}
 	
 	@ManyToOne

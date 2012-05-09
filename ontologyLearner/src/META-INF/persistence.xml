@@ -35,6 +35,7 @@
 		<class>edu.sabanciuniv.dataMining.experiment.models.setcover.SetCoverItem</class>
 		<class>edu.sabanciuniv.dataMining.experiment.models.Aspect</class>
 		<class>edu.sabanciuniv.dataMining.experiment.models.Keyword</class>
+		<class>edu.sabanciuniv.dataMining.experiment.models.BacklogToken</class>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
 		
         <properties>

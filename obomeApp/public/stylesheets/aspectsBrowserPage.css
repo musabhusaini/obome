@@ -12,6 +12,17 @@
 	padding: .5em;
 }
 
+.ol-unseen-word {
+	color: red;
+}
+
+.ol-seen-keyword {
+}
+
+.ol-seen-word {
+	color: darkgray;
+}
+
 #content {
 }
 

@@ -20,15 +20,18 @@ public class Token {
   private Map<Long, Integer> weightList;
   private long aspect;
   private float score;
+  private float pureScore;
   private int weight;
   private String parentEdgeType;
   private int tokenIndex;
   private int beginPosition;
   private int endPosition;
   private boolean invert;
+  private int relativeBeginPosition;
+  private int relativeEndPosition;
 
   protected Token(String original, String typeString, Token parentToken, String parentEdge,
-      int index, int beginPosition, int endPosition, DatabaseAdapter adp) {
+      int index, int beginPosition, int endPosition, DatabaseAdapter adp, int sentenceBeginPosition) {
     childTokens = new ArrayList<Token>();
     scoreList = new HashMap<Long, Float>();
     weightList = new HashMap<Long, Integer>();
@@ -36,10 +39,12 @@ public class Token {
     originalText = original.trim();
     parentEdgeType = parentEdge;
     stemmedTexts = Stemmer.GetStems(original.toLowerCase(), "h,p,s");
-    stemmedTexts.add(original.toLowerCase());
+    stemmedTexts.add(0, original.toLowerCase());
     tokenIndex = index;
     this.beginPosition = beginPosition;
     this.endPosition = endPosition;
+    relativeBeginPosition = beginPosition - sentenceBeginPosition;
+    relativeEndPosition = endPosition - sentenceBeginPosition;
     invert = false;
 
     if (typeString.length() < 2)
@@ -67,14 +72,20 @@ public class Token {
       score = 0;
     } else
       weight = 1;
+    pureScore = score;
 
     aspect = new Long(-1);
     for (int i = 0; i < stemmedTexts.size() && aspect == -1; i++)
       aspect = adp.GetAspectId(stemmedTexts.get(i));
+    // aspect = Aspects.GetAspectOfKeyword(stemmedTexts.get(i));
   }
 
   protected void AddChildToken(Token child) {
     childTokens.add(child);
+  }
+
+  private float GetProcessedScore(float score) {
+    return (invert ? score * -1 : score);
   }
 
   private float GetProcessedScore() {
@@ -85,7 +96,7 @@ public class Token {
     if (parentEdgeType != null) {
       switch (parentEdgeType) {
       case "acomp":
-        // parent a aktar
+        // She looks very beautiful acomp(looks, beautiful)
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
@@ -93,41 +104,73 @@ public class Token {
         }
         break;
       case "advmod":
-        // parent a aktar
+        // very good advmod(good, very)
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
-          parentToken.UpdateScore(GetProcessedScore(), weight);
+          parentToken.UpdateScore(GetProcessedScore());
         }
         break;
       case "amod":
-        // parent a aktar
+        // Sam eats red meat amod(meat, red)
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
           parentToken.UpdateScore(GetProcessedScore(), weight);
         }
         break;
-      case "dobj":
-        // parent a aktar
+      case "appos":
+        // Bill (John's cousin) appos(Bill, cousin)
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
           parentToken.UpdateScore(GetProcessedScore(), weight);
         }
+        break;
+      // case "aux":
+      // He should leave aux(leave, should)
+      // if (IsAKeyword())
+      // parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
+      // else {
+      // parentToken.UpdateScore(GetProcessedScore(), weight);
+      // }
+      // break;
+      case "csubj":
+        // What she said is true csubj(true, said)
+        UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
+        if (IsAKeyword())
+          AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
+        break;
+      case "csubjpass":
+        // That she lied was suspected by everyone csubjpass(suspected, lied)
+        UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
+        if (IsAKeyword())
+          AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
+        break;
+      case "dobj":
+        // They win the lottery dobj(win, lottery)
+        UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
+        if (IsAKeyword())
+          AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
         break;
       case "neg":
         // parent ýn weight ini negatifleþtir
         parentToken.Negate();
         break;
-      // case "npadvmod":
-      // daha sonra karar verilecek
-      // break;
-      // case "nsubj":
-      // parent ý kendine alacak
-      // break;
+      case "npadvmod":
+        // The silence is itself significant npadvmod(significant, itself)
+        UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
+        if (IsAKeyword())
+          AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
+        break;
+      case "nsubj":
+        // The baby is cute nsubj(cute, baby)
+        UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
+        if (IsAKeyword())
+          AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
+        break;
       case "nsubjpass":
-        // parent a aktar
+        // Dole was defeated by Clinton nsubjpass(defeated, Doll)
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
@@ -135,7 +178,7 @@ public class Token {
         }
         break;
       case "partmod":
-        // parent a aktar
+        // Bill tried to shoot demonstrating his incompetence partmod(shoot, demonstrating)
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
@@ -143,7 +186,7 @@ public class Token {
         }
         break;
       case "rcmod":
-        // parent a aktar
+        // I saw the man you love rcmod(man, love)
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
@@ -151,36 +194,46 @@ public class Token {
         }
         break;
       case "rel":
-        // parent a aktar
+        // I saw the man whose wife you love rel(love, wife)
+        UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
         if (IsAKeyword())
-          parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
-        else {
-          parentToken.UpdateScore(GetProcessedScore(), weight);
-        }
+          AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
         break;
-      // case "xcomp":
-      // kendine al
-      // break;
+      case "xcomp":
+        // He says that you like to swim xcomp(like, swim)
+        UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
+        if (IsAKeyword())
+          AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
+        break;
       default:
         if (IsAKeyword())
-          parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
+          parentToken.AddAspectScore(GetProcessedScore(score), weight, aspect);
         break;
       }
+      if (wordType == WordType.ADJECTIVE || wordType == WordType.ADVERB
+          || (wordType == WordType.NOUN && pureScore != 0)
+          || (wordType == WordType.VERB && pureScore != 0))
+        parentToken.AddAspectScore(pureScore, 1, -1);
       for (Entry<Long, Float> e : GetScoreMap().entrySet())
-        parentToken.AddAspectScore(e.getValue(), weightList.get(e.getKey()), e.getKey());
+        parentToken.AddAspectScore(GetProcessedScore(e.getValue()), weightList.get(e.getKey()),
+            e.getKey());
     }
   }
 
   private void AddModifiers(List<ModifierItem> list, boolean included) {
-    // acomp advmod amod dobj neg nsubjpass partmod rcmod rel
+    // acomp advmod amod dobj neg nsubjpass partmod rcmod rel appos csubj csubjpass npadvmod xcomp
+    // nsubj
     boolean modifiedByAnother = false;
     for (Token t : childTokens) {
       if (IsAKeyword() || included) {
         if (t.GetParentEdgeType().equals("acomp") || t.GetParentEdgeType().equals("advmod")
-            || t.GetParentEdgeType().equals("amod") || t.GetParentEdgeType().equals("dobj")
-            || t.GetParentEdgeType().equals("neg") || t.GetParentEdgeType().equals("nsubjpass")
-            || t.GetParentEdgeType().equals("partmod") || t.GetParentEdgeType().equals("rcmod")
-            || t.GetParentEdgeType().equals("rel")) {
+            || t.GetParentEdgeType().equals("amod") || t.GetParentEdgeType().equals("appos")
+            || t.GetParentEdgeType().equals("csubj") || t.GetParentEdgeType().equals("csubjpass")
+            || t.GetParentEdgeType().equals("dobj") || t.GetParentEdgeType().equals("neg")
+            || t.GetParentEdgeType().equals("npadvmod") || t.GetParentEdgeType().equals("nsubj")
+            || t.GetParentEdgeType().equals("nsubjpass") || t.GetParentEdgeType().equals("partmod")
+            || t.GetParentEdgeType().equals("rcmod") || t.GetParentEdgeType().equals("rel")
+            || t.GetParentEdgeType().equals("xcomp")) {
           modifiedByAnother = true;
           list.add(new ModifierItem(t, this));
           t.AddModifiers(list, true);
@@ -199,8 +252,23 @@ public class Token {
   }
 
   protected void UpdateScore(float score, int weight) {
-    this.score = ((this.score * this.weight) + (score * weight)) / (this.weight + weight);
-    this.weight += weight;
+    if (this.score == 0 && this.weight == 1) {
+      this.score = score;
+      this.weight = weight + 1;
+    } else {
+      this.score = ((this.score * this.weight) + (score * weight)) / (this.weight + weight);
+      this.weight += weight;
+    }
+  }
+
+  protected void UpdateScore(float score) {
+    if (this.score < 0)
+      this.score = (Math.abs(this.score) + (1 - Math.abs(this.score)) / (1 / score)) * -1;
+    else if (this.score > 0) {
+      this.score = Math.abs(this.score) + (1 - Math.abs(this.score)) / (1 / score);
+    } else
+      this.score = score;
+    weight++;
   }
 
   protected void AddAspectScore(float score, int weight, long aspectId) {
@@ -276,5 +344,13 @@ public class Token {
 
   public int GetEndPosition() {
     return endPosition;
+  }
+
+  public int GetRelativeBeginPosition() {
+    return relativeBeginPosition;
+  }
+
+  public int GetRelativeEndPosition() {
+    return relativeEndPosition;
   }
 }
