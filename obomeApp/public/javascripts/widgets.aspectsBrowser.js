@@ -3,7 +3,7 @@
 	var aspectsListId = "ab_aspects_list";
 	var keywordsListId = "ab_keywords_list";
 	
-	var olButtonClass = "ol-button";
+	var olButtonClass = "ui-icon-button";
 	
 	// Helpers to make things easier.
 	function makeId(domIdPrefix, id) {
@@ -121,6 +121,7 @@
 	// Creates an item in an editable list.
 	function createEditableListItem(options) {
 		var listItem = $("<option>")
+			.attr("title", "Double click to edit")
 			.addClass("ui-list-item")
 			.text(options.text)
 			.val(options.value)
@@ -151,7 +152,7 @@
 							}
 						}, newValue, {
 							title: 'Update Failed',
-							message: "Could not update, possibly due to a conflict."
+							message: "This " + options.typeName.toLowerCase() + " already exists."
 						}, options.me);
 					}
 				});
@@ -203,7 +204,7 @@
 								label: ui.draggable.text()
 							}, {
 								title: "Add Failed",
-								message: "Could not add, possibly due to a conflict."
+								message: "This " + options.typeName.toLowerCase() + " already exists."
 							}, me, list);
 						}
 					}))
@@ -213,6 +214,7 @@
 				.append($("<ul>")
 					.addClass("ui-sidebyside-controls-list")
 					.append(addButton = $("<li>")
+						.attr("title", "Add new " + options.typeName.toLowerCase())
 						.addClass(olButtonClass)
 						.button({
 							text: false,
@@ -229,12 +231,13 @@
 								operate: function(value) {
 									callAndDisplay(options.addHandlers, value, {
 										title: "Add Failed",
-										message: "Could not add, possibly due to a conflict."
+										message: "This " + options.typeName.toLowerCase() + " already exists."
 									}, me, list);
 								}
 							});
 						}))
 					.append(deleteButton = $("<li>")
+						.attr("title", "Delete this " + options.typeName.toLowerCase())
 						.addClass("ui-sidebyside-controls-list-item-spaced")
 						.addClass(olButtonClass)
 						.button({
@@ -248,7 +251,7 @@
 							var value = $(list).val();
 							callAndDisplay(options.deleteHandlers, value, {
 								title: 'Delete Failed',
-								message: "Could not delete, possibly due to a conflict."
+								message: "Unexpected error: could not delete."
 							}, me, list);
 						}))));
 		
@@ -301,13 +304,8 @@
 							}), window.JSON.stringify(newAspect));
 						}
 					})));
-				
-				// If nothing is selected, then select this.
-				if (!$(aspectsList).find(":selected").size()) {
-					selectOption(newAspectElem);
-					
-					$($$(keywordsListId, me._id).data("addButton")).button("enable");
-				}
+
+				selectOption(newAspectElem);
 			}
 		},
 		
@@ -379,11 +377,8 @@
 							}), window.JSON.stringify(newKeyword));
 						}
 					})));
-				
-				if (!$(keywordsList).find(":selected").size()) {
-					selectOption(newKeywordElem);
-					$($(keywordsList).data("deleteButton")).button("enable");
-				}
+
+				selectOption(newKeywordElem);
 			}
 		},
 		
@@ -422,7 +417,7 @@
 			var me = this;
 			callAndDisplay(me._addAspectHandlers, aspect, {
 				title: "Add Failed",
-				message: "Could not add, possibly due to a conflict."
+				message: "This aspect already exists."
 			}, me, $$(aspectsListId, me._id));
 		},
 		
@@ -430,7 +425,7 @@
 			var me = this;
 			callAndDisplay(me._addKeywordHandlers, keyword, {
 				title: "Add Failed",
-				message: "Could not add, possibly due to a conflict."
+				message: "This keyword already exists."
 			}, me, $$(keywordsListId, me._id));
 		},
 		
@@ -449,6 +444,8 @@
 			$.each(me.options.collection.aspects, function(i, aspect) {
 				$.proxy(me._addAspectHandlers.display, me)(aspect);
 			});
+			
+			selectOption($(aspectsList).find("option").eq(0));
 			
 			$($(aspectsList)
 				.removeAttr("disabled")
@@ -492,6 +489,9 @@
 					$.each(keywords || [], function(i, keyword) {
 						$.proxy(me._addKeywordHandlers.display, me)(keyword);
 					});
+					
+					// Select the fist one.
+					selectOption($(keywordsList).find("option").eq(0));
 					
 					$(target)
 						.removeAttr("disabled");

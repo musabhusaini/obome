@@ -21,6 +21,7 @@
 		#{press.script "obome.Utils.js" /}
 		#{press.script src:"obome.routes.js", render:true /}
 		#{press.script "widgets.spinner.js" /}
+		#{press.script "widgets.infoPopup.js" /}
 		#{press.script "main.html.js" /}
 		
 		#{press.compressed-script /}
@@ -31,7 +32,8 @@
         	(function(window, document, $) {
         		$(document).ready(function() {
         			obome.displayMainPage({
-        				pingInterval: 60000 * 5
+        				pingInterval: 60000 * 5,
+        				infoContainer: ".ui-info"
         			});
         		});
         	})(window, window.document, window.jQuery);
@@ -48,7 +50,8 @@
     			<div id="banner-home-link">
     				#{a @Application.landingPage()}Ontology-Based Opinion Mining Engine#{/a}
     			</div>
-    			<div class="ui-subtitle">#{get 'title' /}</div>
+    			<div class="ui-info ui-float-right" title="More Information">#{get "info" /}</div>
+    			<div class="ui-subtitle">#{get "title" /}</div>
     		</div>
     		<div id="content-wrapper">
         		#{doLayout /}

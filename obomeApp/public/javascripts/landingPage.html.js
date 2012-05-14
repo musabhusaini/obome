@@ -61,7 +61,11 @@
 		});
 		
 		$(nextButton)
-			.button({ })
+			.button({
+				icons: {
+					primary: "ui-icon-circle-arrow-e"
+				}
+			})
 			.click(function() {
 				$(nextButton).button("disable");
 				$(nextButton).spinner();

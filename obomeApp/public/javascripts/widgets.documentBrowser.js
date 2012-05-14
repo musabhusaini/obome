@@ -34,7 +34,7 @@
 			showNav: true,
 			showCounter: true,
 			documentContainerClass: "ol-document-text",
-			navButtonsClass: "ol-button"
+			navButtonsClass: "ui-icon-button"
 		},
 		
 		_id: null,
@@ -108,7 +108,7 @@
 							var token = $.parseJSON(p1);
 							
 							var css;
-							if (token.isKeyword) {
+							if (token.aspect) {
 								css = seenKeywordClass;
 							} else if (token.isSeen) {
 								css = seenWordClass;
@@ -122,6 +122,9 @@
 								.addClass(css);
 							
 							span = $("<span>")
+								.attr("title",
+										token.aspect ? ("Already added to the '" + token.aspect + "' aspect") :
+											(token.isSeen ? "Already seen and ignored" : "Click to add to the selected aspect"))
 								.addClass("ol-feature-element")
 								.append(span);
 							
@@ -299,6 +302,7 @@
 						// Previous button.
 						.append($("<li>")
 							.attr("id", makeId(prevButton, id))
+							.attr("title", "Previous review")
 							.addClass(me.options.navButtonsClass)
 							.button({
 								disabled: true,
@@ -311,6 +315,7 @@
 						// Next button.
 						.append($("<li>")
 							.attr("id", makeId(nextButton, id))
+							.attr("title", "Next review")
 							.addClass(me.options.navButtonsClass)
 							.addClass("ui-sidebyside-controls-list-item-spaced")
 							.button({

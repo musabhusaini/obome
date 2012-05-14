@@ -76,20 +76,23 @@ public class Documents extends Application {
 		    			.setMaxResults(1)
 		    			.getResultList(), null);
 		    		
-		    		boolean isKeyword = false;
+		    		Keyword keyword = null;
 		    		
 		    		if (backlogToken != null) {
 		    			featureJson.addProperty("isSeen", true);
-		    			isKeyword = backlogToken.getIsKeyword();
+		    			keyword = backlogToken.getKeyword();
 		    		} else {
-		    			isKeyword = Iterables.getFirst(em().createQuery("SELECT kw FROM Keyword kw " +
+		    			keyword = Iterables.getFirst(em().createQuery("SELECT kw FROM Keyword kw " +
 								"WHERE kw.aspect.setCover=:sc AND kw.label=:label", Keyword.class)
 							.setParameter("sc", sc)
 							.setParameter("label", feature.getLemma())
 							.setMaxResults(1)
-							.getResultList(), null) != null;
+							.getResultList(), null);
 		    		}
-		    		featureJson.addProperty("isKeyword", isKeyword);
+		    		
+		    		if (keyword != null) {
+		    			featureJson.addProperty("aspect", keyword.getAspect().getLabel());
+		    		}
 		    		
 		    		text.replace(feature.getAbsoluteBeginPosition(), feature.getAbsoluteEndPosition(), String.format("\\{%s}\\",
 		    				featureJson.toString()));
@@ -129,26 +132,26 @@ public class Documents extends Application {
     			.setMaxResults(1)
     			.getResultList(), null);
 
-    		boolean isKeyword = false;
+    		Keyword keyword = null;
     		
-    		if (backlogToken == null || !backlogToken.getIsKeyword()) {
-				isKeyword = Iterables.getFirst(em().createQuery("SELECT kw FROM Keyword kw " +
+    		if (backlogToken == null || backlogToken.getKeyword() == null) {
+				keyword = Iterables.getFirst(em().createQuery("SELECT kw FROM Keyword kw " +
 						"WHERE kw.aspect.setCover=:sc AND kw.label=:label", Keyword.class)
 					.setParameter("sc", setCover)
 					.setParameter("label", token.getLemma())
 					.setMaxResults(1)
-					.getResultList(), null) != null;
+					.getResultList(), null);
     		}
     		
     		if (backlogToken == null) {
     			backlogToken = new BacklogToken()
     				.setLabel(token.getLemma())
     				.setSetCover(setCover)
-    				.setIsKeyword(isKeyword);
+    				.setKeyword(keyword);
     			
     			em().persist(backlogToken);
-    		} else if (isKeyword) {
-    			backlogToken.setIsKeyword(isKeyword);
+    		} else if (keyword != null) {
+    			backlogToken.setKeyword(keyword);
     			em().merge(backlogToken);
     		}
     	}

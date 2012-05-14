@@ -21,7 +21,7 @@ public class BacklogToken extends IdentifiableObject {
 	private static final long serialVersionUID = 1L;
 	
 	private String label;
-	private boolean isKeyword;
+	private Keyword keyword;
 	private SetCover setCover;
 	
 	@Column(nullable=false)
@@ -34,13 +34,15 @@ public class BacklogToken extends IdentifiableObject {
 		return this;
 	}
 	
-	@Column(name="is_keyword")
-	public boolean getIsKeyword() {
-		return this.isKeyword;
+	@ManyToOne
+	@JoinColumn(name="keyword_uuid", nullable=true)
+	@Basic(fetch=FetchType.LAZY)
+	public Keyword getKeyword() {
+		return this.keyword;
 	}
 	
-	public BacklogToken setIsKeyword(boolean isKeyword) {
-		this.isKeyword = isKeyword;
+	public BacklogToken setKeyword(Keyword keyword) {
+		this.keyword = keyword;
 		return this;
 	}
 	

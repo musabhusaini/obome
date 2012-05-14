@@ -1,11 +1,15 @@
 package edu.sabanciuniv.dataMining.experiment.models;
 
+import java.util.List;
+
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import edu.sabanciuniv.dataMining.data.IdentifiableObject;
@@ -20,6 +24,7 @@ public class Keyword extends IdentifiableObject {
 
 	private Aspect aspect;
 	private String label;
+	private List<BacklogToken> backlogTokens;
 	
 	public Keyword() {
 		this(new Aspect());
@@ -51,5 +56,15 @@ public class Keyword extends IdentifiableObject {
 
 	public void setLabel(String label) {
 		this.label = label;
+	}
+	
+	@OneToMany(mappedBy="keyword", cascade=CascadeType.ALL)
+	public List<BacklogToken> getBacklogTokens() {
+		return this.backlogTokens;
+	}
+	
+	public Keyword setBacklogTokens(List<BacklogToken> backlogTokens) {
+		this.backlogTokens = backlogTokens;
+		return this;
 	}
 }

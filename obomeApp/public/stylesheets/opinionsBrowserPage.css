@@ -38,6 +38,16 @@
 	padding: .5em;
 }
 
+tr.ob-divider > td {
+	border-bottom: 1pt solid black;
+	padding-top: .5em;
+}
+
+tr.ob-overall-rating > td {
+	font-style: italic;
+	padding-top: .5em;
+}
+
 .ob-modified {
 	color: red;
 }
@@ -47,18 +57,26 @@
 }
 
 .ob-irrelevant {
-	color: lightgray;
+	color: gray;
+}
+
+.ob-sentence-polarity {
+	color: blue;
 }
 
 #documentContainer {
 	margin-left: .5em;
 }
 
-th {
+#tblOpinionSummary {
+	border-collapse: collapse;
+}
+
+#tblOpinionSummary th {
 	text-align: left;
 }
 
-td {
+#tblOpinionSummary td {
 	padding-right: 1.2em;
 }
 

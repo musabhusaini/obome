@@ -27,24 +27,54 @@
 	</script>
 #{/set}
 
+#{set "info"}
+	<div>
+		<div>
+			Domain aspects and related keywords can be extracted by going through these documents.
+		</div>
+		<div class="ui-vertical-space"></div>
+		<div>
+			<div>
+				All nouns are highlighted according to the following legend:
+			</div>
+			<div>
+				<div class="legend-button">
+					<div class="ol-unseen-word">Uncategorized</div>
+				</div>
+			</div>
+			<div>
+				<div class="legend-button">
+					<div class="ol-seen-keyword">Marked as Keywords</div>
+				</div>
+			</div>
+			<div>
+				<div class="legend-button">
+					<div class="ol-seen-word">Previously Ignored</div>
+				</div>
+			</div>
+		</div>
+		<div class="ui-vertical-space"></div>
+		<div>
+			These nouns can be dragged and dropped into either of the boxes (aspect or keywords) or clicked to be marked as keywords for the
+			selected aspect.
+		</div>
+	</div>
+#{/set}
+
 <div id="content">
-	<div class="ui-prominent ui-corner-all ui-distant ui-padded-message">
-		Please go through these documents and extract domain aspects and related keywords. Words that are likely to be keywords have been
-		highlighted for your convenience. Highlighted words can be dragged and dropped into either of the boxes or clicked to be marked as
-		keywords. Please collect as many keywords for your domain aspects as you can (more keywords will yield better opinion mining results)
-		and press Next.
-	</div>
-	<div class="ui-float-left ab-doc-container">
-		<div id="documentContainer"></div>
-	</div>
-	<div class="ui-float-right ab-aspects-container">
-		<div id="aspectsContainer"></div>
+	<div>
+		<div class="ui-float-left ab-doc-container">
+			<div id="documentContainer"></div>
+		</div>
+		<div class="ui-float-right ab-aspects-container">
+			<div id="aspectsContainer"></div>
+		</div>
 	</div>
 	<div class="ui-helper-clearfix"></div>
 	<div class="ui-vertical-space"></div>
 	<div class="ui-float-right">
-		<div id="btnUpload" class="main-button">Upload</div>
-		<div id="btnDownload" class="main-button">Download</div>
-		<div id="btnNext" class="main-button">Next</div>
+		<div id="btnUpload" class="ui-main-button" title="Upload an aspects/keywords set">Upload</div>
+		<div id="btnDownload" class="ui-main-button" title="Download the current aspects/keywords set">Download</div>
+		<div id="btnNext" class="ui-main-button" title="Next step">Next</div>
 	</div>
 </div>

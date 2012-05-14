@@ -30,8 +30,8 @@
 	</script>
 #{/set}
 
-<div id="content">
-	<div class="ui-prominent ui-corner-all ui-distant ui-padded-message">
+#{set "info"}
+	<div>
 		<div>
 			Now you can view aspect-based polarities of each review/comment from your corpus. The polarities are given on a scale of -1 to +1
 			where -1 is the most negative opinion and +1 is the most positive opinion.
@@ -43,6 +43,9 @@
 			<div class="ob-modifier">Keyword modifiers</div>
 		</div>
 	</div>
+#{/set}
+
+<div id="content">
 	<div class="ui-float-left ob-reviews-container">
 		<div class="ob-reviews-list-container ui-float-left">
 			<div class="ui-widget-header ui-corner-top ol-header"><span>Reviews</span></div>

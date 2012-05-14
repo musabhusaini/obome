@@ -11,5 +11,9 @@
 		}
 		
 		pingDelayed();
+		
+		$(options.infoContainer).infoPopup({
+			title: "More Information"
+		});
 	};
 })(window, window.document, window.jQuery, window.obome, window.obome.routes)

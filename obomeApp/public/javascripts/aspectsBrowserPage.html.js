@@ -7,7 +7,10 @@
 		var downloadButton = "#btnDownload";
 		var nextButton = "#btnNext";
 		
-		var mainButtonClass = ".main-button";
+		var mainButtonSelector = ".ui-main-button";
+		var legendButtonSelector = ".legend-button";
+		
+		$(legendButtonSelector).button();
 		
 		$(docContainer)
 			.documentBrowser($.extend(options, {
@@ -21,7 +24,11 @@
 			.aspectsBrowser(options);
 
 		$(uploadButton)
-			.button();
+			.button({
+				icons: {
+					primary: "ui-icon-arrowthickstop-1-n"
+				}
+			});
 		
 		var uploader = new plupload.Uploader({
 			runtimes: "html5,html4",
@@ -38,30 +45,38 @@
 
 		uploader.init();
 		uploader.bind("FilesAdded", function(up, files) {
-			$(mainButtonClass).button("disable");
-			$(mainButtonClass).spinner();
+			$(mainButtonSelector).button("disable");
+			$(mainButtonSelector).spinner();
 			up.start();
 		});
 		uploader.bind("FileUploaded", function(up, file) {
 			window.location.reload();
 		});
 		uploader.bind("Error", function (up, err) {
-			$(mainButtonClass).button("enable");
-			$(mainButtonClass).spinner("destroy");
+			$(mainButtonSelector).button("enable");
+			$(mainButtonSelector).spinner("destroy");
 			window.alert("Could not upload due to an unknown error");
 		});
 		
 		$(downloadButton)
-			.button()
+			.button({
+				icons: {
+					primary: "ui-icon-arrowthickstop-1-s"
+				}
+			})
 			.click(function() {
 				window.open(routes.Aspects.downloadableTextFile({ collection: options.collection.uuid }));
 			});
 		
 		$(nextButton)
-			.button()
+			.button({
+				icons: {
+					primary: "ui-icon-circle-arrow-e"
+				}
+			})
 			.click(function() {
-				$(mainButtonClass).button("disable");
-				$(mainButtonClass).spinner();
+				$(mainButtonSelector).button("disable");
+				$(mainButtonSelector).spinner();
 				window.location.href = routes.OpinionCollections.opinionsBrowserPage({ collection: options.collection.uuid });
 			});
 	};

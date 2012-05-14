@@ -46,7 +46,10 @@
 
 		$(nextButton)
 			.button({
-				disabled: true
+				disabled: true,
+				icons: {
+					primary: "ui-icon-circle-arrow-e"
+				}
 			})
 			.click(function() {
 				$(nextButton).button("disable");
@@ -65,7 +68,12 @@
 		
 		$(thresholdTextbox)
 			.keypress(function(event) {
-				return !window.isNaN(String.fromCharCode(event.which));
+				if (event.which === $.ui.keyCode.ENTER) {
+					$(event.target).effect("highlight", {}, 500);
+					$(event.target).blur();
+				} else {
+					return !window.isNaN(String.fromCharCode(event.which));
+				}
 			});
 		
 		$(distillerContainer)
@@ -102,7 +110,7 @@
 					.success(function(data) {
 
 						$(progressBar).progressbar("option", { value: 100 });
-						$(progressContainer).hide();//"highlight", {}, 1000);
+						$(progressContainer).hide();
 
 						$(distillerContainer)
 							.show();
@@ -126,7 +134,7 @@
 							
 							axes: {
 								xaxis: {
-									label: "Threshold (%)",
+									label: "Threshold (% of Document Usefulness)",
 									pad: 0,
 									tickOptions: {
 										formatString: "%2.0f"

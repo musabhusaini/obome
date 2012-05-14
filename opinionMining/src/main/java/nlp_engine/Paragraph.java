@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import database_connector.DatabaseAdapter;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.trees.semgraph.SemanticGraph;
 import edu.stanford.nlp.trees.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
@@ -27,19 +29,8 @@ public class Paragraph {
     for (CoreMap c : iSentences) {
       dependencies = c.get(BasicDependenciesAnnotation.class);
       if (dependencies.getRoots().size() > 0) {
-        List<IndexedWord> tempList = dependencies.topologicalSort();
-        int tempMin = tempList.get(0).beginPosition();
-        int tempMax = tempList.get(0).endPosition();
-
-        for (IndexedWord i : dependencies.topologicalSort()) {
-          if (tempMin > i.beginPosition())
-            tempMin = i.beginPosition();
-          if (tempMax < i.endPosition())
-            tempMax = i.endPosition();
-        }
-
-        sentences.add(new SentenceObject(dependencies, count, adp, tempMin, tempMax, text
-            .substring(tempMin, tempMax)));
+        sentences.add(new SentenceObject(dependencies, count, adp,
+        		c.get(CharacterOffsetBeginAnnotation.class), c.get(CharacterOffsetEndAnnotation.class), c.get(TextAnnotation.class)));
         count += dependencies.size();
       }
     }

@@ -26,6 +26,14 @@
 	</script>
 #{/set}
 
+#{set "info"}
+	<div>
+		As determined by our algorithm, your corpus will follow the data reduction shown below. Here, you can choose the threshold you
+		would like to set. A higher threshold means you will have to extract keywords and aspects from fewer documents while compromising
+		a higher percentage of data quality.
+	</div>
+#{/set}
+
 <div id="content">
 	<div id="cntnrProperties">
 		<div>
@@ -38,16 +46,11 @@
 		<div id="pbarProgress" class="ui-distant"></div>
 	</div>
 	<div id="cntnrDistiller" class="ui-distant">
-		<div class="ui-prominent ui-corner-all ui-distant ui-padded-message">
-			As determined by our algorithm, your corpus will follow the data reduction shown below. Here, you can choose the threshold you
-			would like to set. A higher threshold means you will have to extract keywords and aspects from fewer documents while compromising
-			a higher percentage of data quality. Please press Next when you're done.
-		</div>
 		<div id="grphDistillerStats" class="ui-distant"></div>
 		<label for="txtThreshold">Selected threshold:</label>
 		<input type="text" id="txtThreshold" /><span>%</span>
 	</div>
 	<div class="ui-vertical-space"></div>
 	<div id="cntnrMessage" class="ui-corner-all ui-float-left"></div>
-	<div id="btnNext" class="ui-float-right">Next</div>
+	<div id="btnNext" class="ui-float-right ui-main-button" title="Next step">Next</div>
 </div>

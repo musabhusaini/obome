@@ -96,6 +96,14 @@ ul.ui-controls-list > li {
 	padding: 1em;
 }
 
+.ui-main-button {
+	width: 8em;
+}
+
+.ui-icon-button {
+	height: 2em;
+}
+
 #wrapper {
 	margin: 0 auto;
 	width: 70%;

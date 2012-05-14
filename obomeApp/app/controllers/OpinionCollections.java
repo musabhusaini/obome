@@ -41,6 +41,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import play.Logger;
+import play.cache.Cache;
 import play.libs.F.Promise;
 import play.mvc.results.NotFound;
 import web_package.CommentResult;
@@ -73,14 +74,14 @@ public class OpinionCollections extends Application {
 
 		@Override
 		public boolean apply(Token other) {
-			return other.GetBeginPosition() == this.token.GetBeginPosition();
+			return other.GetRelativeBeginPosition() == this.token.GetRelativeBeginPosition();
 		}
 	}
 	
 	public static class TokenBeginComparer implements Comparator<Token> {
 		@Override
 		public int compare(Token token1, Token token2) {
-			return token1.GetBeginPosition() - token2.GetBeginPosition();
+			return token1.GetRelativeBeginPosition() - token2.GetRelativeBeginPosition();
 		}
 	}
 	
@@ -300,6 +301,10 @@ public class OpinionCollections extends Application {
 	
 	public static void opinionsBrowserPage(String collection) {
 		SetCover sc = fetch(SetCover.class, collection);
+		
+		// Clear cache for this collection.
+		Cache.delete(collection);
+		
 		OpinionCollectionViewModel viewModel = new OpinionCollectionViewModel(sc);
 		viewModel.size = getCollectionSize(sc);
 		collection = new Gson().toJson(viewModel, OpinionCollectionViewModel.class);
@@ -314,114 +319,132 @@ public class OpinionCollections extends Application {
 	}
 	
 	public static void opinionMiner(String collection, String document) {
-		OpinionMinerResultViewModel result = new OpinionMinerResultViewModel();
+		Map<String, OpinionMinerResultViewModel> results = (Map<String, OpinionMinerResultViewModel>) Cache.get(collection);
 		
-		OpinionDocument opinDoc = fetch(OpinionDocument.class, document);
-		StringBuffer docText = new StringBuffer(opinDoc.getContent());
-		
-		// Set up connection string.
-		byte[] uuid = IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(collection));
-		String url = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.url").toString();
-		String user = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.user").toString();
-		String pwd = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.password").toString();
-		String connectionString = url + "?user=" + user + "&password=" + pwd;
-		
-		// Get opinion mining result from the engine.
-		CommentResult commentResult;
-		try {
-			// Call the opinion mining engine.
-			commentResult = new CommentResult(docText.toString(), uuid, connectionString);
-			
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
+		if (results == null) {
+			results = Maps.newHashMap();
+			Cache.set(collection, results, "1h");
 		}
 		
-		// Make sense of the score map.
-		Map<Long, Float> rawScorecard = commentResult.GetScoreMap();
-		Map<Long, String> aspectLongIdMap = Maps.newHashMap();
-		result.scorecard = Maps.newHashMap();
-		for (Long key : rawScorecard.keySet()) {
-			String label;
-			float score;
+		OpinionMinerResultViewModel result = results.get(document);
+		if (result == null) {
+			result = new OpinionMinerResultViewModel();
+			OpinionDocument opinDoc = fetch(OpinionDocument.class, document);
 			
-			if (key >= 0) {
-				label = (String)em().createNativeQuery("SELECT label " +
-						"FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
-					.setParameter("key", key)
-					.getSingleResult();
-			} else {
-				label = "Overall";
+			// Set up connection string.
+			byte[] uuid = IdentifiableObject.getUuidBytes(IdentifiableObject.createUuid(collection));
+			String url = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.url").toString();
+			String user = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.user").toString();
+			String pwd = em().getEntityManagerFactory().getProperties().get("javax.persistence.jdbc.password").toString();
+			String connectionString = url + "?user=" + user + "&password=" + pwd;
+			
+			// Get opinion mining result from the engine.
+			CommentResult commentResult;
+			try {
+				// Call the opinion mining engine.
+				commentResult = new CommentResult(opinDoc.getContent(), uuid, connectionString);	
+			} catch (Throwable e) {
+				Logger.error("Could not process review: %s", opinDoc.getContent());
+				throw new IllegalStateException(e);
 			}
 			
-			aspectLongIdMap.put(key, label);
-			
-			score = rawScorecard.get(key);
-			if (Float.isNaN(score)) {
-				score = 0;
-			}
-			
-			result.scorecard.put(label, score);
-		}
-		
-		// Store all modified/modifier tokens.
-		List<ModifierItem> modifierItems = commentResult.GetModifierList();
-		List<Token> tokens = Lists.newArrayList();
-		for (ModifierItem item : modifierItems) {
-			Token token = Iterables.find(tokens, new TokenBeginEquals(item.GetModifiedToken()), null);
-			if (token == null) {
-				tokens.add(item.GetModifiedToken());
-			}
-			
-			if (item.HasModifier()) {
-				token = Iterables.find(tokens, new TokenBeginEquals(item.GetModifierToken()), null);
-				if (token == null) {
-					tokens.add(item.GetModifierToken());
-				}
-			}
-		}
-		
-		// Indicate tokens on the output string.
-		Collections.sort(tokens, Collections.reverseOrder(new TokenBeginComparer()));
-		for (Token token : tokens) {
-			String tokenText = docText.substring(token.GetBeginPosition(), token.GetEndPosition());
-			DisplayFeatureModel featureModel = new DisplayFeatureModel();
-			featureModel.content = tokenText;
-			featureModel.type = token.IsAKeyword() ? "modified" : "modifier";
-			
-			JsonObject json = featureModel.toJson();
-			
-			if (token.IsAKeyword()) {
-				json.addProperty("aspect", aspectLongIdMap.get(token.GetAspectId()));
-			} else {
-				json.addProperty("polarity", token.GetScore());
-			}
-			
-			docText.replace(token.GetBeginPosition(), token.GetEndPosition(), String.format("\\{%s}\\", json.toString()));
-		}
-		
-		// Find all unused sentences and indicate in the output.
-		LinguisticText lingText = new LinguisticText(opinDoc.getContent());
-		int beginIndex = 0;
-		for (LinguisticSentence sentence : lingText.getSentences()) {
-			if (Iterables.size(sentence.getTokens()) < 4) {
-				continue;
-			}
-			
-			int newBeginIndex = docText.indexOf(sentence.getText(), beginIndex);
-			if (newBeginIndex > -1) {
-				beginIndex = newBeginIndex;
-
-				DisplayFeatureModel featureModel = new DisplayFeatureModel();
-				featureModel.content = sentence.getText();
-				featureModel.type = "irrelevant";
-				JsonObject json = featureModel.toJson();
+			// Make sense of the score map.
+			Map<Long, Float> rawScorecard = commentResult.GetScoreMap();
+			Map<Long, String> aspectLongIdMap = Maps.newHashMap();
+			result.scorecard = Maps.newHashMap();
+			for (Long key : rawScorecard.keySet()) {
+				String label;
+				float score;
 				
-				docText.replace(beginIndex, beginIndex + sentence.getText().length(), String.format("\\{%s}\\", json.toString()));
-				beginIndex += json.toString().length();
+				if (key >= 0) {
+					label = (String)em().createNativeQuery("SELECT label " +
+							"FROM Aspects WHERE CAST(CONV(SUBSTRING(MD5(uuid), 1, 15), 16, 10) AS SIGNED INTEGER)=:key")
+						.setParameter("key", key)
+						.getSingleResult();
+				} else {
+					label = "Overall";
+				}
+				
+				aspectLongIdMap.put(key, label);
+				
+				score = rawScorecard.get(key);
+				if (Float.isNaN(score)) {
+					score = 0;
+				}
+				
+				result.scorecard.put(label, score);
 			}
+			
+			// Store all modified/modifier tokens.
+			StringBuilder docText = new StringBuilder();
+			List<SentenceObject> sentences = commentResult.GetSentences();
+			for (SentenceObject sentence : sentences) {
+				StringBuilder sentenceText = new StringBuilder(sentence.GetText());
+				
+				// Indicate tokens on the output string.
+				List<ModifierItem> modifierItems = sentence.GetModifiers();
+				List<Token> tokens = Lists.newArrayList();
+				for (ModifierItem item : modifierItems) {
+					Token token = Iterables.find(tokens, new TokenBeginEquals(item.GetModifiedToken()), null);
+					if (token == null) {
+						tokens.add(item.GetModifiedToken());
+					}
+					
+					if (item.HasModifier()) {
+						token = Iterables.find(tokens, new TokenBeginEquals(item.GetModifierToken()), null);
+						if (token == null) {
+							tokens.add(item.GetModifierToken());
+						}
+					}
+				}
+	
+				Collections.sort(tokens, Collections.reverseOrder(new TokenBeginComparer()));
+				for (Token token : tokens) {
+					String tokenText = sentenceText.substring(token.GetRelativeBeginPosition(), token.GetRelativeEndPosition());
+					DisplayFeatureModel featureModel = new DisplayFeatureModel();
+					featureModel.content = tokenText;
+					featureModel.type = token.IsAKeyword() ? "modified" : "modifier";
+					
+					JsonObject json = featureModel.toJson();
+					
+					if (token.IsAKeyword()) {
+						json.addProperty("aspect", aspectLongIdMap.get(token.GetAspectId()));
+					} else {
+						json.addProperty("polarity", token.GetScore());
+					}
+					
+					sentenceText.replace(token.GetRelativeBeginPosition(), token.GetRelativeEndPosition(),
+							String.format("\\{%s}\\", json.toString()));
+				}
+				
+				if (sentence.GetScoreMap().size() > 1) {
+					docText.append(sentenceText);
+				} else {
+					DisplayFeatureModel featureModel = new DisplayFeatureModel();
+					featureModel.content = sentence.GetText();
+					featureModel.type = "irrelevant";
+					JsonObject json = featureModel.toJson();
+					
+					docText.append(String.format("\\{%s}\\", json.toString()));
+				}
+				
+				if (sentence.GetScoreMap().containsKey(-1L)) {
+					DisplayFeatureModel featureModel = new DisplayFeatureModel();
+					featureModel.content = "";
+					featureModel.type = "sentence-polarity";
+					JsonObject json = featureModel.toJson();
+					json.addProperty("polarity", sentence.GetScoreMap().get(-1L));
+					
+					docText.append(String.format("\\{%s}\\", json.toString()));
+				}
+				
+				docText.append("\r\n");
+			}
+			
+			result.document = new DocumentViewModel(opinDoc.getIdentifier(), docText.toString().trim());
+			
+			results.put(document, result);
 		}
-		
-		result.document = new DocumentViewModel(opinDoc.getIdentifier(), docText.toString());
 		
 		renderJSON(result);
 	}
