@@ -16,7 +16,7 @@
 		function proxy(fn) {
 			return function() {
 				me = this;
-				var args = [];
+				var args = [ ];
 				for (var index=0; index<arguments.length; index++) {
 					args.push(arguments[index]);
 				}
@@ -40,9 +40,12 @@
 			dialogOptions: {
 				autoOpen: false,
 				draggable: false,
-				resizable: false
+				resizable: false,
+				show: "clip",
+				hide: "clip",
+				position: ["right", "bottom"]
 			},
-			buttonClass: "ui-icon-button",
+			buttonClass: "ui-icon-button"
 		};
 		
 		me._create = proxy(function() {
@@ -55,7 +58,7 @@
 			oldTitle = $(me.element).attr("title");
 			
 			// create the dialog.
-			$(popup).dialog($.extend(true, {}, me.options.dialogOptions, {
+			$(popup).dialog($.extend(true, { }, me.options.dialogOptions, {
 				title: getTitle()
 			}));
 		});

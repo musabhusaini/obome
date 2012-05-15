@@ -12,8 +12,8 @@
 		
 		pingDelayed();
 		
-		$(options.infoContainer).infoPopup({
-			title: "More Information"
-		});
+		if ($(options.infoContainer).contents().size()) {
+			$(options.infoContainer).infoPopup();
+		}
 	};
 })(window, window.document, window.jQuery, window.obome, window.obome.routes)

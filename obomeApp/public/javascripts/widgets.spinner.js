@@ -1,8 +1,8 @@
-(function(window, document, $) {
+(function(window, document, $, Math) {
 	
 	$.widget("widgets.spinner", {
 		options: {
-			spinnerClass: "ui-spinner",
+			spinnerClass: "ui-icon-loader",
 			positionMy: "center center",
 			positionAt: "center center"
 		},
@@ -12,61 +12,67 @@
 		_theRest: null,
 		
 		refresh: function() {
+			// Calculate new dimensions.
+			var dims = {
+				width: $(this.element).width() < $(this._spinner).width() ? $(this._spinner).width() : "",
+				height: $(this.element).height() < $(this._spinner).height() ? $(this._spinner).height() : ""
+			};
+			
+			// Remove everything else.
+			$(this._theRest).remove();
+			
+			// Resize if necessary and append the spinner.
+			$(this.element)
+				.width(dims.width)
+				.height(dims.height)
+				.append(this._spinner);
+
+			// Add classes and move to the center.
 			$(this._spinner)
 				.removeClass()
 				.addClass(this.options.spinnerClass)
-				.addClass("ui-widget");
+				.addClass("ui-widget")
+				.addClass("ui-corner-all")
+				.position({
+					my: this.options.positionMy,
+					at: this.options.positionAt,
+					of: $(this.element),
+					collision: "none"
+				});
 		},
 	
 		_create: function() {
 			// Save everything else.
 			this._theRest = $(this.element).contents();
-
+			
 			// Create spinner.
 			this._spinner = "spinner_" + window.Math.floor(window.Math.random() * 1000000).toString();
-			this._spinner = $("<div>")
-				.attr("id", this._spinner)
-				.addClass("ui-spinner")
-				.addClass("ui-widget")
-				.addClass("ui-corner-all")
-				.appendTo(this.element);
-			
-			// Remove everything else.
-			$(this._theRest).remove();
-			
-			// Move to the center.
-			$(this._spinner).position({
-				my: this.options.positionMy,
-				at: this.options.positionAt,
-				of: $(this.element),
-				collision: "none"
-			});
-			
-			// Revert so we let _init do this work.
-			$(this.element).append(this._theRest)
-			$(this._spinner).hide();
+			this._spinner = $("<div>").attr("id", this._spinner);
 		},
 		
 		_init: function() {
-			$(this._theRest).remove();
-			$(this._spinner).show();
+			this.refresh();
 		},
 		
 		_setOption: function(key, value) {
 			$.Widget.prototype._setOption.apply(this, arguments);
 			
 			if ("key" === "spinnerClass") {
-				refresh();
+				this.refresh();
 			}
 		},
 		
 		destroy: function() {
 			$(this._spinner).remove();
-			$(this.element).append(this._theRest)
 			this._spinner = null;
-			
+
+			$(this.element)
+				.append(this._theRest)
+				.width("")
+				.height("");
+
 			$.Widget.prototype.destroy.call(this);
 		}
 	});
 
-})(window, window.document, window.jQuery);
+})(window, window.document, window.jQuery, window.Math);

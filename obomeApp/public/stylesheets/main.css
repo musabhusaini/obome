@@ -40,10 +40,10 @@ ul.ui-controls-list > li {
 	margin-left: .5em;
 }
 
-.ui-spinner {
-	width: 36px;
-	height: 36px;
-	background-image: url(/public/images/spinner.gif);
+.ui-icon-loader {
+	width: 16px;
+	height: 16px;
+	background-image: url(/public/images/ajax-loader.gif);
 	background-repeat: no-repeat;
 }
 

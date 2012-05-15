@@ -1,0 +1,8 @@
+\.git\
+\ontologyLearner\
+\opinionMining\
+\.settings\
+\eclipse\
+\lib\
+\logs\
+\tmp\
