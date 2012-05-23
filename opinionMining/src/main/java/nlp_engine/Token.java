@@ -1,6 +1,8 @@
 package nlp_engine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,11 +10,17 @@ import java.util.Map.Entry;
 
 import nlp_engine.Utils.WordType;
 import stem_engine.Stemmer;
-import database_connector.DatabaseAdapter;
+import database_engine.DatabaseAdapter;
 
-public class Token {
+@SuppressWarnings("rawtypes")
+public class Token implements Comparable {
+  private static List<String> nonPriorTypes = new ArrayList<String>(Arrays.asList(new String[] {
+      "csubj", "csubjpass", "dobj", "npadvmod", "nsubj", "rel", "xcomp" }));
+  private static List<String> priorTypes = new ArrayList<String>(Arrays.asList(new String[] {
+      "acomp", "advmod", "amod", "appos", "neg", "nsubjpass", "partmod", "rcmod" }));
   private Token parentToken;
   private List<Token> childTokens;
+  private List<Token> modifiedByList;
   private String originalText;
   private List<String> stemmedTexts;
   private WordType wordType;
@@ -27,24 +35,24 @@ public class Token {
   private int beginPosition;
   private int endPosition;
   private boolean invert;
-  private int relativeBeginPosition;
-  private int relativeEndPosition;
+  private int sentenceBeginPosition;
 
-  protected Token(String original, String typeString, Token parentToken, String parentEdge,
-      int index, int beginPosition, int endPosition, DatabaseAdapter adp, int sentenceBeginPosition) {
+  protected Token(String original, String lemma, String typeString, Token parentToken,
+      String parentEdge, int index, int beginPosition, int endPosition, DatabaseAdapter adp,
+      int sentenceBeginPosition) {
+    modifiedByList = new ArrayList<Token>();
     childTokens = new ArrayList<Token>();
     scoreList = new HashMap<Long, Float>();
     weightList = new HashMap<Long, Integer>();
     this.parentToken = parentToken;
     originalText = original.trim();
     parentEdgeType = parentEdge;
-    stemmedTexts = Stemmer.GetStems(original.toLowerCase(), "h,p,s");
-    stemmedTexts.add(0, original.toLowerCase());
+    stemmedTexts = Stemmer.GetStems(lemma.toLowerCase(), "h,p,s");
+    stemmedTexts.add(0, lemma.toLowerCase());
     tokenIndex = index;
     this.beginPosition = beginPosition;
     this.endPosition = endPosition;
-    relativeBeginPosition = beginPosition - sentenceBeginPosition;
-    relativeEndPosition = endPosition - sentenceBeginPosition;
+    this.sentenceBeginPosition = sentenceBeginPosition;
     invert = false;
 
     if (typeString.length() < 2)
@@ -100,6 +108,7 @@ public class Token {
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
+          parentToken.AddModifier(this);
           parentToken.UpdateScore(GetProcessedScore(), weight);
         }
         break;
@@ -108,6 +117,7 @@ public class Token {
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
+          parentToken.AddModifier(this);
           parentToken.UpdateScore(GetProcessedScore());
         }
         break;
@@ -116,6 +126,7 @@ public class Token {
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
+          parentToken.AddModifier(this);
           parentToken.UpdateScore(GetProcessedScore(), weight);
         }
         break;
@@ -124,6 +135,7 @@ public class Token {
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
+          parentToken.AddModifier(this);
           parentToken.UpdateScore(GetProcessedScore(), weight);
         }
         break;
@@ -137,34 +149,40 @@ public class Token {
       // break;
       case "csubj":
         // What she said is true csubj(true, said)
+        AddModifier(parentToken);
         UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
         if (IsAKeyword())
           AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
         break;
       case "csubjpass":
         // That she lied was suspected by everyone csubjpass(suspected, lied)
+        AddModifier(parentToken);
         UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
         if (IsAKeyword())
           AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
         break;
       case "dobj":
         // They win the lottery dobj(win, lottery)
+        AddModifier(parentToken);
         UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
         if (IsAKeyword())
           AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
         break;
       case "neg":
         // parent ýn weight ini negatifleþtir
+        parentToken.AddModifier(this);
         parentToken.Negate();
         break;
       case "npadvmod":
         // The silence is itself significant npadvmod(significant, itself)
+        AddModifier(parentToken);
         UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
         if (IsAKeyword())
           AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
         break;
       case "nsubj":
         // The baby is cute nsubj(cute, baby)
+        AddModifier(parentToken);
         UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
         if (IsAKeyword())
           AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
@@ -174,6 +192,7 @@ public class Token {
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
+          parentToken.AddModifier(this);
           parentToken.UpdateScore(GetProcessedScore(), weight);
         }
         break;
@@ -182,6 +201,7 @@ public class Token {
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
+          parentToken.AddModifier(this);
           parentToken.UpdateScore(GetProcessedScore(), weight);
         }
         break;
@@ -190,17 +210,20 @@ public class Token {
         if (IsAKeyword())
           parentToken.AddAspectScore(GetProcessedScore(), weight, aspect);
         else {
+          parentToken.AddModifier(this);
           parentToken.UpdateScore(GetProcessedScore(), weight);
         }
         break;
       case "rel":
         // I saw the man whose wife you love rel(love, wife)
+        AddModifier(parentToken);
         UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
         if (IsAKeyword())
           AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
         break;
       case "xcomp":
         // He says that you like to swim xcomp(like, swim)
+        AddModifier(parentToken);
         UpdateScore(parentToken.GetProcessedScore(), parentToken.GetWeight());
         if (IsAKeyword())
           AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
@@ -212,49 +235,37 @@ public class Token {
       }
       if (wordType == WordType.ADJECTIVE || wordType == WordType.ADVERB
           || (wordType == WordType.NOUN && pureScore != 0)
-          || (wordType == WordType.VERB && pureScore != 0))
+          || (wordType == WordType.VERB && pureScore != 0)) { // add overall score
         parentToken.AddAspectScore(pureScore, 1, -1);
+      }
       for (Entry<Long, Float> e : GetScoreMap().entrySet())
         parentToken.AddAspectScore(GetProcessedScore(e.getValue()), weightList.get(e.getKey()),
             e.getKey());
+    } else {
+      if (wordType == WordType.ADJECTIVE || wordType == WordType.ADVERB
+          || (wordType == WordType.NOUN && pureScore != 0)
+          || (wordType == WordType.VERB && pureScore != 0)) { // add overall score
+        AddAspectScore(pureScore, 1, -1);
+      }
+      if (IsAKeyword())
+        AddAspectScore(GetProcessedScore(), GetWeight(), GetAspectId());
     }
   }
 
-  private void AddModifiers(List<ModifierItem> list, boolean included) {
-    // acomp advmod amod dobj neg nsubjpass partmod rcmod rel appos csubj csubjpass npadvmod xcomp
-    // nsubj
-    boolean modifiedByAnother = false;
-    for (Token t : childTokens) {
-      if (IsAKeyword() || included) {
-        if (t.GetParentEdgeType().equals("acomp") || t.GetParentEdgeType().equals("advmod")
-            || t.GetParentEdgeType().equals("amod") || t.GetParentEdgeType().equals("appos")
-            || t.GetParentEdgeType().equals("csubj") || t.GetParentEdgeType().equals("csubjpass")
-            || t.GetParentEdgeType().equals("dobj") || t.GetParentEdgeType().equals("neg")
-            || t.GetParentEdgeType().equals("npadvmod") || t.GetParentEdgeType().equals("nsubj")
-            || t.GetParentEdgeType().equals("nsubjpass") || t.GetParentEdgeType().equals("partmod")
-            || t.GetParentEdgeType().equals("rcmod") || t.GetParentEdgeType().equals("rel")
-            || t.GetParentEdgeType().equals("xcomp")) {
-          modifiedByAnother = true;
-          list.add(new ModifierItem(t, this));
-          t.AddModifiers(list, true);
-        }
-      } else
-        t.AddModifiers(list, false);
-    }
-    if (!modifiedByAnother && IsAKeyword())
-      list.add(new ModifierItem(this));
+  private void AddModifier(Token modifier) {
+    modifiedByList.add(modifier);
   }
 
-  protected List<ModifierItem> GetModifierList() {
-    List<ModifierItem> indexList = new ArrayList<ModifierItem>();
-    AddModifiers(indexList, false);
-    return indexList;
+  protected List<Token> GetModifierList() {
+    return modifiedByList;
   }
 
   protected void UpdateScore(float score, int weight) {
     if (this.score == 0 && this.weight == 1) {
       this.score = score;
       this.weight = weight + 1;
+    } else if (score == 0 && weight == 1) {
+      // do nothing
     } else {
       this.score = ((this.score * this.weight) + (score * weight)) / (this.weight + weight);
       this.weight += weight;
@@ -294,19 +305,28 @@ public class Token {
     return originalText;
   }
 
+  protected List<Token> GetChildrenList() {
+    return childTokens;
+  }
+
   protected Map<Long, Float> GetScoreMap() {
     if (invert) {
-      for (Entry<Long, Float> e : scoreList.entrySet())
-        e.setValue(e.getValue() * -1);
-    }
-    return scoreList;
+      Map<Long, Float> tempScoreMap = new HashMap<Long, Float>();
+      for (Entry<Long, Float> e : scoreList.entrySet()) {
+        tempScoreMap.put(e.getKey(), e.getValue() * -1);
+      }
+      return tempScoreMap;
+    } else
+      return scoreList;
   }
 
   protected Map<Long, Integer> GetWeightMap() {
     return weightList;
   }
 
+  @SuppressWarnings("unchecked")
   protected void TransferScores() {
+    Collections.sort(childTokens);
     if (childTokens.size() != 0) {
       for (Token t : childTokens)
         t.TransferScores();
@@ -322,12 +342,12 @@ public class Token {
     return aspect;
   }
 
-  protected String GetASpectName() {
-    return Aspects.GetAspectName(GetAspectId());
-  }
-
   public Float GetScore() {
     return score;
+  }
+
+  public Float GetPureScore() {
+    return pureScore;
   }
 
   protected int GetWeight() {
@@ -347,10 +367,34 @@ public class Token {
   }
 
   public int GetRelativeBeginPosition() {
-    return relativeBeginPosition;
+    return beginPosition - sentenceBeginPosition;
   }
 
   public int GetRelativeEndPosition() {
-    return relativeEndPosition;
+    return endPosition - sentenceBeginPosition;
+  }
+
+  @Override
+  public int compareTo(Object o) {
+    Token t = (Token) o;
+    if (priorTypes.contains(t.GetParentEdgeType()) && priorTypes.contains(this.GetParentEdgeType()))
+      return 0;
+    else if (nonPriorTypes.contains(t.GetParentEdgeType())
+        && nonPriorTypes.contains(this.GetParentEdgeType()))
+      return 0;
+    else if (!priorTypes.contains(t.GetParentEdgeType())
+        && !priorTypes.contains(this.GetParentEdgeType())
+        && !nonPriorTypes.contains(t.GetParentEdgeType())
+        && !nonPriorTypes.contains(this.GetParentEdgeType()))
+      return 0;
+    else if (priorTypes.contains(t.GetParentEdgeType()))
+      return 1;
+    else if (priorTypes.contains(this.GetParentEdgeType()))
+      return -1;
+    else if (nonPriorTypes.contains(t.GetParentEdgeType()))
+      return 1;
+    else if (nonPriorTypes.contains(this.GetParentEdgeType()))
+      return -1;
+    return 0;
   }
 }

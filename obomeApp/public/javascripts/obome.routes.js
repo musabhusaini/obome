@@ -8,10 +8,12 @@
 		},
 		Application: {
 			landingPage: #{jsAction @Application.landingPage() /},
-			aboutPage: #{jsAction @Application.aboutPage() /},
 			Session: {
 				ping: #{jsAction @Application.ping() /}
 			}
+		},
+		Pages: {
+			show: #{jsAction @Pages.show(':page') /}
 		},
 		OpinionCollections: {
 			list: #{jsAction @OpinionCollections.list() /},

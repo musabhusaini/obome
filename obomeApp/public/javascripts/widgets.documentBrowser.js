@@ -101,43 +101,33 @@
 						document: item.document 
 					}), params || {})
 					.success(function(document) {
-						var text = document.text;
 						var match = null;
 						
-						text = text.replace(/\\{(.+?)}\\/g, function(str, p1) {
-							var token = $.parseJSON(p1);
-							
-							var css;
-							if (token.aspect) {
-								css = seenKeywordClass;
-							} else if (token.isSeen) {
-								css = seenWordClass;
-							} else {
-								css = unseenWordClass;
-							}
+						var doc = new obome.parsedDocument(document.text);
+						var span = doc.getJQHtml();
+						
+						$(span).find(".doc-standard.doc-seen")
+							.addClass(seenWordClass)
+							.attr("title", "Already seen and ignored");
+						
+						$(span).find(".doc-keyword.doc-seen")
+							.addClass(seenKeywordClass)
+							.each(function(index, element) {
+								$(element).attr("title", "Already added to the '" + $(element).attr("aspect") + "' aspect");
+							});
+						
+						$(span).find(".doc-keyword.doc-unseen")
+							.addClass(unseenWordClass)
+							.attr("title", "Click to add to the selected aspect");
 
-							var span = $("<span>")
-								.text(token.content)
-								.attr("lemma", token.lemma)
-								.addClass(css);
-							
-							span = $("<span>")
-								.attr("title",
-										token.aspect ? ("Already added to the '" + token.aspect + "' aspect") :
-											(token.isSeen ? "Already seen and ignored" : "Click to add to the selected aspect"))
-								.addClass("ol-feature-element")
-								.append(span);
-							
-							return $("<div>")
-								.append(span)
-								.html();
-						});
-
+						$(span).find(".doc-seen, .doc-keyword")
+							.wrap($("<div>").addClass("ol-feature-element"));
+						
 						$(me._container).find($$(textContainer, id)).spinner("destroy");
 						$(me._container)
 							.find($$(textContainer, id))
 							.empty()
-							.html(window.unescape(text));
+							.append(span);
 										
 						$(me._container).find(".ol-feature-element")
 							.button()

@@ -6,7 +6,7 @@ import java.util.Map;
 import nlp_engine.ModifierItem;
 import nlp_engine.Paragraph;
 import nlp_engine.SentenceObject;
-import database_connector.DatabaseAdapter;
+import database_engine.DatabaseAdapter;
 
 public class CommentResult {
 	private Paragraph paragraph;

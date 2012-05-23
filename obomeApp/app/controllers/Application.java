@@ -202,8 +202,4 @@ public class Application extends Controller implements EnhancedForContinuations 
 	public static void test(String callback) {
 		renderJSON(callback + "()");
 	}
-	
-	public static void aboutPage() {
-		render();
-	}
 }

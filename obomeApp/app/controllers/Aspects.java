@@ -42,7 +42,7 @@ public class Aspects extends Application {
 		
 		try {
 			File directory = new File(new File(Play.configuration.getProperty("play.tmp", "tmp")),
-					Play.configuration.getProperty("obome.downloads", "downloads"));
+					Play.configuration.getProperty("sare.downloads", "downloads"));
 			
 			if (!directory.exists()) {
 				directory.mkdir();

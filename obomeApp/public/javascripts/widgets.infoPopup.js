@@ -89,6 +89,8 @@
 				.button("destroy");
 			$(popup).dialog("destroy");
 		});
+		
+		return me;
 	};
 	
 	obome.widgets.infoPopup.prototype = {

@@ -48,15 +48,15 @@ tr.ob-overall-rating > td {
 	padding-top: .5em;
 }
 
-.ob-modified {
+.ob-keyword-display {
 	color: red;
 }
 
-.ob-modifier {
+.ob-modifier-display {
 	color: green;
 }
 
-.ob-irrelevant {
+.ob-irrelevant-display {
 	color: gray;
 }
 

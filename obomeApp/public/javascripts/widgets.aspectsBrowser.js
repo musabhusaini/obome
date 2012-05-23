@@ -200,8 +200,9 @@
 						greedy: true,
 						scope: "features",
 						drop: function(event, ui) {
+							var text = $(ui.draggable).find("[lemma]").eq(0).attr("lemma") || $(ui.draggable).text();
 							callAndDisplay(options.addHandlers, {
-								label: ui.draggable.text()
+								label: text
 							}, {
 								title: "Add Failed",
 								message: "This " + options.typeName.toLowerCase() + " already exists."

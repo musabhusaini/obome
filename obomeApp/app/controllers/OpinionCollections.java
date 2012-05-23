@@ -23,7 +23,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import jobs.OpinionCollectionDistiller;
 import jobs.OpinionCollectionDistillerAnalyzer;
 import jobs.OpinionCollectionSynthesizer;
-import models.DisplayFeatureModel;
+import models.DisplayTextModel;
+import models.DisplayTextModel.DisplayTextType;
 import models.DocumentViewModel;
 import models.OpinionCollectionItemViewModel;
 import models.OpinionCollectionViewModel;
@@ -375,73 +376,110 @@ public class OpinionCollections extends Application {
 				result.scorecard.put(label, score);
 			}
 			
-			// Store all modified/modifier tokens.
-			StringBuilder docText = new StringBuilder();
+			DisplayTextModel rootDisplayText = new DisplayTextModel();
+			rootDisplayText.types.add(DisplayTextType.ROOT);
+			
+			int lastSentenceEnd = 0;
+			
 			List<SentenceObject> sentences = commentResult.GetSentences();
 			for (SentenceObject sentence : sentences) {
-				StringBuilder sentenceText = new StringBuilder(sentence.GetText());
+				// Add preceding text (separator, etc).
+				DisplayTextModel sentenceDisplayText = new DisplayTextModel();
+				sentenceDisplayText.content = opinDoc.getContent().substring(lastSentenceEnd, sentence.GetBeginPosition());
+				sentenceDisplayText.types.add(DisplayTextType.SEPARATOR);
+				if (StringUtils.isNotEmpty(sentenceDisplayText.content)) {
+					rootDisplayText.children.add(sentenceDisplayText);
+				}
 				
-				// Indicate tokens on the output string.
-				List<ModifierItem> modifierItems = sentence.GetModifiers();
-				List<Token> tokens = Lists.newArrayList();
+				String sentenceText = sentence.GetText();
+				sentenceDisplayText = new DisplayTextModel();
+				sentenceDisplayText.types.add(DisplayTextType.SENTENCE);
+				
+				// Get all sentence tokens.
+				List<Token> tokens = sentence.GetTokenList();
+				Collections.sort(tokens, new TokenBeginComparer());
+				
+				// Get modifier tokens.
+				List<ModifierItem> modifierItems = sentence.GetModifierList();
+				List<Token> modifierTokens = Lists.newArrayList();
 				for (ModifierItem item : modifierItems) {
-					Token token = Iterables.find(tokens, new TokenBeginEquals(item.GetModifiedToken()), null);
+					Token token = Iterables.find(modifierTokens, new TokenBeginEquals(item.GetModifiedToken()), null);
 					if (token == null) {
-						tokens.add(item.GetModifiedToken());
+						modifierTokens.add(item.GetModifiedToken());
 					}
 					
 					if (item.HasModifier()) {
-						token = Iterables.find(tokens, new TokenBeginEquals(item.GetModifierToken()), null);
+						token = Iterables.find(modifierTokens, new TokenBeginEquals(item.GetModifierToken()), null);
 						if (token == null) {
-							tokens.add(item.GetModifierToken());
+							modifierTokens.add(item.GetModifierToken());
 						}
 					}
 				}
-	
-				Collections.sort(tokens, Collections.reverseOrder(new TokenBeginComparer()));
+								
+				int lastTokenIndex = 0;
+				DisplayTextModel displayText;
+				
 				for (Token token : tokens) {
-					String tokenText = sentenceText.substring(token.GetRelativeBeginPosition(), token.GetRelativeEndPosition());
-					DisplayFeatureModel featureModel = new DisplayFeatureModel();
-					featureModel.content = tokenText;
-					featureModel.type = token.IsAKeyword() ? "modified" : "modifier";
-					
-					JsonObject json = featureModel.toJson();
-					
-					if (token.IsAKeyword()) {
-						json.addProperty("aspect", aspectLongIdMap.get(token.GetAspectId()));
-					} else {
-						json.addProperty("polarity", token.GetScore());
+					// Add preceding text, if any (separators, etc).
+					displayText = new DisplayTextModel();
+					displayText.content = sentenceText.substring(lastTokenIndex, token.GetRelativeBeginPosition());
+					displayText.types.add(DisplayTextType.SEPARATOR);
+					if (StringUtils.isNotEmpty(displayText.content)) {
+						sentenceDisplayText.children.add(displayText);
 					}
 					
-					sentenceText.replace(token.GetRelativeBeginPosition(), token.GetRelativeEndPosition(),
-							String.format("\\{%s}\\", json.toString()));
+					// Process this token.
+					displayText = new DisplayTextModel();
+					displayText.content = sentenceText.substring(token.GetRelativeBeginPosition(), token.GetRelativeEndPosition());
+					
+					// Determine token type.
+					if (token.IsAKeyword()) {
+						displayText.types.add(DisplayTextType.KEYWORD);
+						displayText.otherInfo.put("aspect", aspectLongIdMap.get(token.GetAspectId()));
+					} else {
+						Token tmp = Iterables.find(modifierTokens, new TokenBeginEquals(token), null);
+						if (tmp != null) {
+							displayText.types.add(DisplayTextType.MODIFIER);
+						}
+						
+						Float score = token.GetScore();
+						if (score != 0) {
+							displayText.types.add(DisplayTextType.POLAR);
+							displayText.otherInfo.put("polarity", token.GetScore());
+						} else {
+							displayText.types.add(DisplayTextType.STANDARD);
+						}
+					}
+					
+					sentenceDisplayText.children.add(displayText);
+					
+					lastTokenIndex = token.GetRelativeEndPosition();
 				}
 				
-				if (sentence.GetScoreMap().size() > 1) {
-					docText.append(sentenceText);
-				} else {
-					DisplayFeatureModel featureModel = new DisplayFeatureModel();
-					featureModel.content = sentence.GetText();
-					featureModel.type = "irrelevant";
-					JsonObject json = featureModel.toJson();
-					
-					docText.append(String.format("\\{%s}\\", json.toString()));
+				displayText = new DisplayTextModel();
+				displayText.content = sentenceText.substring(lastTokenIndex);
+				displayText.types.add(DisplayTextType.SEPARATOR);
+				
+				if (StringUtils.isNotEmpty(displayText.content)) {
+					sentenceDisplayText.children.add(displayText);
+				}
+				
+				if (sentence.GetScoreMap().size() <= 1) {
+					sentenceDisplayText.types.add(DisplayTextType.IRRELEVANT);
 				}
 				
 				if (sentence.GetScoreMap().containsKey(-1L)) {
-					DisplayFeatureModel featureModel = new DisplayFeatureModel();
-					featureModel.content = "";
-					featureModel.type = "sentence-polarity";
-					JsonObject json = featureModel.toJson();
-					json.addProperty("polarity", sentence.GetScoreMap().get(-1L));
-					
-					docText.append(String.format("\\{%s}\\", json.toString()));
+					displayText = new DisplayTextModel();
+					displayText.types.add(DisplayTextType.SENTENCE_POLARITY);
+					displayText.otherInfo.put("polarity", sentence.GetScoreMap().get(-1L));
+					sentenceDisplayText.children.add(displayText);
 				}
 				
-				docText.append("\r\n");
+				rootDisplayText.children.add(sentenceDisplayText);
+				lastSentenceEnd = sentence.GetEndPosition();
 			}
 			
-			result.document = new DocumentViewModel(opinDoc.getIdentifier(), docText.toString().trim());
+			result.document = new DocumentViewModel(opinDoc.getIdentifier(), rootDisplayText);
 			
 			results.put(document, result);
 		}

@@ -5,11 +5,11 @@
 # Home page
 GET     /                				                       			Application.landingPage
 
-GET		/about															Application.aboutPage
-
 GET		/test.json														Application.test(format:'json')
 
 POST	/session														Application.ping
+
+GET		/pages/{page}													Pages.show
 
 GET		/collections													OpinionCollections.list
 

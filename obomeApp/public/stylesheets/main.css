@@ -101,7 +101,8 @@ ul.ui-controls-list > li {
 }
 
 .ui-icon-button {
-	height: 2em;
+	height: 27px;
+	width: 27px;
 }
 
 #wrapper {
@@ -119,6 +120,7 @@ ul.ui-controls-list > li {
 }
 
 #banner {
+	padding-top: .5em;
 	padding-bottom: 2em;
 }
 
@@ -129,6 +131,7 @@ ul.ui-controls-list > li {
 
 #banner-home-link a {
 	text-decoration: none;
+	padding: .2em .5em .2em 0em;
 }
 
 #banner-links-container {

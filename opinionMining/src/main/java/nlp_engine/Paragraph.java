@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import database_connector.DatabaseAdapter;
+import database_engine.DatabaseAdapter;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -29,8 +29,9 @@ public class Paragraph {
     for (CoreMap c : iSentences) {
       dependencies = c.get(BasicDependenciesAnnotation.class);
       if (dependencies.getRoots().size() > 0) {
-        sentences.add(new SentenceObject(dependencies, count, adp,
-        		c.get(CharacterOffsetBeginAnnotation.class), c.get(CharacterOffsetEndAnnotation.class), c.get(TextAnnotation.class)));
+        sentences.add(new SentenceObject(dependencies, count, adp, c
+            .get(CharacterOffsetBeginAnnotation.class), c.get(CharacterOffsetEndAnnotation.class),
+            c.get(TextAnnotation.class)));
         count += dependencies.size();
       }
     }
@@ -65,8 +66,7 @@ public class Paragraph {
   public List<ModifierItem> GetModifierList() {
     List<ModifierItem> indexList = new ArrayList<ModifierItem>();
     for (SentenceObject so : sentences) {
-      Sentence s = so.GetSentence();
-      indexList.addAll(s.GetModifierList());
+      indexList.addAll(so.GetModifierList());
     }
     return indexList;
   }

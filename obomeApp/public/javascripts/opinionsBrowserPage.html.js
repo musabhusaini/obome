@@ -1,4 +1,4 @@
-(function(window, document, $, Math, obome, routes) {
+(function(window, document, $, Math, obome, routes, Utils) {
 
 	obome.displayPage = function(options) {
 		
@@ -12,7 +12,7 @@
 		
 		var opinionDependentClass = ".opinion-dependent";
 		var summaryBoxClass = ".ob-summary-box";
-		
+				
 		options = $.extend(true, {
 			scorePrecision: 3,
 			prefetch: {
@@ -23,7 +23,7 @@
 		}, options);
 		
 		var lastResult = {};
-		
+				
 		function getPolarityIndicator(polarity) {
 			return "[" + (polarity < 0 ? "-" : "+") + "]";
 		}
@@ -196,31 +196,8 @@
 					.success(function(result) {
 						$(opinionDependentClass).spinner("destroy");
 						
-						var text = result.document.text;
-						text = text.replace(/\\{(.+?)}\\/gm, function(str, p1) {
-							var token = $.parseJSON(p1);
-							var span = $("<span>")
-								.addClass("ob-" + token.type)
-								.text(token.content);
-							
-							if (token.type === "modified") {
-								$(span).attr("title", "aspect: " + token.aspect);
-							} else if (token.type === "modifier") {
-								$(span).attr("title", "polarity: " + roundScore(token.polarity));
-							} else if (token.type === "sentence-polarity") {
-								$(span)
-									.text(" " + getPolarityIndicator(token.polarity))
-									.attr("title", "polarity: " + roundScore(token.polarity));
-							}
-							
-							return $("<div>")
-								.append(span)
-								.html();
-						});
-						
-						text = text.replace(/\r\n/g, $("<div>").append($("<br>")).html());
-						
-						$(docTextContainer).html(text);
+						var doc = new obome.parsedDocument(result.document.text);
+						$(docTextContainer).append(doc.getJQHtml());
 						
 						lastResult = result;
 						updateSummary();
@@ -235,4 +212,4 @@
 		
 		$(reviewsList).change();
 	};
-})(window, window.document, window.jQuery, window.Math, window.obome, window.obome.routes)
+})(window, window.document, window.jQuery, window.Math, window.obome, window.obome.routes, window.obome.Utils);

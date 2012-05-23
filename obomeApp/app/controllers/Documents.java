@@ -4,9 +4,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+
 import play.Logger;
 
-import models.DisplayFeatureModel;
+import models.DisplayTextModel;
+import models.DisplayTextModel.DisplayTextType;
 import models.DocumentViewModel;
 import models.OpinionCollectionItemViewModel;
 
@@ -48,26 +51,35 @@ public class Documents extends Application {
 		    	
 		    	StringBuilder text = new StringBuilder(textDoc.getText());
 		    	List<LinguisticToken> features = Lists.newArrayList(textDoc.getFeatures());
-		    	Collections.sort(features, Collections.reverseOrder(new Comparator<LinguisticToken>() {
+		    	Collections.sort(features, new Comparator<LinguisticToken>() {
 					@Override
 					public int compare(LinguisticToken arg0, LinguisticToken arg1) {
 						return arg0.getAbsoluteEndPosition() - arg1.getAbsoluteBeginPosition();
 					}
-		    	}));
+		    	});
+		    	
+		    	DisplayTextModel rootDisplayFeature = new DisplayTextModel();
+		    	rootDisplayFeature.types.add(DisplayTextType.ROOT);
+		    	
+		    	DisplayTextModel displayFeature;
+		    	int lastIndex = 0;
 		    	
 		    	for (LinguisticToken feature : features) {
+		    		Logger.info("(%d, %d)", lastIndex, feature.getAbsoluteBeginPosition());
+		    		displayFeature = new DisplayTextModel();
+		    		displayFeature.content = text.substring(lastIndex, feature.getAbsoluteBeginPosition());
+		    		displayFeature.types.add(DisplayTextType.IRRELEVANT);
+		    		rootDisplayFeature.children.add(displayFeature);
+		    		
 		    		String substring = text.substring(feature.getAbsoluteBeginPosition(), feature.getAbsoluteEndPosition());
 		    		if (!substring.equals(feature.getText())) {
 		    			Logger.error("While parsing features %s != %s", feature.getText(), substring);
 		    			continue;
 		    		}
 		    		
-		    		DisplayFeatureModel featureModel = new DisplayFeatureModel();
-		    		featureModel.content = feature.getText();
-		    		featureModel.type = "feature";
-		    		
-		    		JsonObject featureJson = featureModel.toJson();
-		    		featureJson.addProperty("lemma", feature.getLemma());
+		    		displayFeature = new DisplayTextModel();
+		    		displayFeature.content = feature.getText();
+		    		displayFeature.otherInfo.put("lemma", feature.getLemma());
 		    		
 		    		BacklogToken backlogToken = Iterables.getFirst(em().createQuery("SELECT bt FROM BacklogToken bt " +
 		    				"WHERE bt.setCover=:sc AND bt.label=:label", BacklogToken.class)
@@ -79,9 +91,11 @@ public class Documents extends Application {
 		    		Keyword keyword = null;
 		    		
 		    		if (backlogToken != null) {
-		    			featureJson.addProperty("isSeen", true);
+		    			displayFeature.types.add(DisplayTextType.SEEN);
 		    			keyword = backlogToken.getKeyword();
 		    		} else {
+		    			displayFeature.types.add(DisplayTextType.UNSEEN);
+		    			
 		    			keyword = Iterables.getFirst(em().createQuery("SELECT kw FROM Keyword kw " +
 								"WHERE kw.aspect.setCover=:sc AND kw.label=:label", Keyword.class)
 							.setParameter("sc", sc)
@@ -91,14 +105,28 @@ public class Documents extends Application {
 		    		}
 		    		
 		    		if (keyword != null) {
-		    			featureJson.addProperty("aspect", keyword.getAspect().getLabel());
+		    			displayFeature.otherInfo.put("aspect", keyword.getAspect().getLabel());
 		    		}
 		    		
-		    		text.replace(feature.getAbsoluteBeginPosition(), feature.getAbsoluteEndPosition(), String.format("\\{%s}\\",
-		    				featureJson.toString()));
+		    		if (keyword != null || backlogToken == null) {
+		    			displayFeature.types.add(DisplayTextType.KEYWORD);
+		    		} else {
+		    			displayFeature.types.add(DisplayTextType.STANDARD);
+		    		}
+		    		
+		    		rootDisplayFeature.children.add(displayFeature);
+		    		
+		    		lastIndex = feature.getAbsoluteEndPosition();
 		    	}
 		    	
-		    	return new DocumentViewModel(textDoc.getIdentifier().toString(), text.toString());
+		    	displayFeature = new DisplayTextModel();
+		    	displayFeature.content = text.substring(lastIndex);
+		    	displayFeature.types.add(DisplayTextType.SEPARATOR);
+		    	if (StringUtils.isNotBlank(displayFeature.content)) {
+		    		rootDisplayFeature.children.add(displayFeature);
+		    	}
+		    	
+		    	return new DocumentViewModel(textDoc.getIdentifier(), rootDisplayFeature);
 			}
     	}
     	

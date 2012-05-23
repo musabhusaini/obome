@@ -19,4 +19,10 @@
 			});
 	};
 	
+	obome.Utils.outerHtml = function(html) {
+		return $("<div>")
+			.append(html)
+			.html();
+	};
+	
 })(window, window.document, window.jQuery, window.obome);
