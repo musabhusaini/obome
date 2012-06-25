@@ -65,7 +65,6 @@ public class Documents extends Application {
 		    	int lastIndex = 0;
 		    	
 		    	for (LinguisticToken feature : features) {
-		    		Logger.info("(%d, %d)", lastIndex, feature.getAbsoluteBeginPosition());
 		    		displayFeature = new DisplayTextModel();
 		    		displayFeature.content = text.substring(lastIndex, feature.getAbsoluteBeginPosition());
 		    		displayFeature.types.add(DisplayTextType.IRRELEVANT);

@@ -200,7 +200,7 @@
 						greedy: true,
 						scope: "features",
 						drop: function(event, ui) {
-							var text = $(ui.draggable).find("[lemma]").eq(0).attr("lemma") || $(ui.draggable).text();
+							var text = $(ui.draggable).find(".doc-seen, .doc-keyword").eq(0).data("lemma") || $(ui.draggable).text();
 							callAndDisplay(options.addHandlers, {
 								label: text
 							}, {
@@ -482,6 +482,10 @@
 					.empty()
 					.data("deleteButton"))
 						.button("disable");
+				
+				$($(keywordsList)
+					.data("addButton"))
+						.button("enable");
 				
 				$.getJSON(routes.Keywords.list({
 					collection: me.options.collection.uuid,

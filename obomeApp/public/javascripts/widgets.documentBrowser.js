@@ -140,7 +140,7 @@
 							})
 							.click(function(event) {
 								me._trigger("featureClick", event, {
-									label: $(event.target).attr("lemma") ||$(event.target).text() 
+									label: $(event.target).data("lemma") || $(event.target).text() 
 								});
 							});
 						

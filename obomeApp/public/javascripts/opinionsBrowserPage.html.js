@@ -197,7 +197,32 @@
 						$(opinionDependentClass).spinner("destroy");
 						
 						var doc = new obome.parsedDocument(result.document.text);
-						$(docTextContainer).append(doc.getJQHtml());
+						var span = doc.getJQHtml();
+						
+						$(span).find(".doc-keyword")
+							.addClass("ob-keyword-display")
+							.each(function(index, element) {
+								$(element).attr("title", "aspect: " + $(element).data("aspect"));
+							});
+						
+						$(span).find(".doc-modifier.doc-polar, .doc-sentence-polarity")
+							.each(function(index, element) {
+								$(element).attr("title", "polarity: " + roundScore($(element).data("polarity") || 0));
+							});
+						
+						$(span).find(".doc-sentence-polarity")
+							.addClass("ob-sentence-polarity-display")
+							.each(function(index, element) {
+								$(element).text(" " + getPolarityIndicator($(element).data("polarity")));
+							});
+
+						$(span).find(".doc-modifier.doc-polar")
+							.addClass("ob-modifier-display");
+
+						$(span).find(".doc-irrelevant")
+							.addClass("ob-irrelevant-display");
+						
+						$(docTextContainer).append(span);
 						
 						lastResult = result;
 						updateSummary();
