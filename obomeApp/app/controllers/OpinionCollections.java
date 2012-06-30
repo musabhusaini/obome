@@ -47,6 +47,7 @@ import play.libs.F.Promise;
 import play.mvc.results.NotFound;
 import web_package.CommentResult;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -504,13 +505,35 @@ public class OpinionCollections extends Application {
 		render(collection, bypassCache, featureType);
 	}
 	
+	public static void documents(String collection) {
+		Corpus corpus;
+		
+		try {
+			SetCover sc = fetch(SetCover.class, collection);
+			corpus = sc.getCorpus();
+		} catch (NotFound e) {
+			corpus = fetch(Corpus.class, collection);
+		}
+		
+		List<String> uuids = Lists.newArrayList(Iterables.transform(corpus.getOpinionDocuments(), new Function<OpinionDocument, String>() {
+			@Override
+			public String apply(OpinionDocument arg0) {
+				return arg0.getIdentifier().toString();
+			}
+		}));
+		
+		renderJSON(uuids);
+	}
+	
 	public static void items(String collection) {
 		SetCover sc = fetch(SetCover.class, collection);
-		
-		List<String> uuids = Lists.newArrayList();
-		for (SetCoverItem scReview : sc.getItems()) {
-			uuids.add(scReview.getIdentifier().toString());
-		}
+		List<String> uuids = Lists.newArrayList(Iterables.transform(sc.getItems(), new Function<SetCoverItem, String>() {
+			@Override
+			public String apply(SetCoverItem arg0) {
+				return arg0.getIdentifier().toString();
+			}
+		}));
+
 		renderJSON(uuids);
 	}
 	

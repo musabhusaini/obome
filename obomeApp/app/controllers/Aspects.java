@@ -2,22 +2,40 @@ package controllers;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import models.AspectViewModel;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import play.Play;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import edu.sabanciuniv.dataMining.experiment.models.Aspect;
 import edu.sabanciuniv.dataMining.experiment.models.Keyword;
@@ -71,6 +89,8 @@ public class Aspects extends Application {
 		SetCover sc = fetch(SetCover.class, collection);
 		
 		try {
+			Map<String, List<String>> aspects = Maps.newHashMap();
+			
 			if (file.getName().endsWith(".txt")) {
 				Scanner scanner = new Scanner(file);
 				
@@ -82,31 +102,128 @@ public class Aspects extends Application {
 					}
 					lastToken = lastToken.replaceAll("[<>]", "");
 					
-					Aspect aspect = Iterables.getFirst(em().createQuery("SELECT a FROM Aspect a WHERE a.setCover=:sc AND a.label=:label", Aspect.class)
-							.setParameter("sc", sc)
-							.setParameter("label", lastToken)
-							.setMaxResults(1)
-							.getResultList(), null);
-					if (aspect == null) {
-						aspect = new Aspect(sc, lastToken);
-						em().persist(aspect);
+					List<String> kwList = Lists.newArrayList();
+					if (!aspects.containsKey(lastToken)) {
+						aspects.put(lastToken, kwList);
+					} else {
+						kwList = aspects.get(lastToken);
 					}
 					
 					while (scanner.hasNext() && !(lastToken = scanner.next()).matches("<.+?")) {
-						Keyword keyword = Iterables.getFirst(em().createQuery("SELECT k FROM Keyword k WHERE k.aspect=:aspect AND k.label=:label", Keyword.class)
-								.setParameter("aspect", aspect)
-								.setParameter("label", lastToken)
-								.setMaxResults(1)
-								.getResultList(), null);
+						if (!kwList.contains(lastToken)) {
+							kwList.add(lastToken);
+						}
+					}
+				}
+			} else if (file.getName().endsWith(".xml")) {
+				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
+				Document doc = docBuilder.parse(new FileInputStream(file));
+				doc.getDocumentElement().normalize();
+				
+				NodeList aspectNodes = doc.getDocumentElement().getElementsByTagName("aspect");
+				for (int index=0; index<aspectNodes.getLength(); index++) {
+					Element aspectElem = (Element)aspectNodes.item(index);
+					
+					NodeList labelNodes = aspectElem.getElementsByTagName("label");
+					if (labelNodes.getLength() < 1) {
+						continue;
+					}
+					
+					String aspectLabel = StringEscapeUtils.unescapeXml(labelNodes.item(0).getTextContent());
+					if (StringUtils.isEmpty(aspectLabel)) {
+						continue;
+					}
+					
+					List<String> kwList = Lists.newArrayList();
+					if (!aspects.containsKey(aspectLabel)) {
+						aspects.put(aspectLabel, kwList);
+					} else {
+						kwList = aspects.get(aspectLabel);
+					}
+					
+					NodeList keywordsNodes = aspectElem.getElementsByTagName("keywords");
+					for (int index1=0; index1<keywordsNodes.getLength(); index1++) {
+						Element keywordsElem = (Element)keywordsNodes.item(index1);
 						
-						if (keyword == null) {
-							keyword = new Keyword(aspect, lastToken);
-							em().persist(keyword);
+						NodeList keywordNodes = keywordsElem.getElementsByTagName("keyword");
+						for (int index2=0; index2<keywordNodes.getLength(); index2++) {
+							Element keywordElem = (Element)keywordNodes.item(index2);
+							
+							labelNodes = keywordElem.getElementsByTagName("label");
+							if (labelNodes.getLength() < 1) {
+								continue;
+							}
+							
+							String keywordLabel = StringEscapeUtils.unescapeXml(labelNodes.item(0).getTextContent());
+							if (StringUtils.isEmpty(keywordLabel)) {
+								continue;
+							}
+							
+							if (!kwList.contains(keywordLabel)) {
+								kwList.add(keywordLabel);
+							}
+						}
+					}
+				}
+			} else if (file.getName().endsWith(".json")) {
+				JsonArray aspectsArray = new JsonParser().parse(new FileReader(file)).getAsJsonArray();
+				
+				for (JsonElement aspectElem : aspectsArray) {
+					JsonObject aspectObj = aspectElem.getAsJsonObject();
+					String aspectLabel = aspectObj.get("label").getAsString();
+					if (StringUtils.isEmpty(aspectLabel)) {
+						continue;
+					}
+					
+					List<String> kwList = Lists.newArrayList();
+					if (!aspects.containsKey(aspectLabel)) {
+						aspects.put(aspectLabel, kwList);
+					} else {
+						kwList = aspects.get(aspectLabel);
+					}
+					
+					JsonArray keywordsArray = aspectObj.get("keywords").getAsJsonArray();
+					for (JsonElement keywordElem : keywordsArray) {
+						JsonObject keywordObj = keywordElem.getAsJsonObject();
+						String keywordLabel = keywordObj.get("label").getAsString();
+						if (StringUtils.isEmpty(keywordLabel)) {
+							continue;
+						}
+						
+						if (!kwList.contains(keywordLabel)) {
+							kwList.add(keywordLabel);
 						}
 					}
 				}
 			}
-		} catch (RuntimeException | IOException e) {
+			
+			for (Entry<String, List<String>> entry : aspects.entrySet()) {
+				Aspect aspect = Iterables.getFirst(em().createQuery("SELECT a FROM Aspect a WHERE a.setCover=:sc AND a.label=:label", Aspect.class)
+						.setParameter("sc", sc)
+						.setParameter("label", entry.getKey())
+						.setMaxResults(1)
+						.getResultList(), null);
+				if (aspect == null) {
+					aspect = new Aspect(sc, entry.getKey());
+					em().persist(aspect);
+				}
+				
+				for (String keywordLabel : entry.getValue()) {
+					Keyword keyword = Iterables.getFirst(em().createQuery("SELECT k FROM Keyword k WHERE k.aspect=:aspect AND k.label=:label", Keyword.class)
+							.setParameter("aspect", aspect)
+							.setParameter("label", keywordLabel)
+							.setMaxResults(1)
+							.getResultList(), null);
+					
+					if (keyword == null) {
+						keyword = new Keyword(aspect, keywordLabel);
+						em().persist(keyword);
+					}					
+				}
+			}
+			
+		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			throw new IllegalStateException("Could not read file");
 		}
