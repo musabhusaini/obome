@@ -15,6 +15,10 @@ import java.util.Scanner;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathException;
+import javax.xml.xpath.XPathFactory;
 
 import models.AspectViewModel;
 
@@ -116,21 +120,19 @@ public class Aspects extends Application {
 					}
 				}
 			} else if (file.getName().endsWith(".xml")) {
+				XPath xpath = XPathFactory.newInstance().newXPath();
 				DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
 				DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
 				Document doc = docBuilder.parse(new FileInputStream(file));
 				doc.getDocumentElement().normalize();
-				
-				NodeList aspectNodes = doc.getDocumentElement().getElementsByTagName("aspect");
+
+				NodeList aspectNodes = (NodeList)xpath.compile("./aspects/aspect")
+					.evaluate(doc, XPathConstants.NODESET);
 				for (int index=0; index<aspectNodes.getLength(); index++) {
 					Element aspectElem = (Element)aspectNodes.item(index);
 					
-					NodeList labelNodes = aspectElem.getElementsByTagName("label");
-					if (labelNodes.getLength() < 1) {
-						continue;
-					}
-					
-					String aspectLabel = StringEscapeUtils.unescapeXml(labelNodes.item(0).getTextContent());
+					String aspectLabel = StringEscapeUtils.unescapeXml((String)xpath.compile("./label[1]/text()")
+						.evaluate(aspectElem, XPathConstants.STRING));
 					if (StringUtils.isEmpty(aspectLabel)) {
 						continue;
 					}
@@ -142,27 +144,16 @@ public class Aspects extends Application {
 						kwList = aspects.get(aspectLabel);
 					}
 					
-					NodeList keywordsNodes = aspectElem.getElementsByTagName("keywords");
-					for (int index1=0; index1<keywordsNodes.getLength(); index1++) {
-						Element keywordsElem = (Element)keywordsNodes.item(index1);
+					NodeList keywordNodes = (NodeList)xpath.compile("./keywords/keyword/label[1]")
+						.evaluate(aspectElem, XPathConstants.NODESET);
+					for (int index1=0; index1<keywordNodes.getLength(); index1++) {
+						String keywordLabel = StringEscapeUtils.unescapeXml(keywordNodes.item(index1).getTextContent());
+						if (StringUtils.isEmpty(keywordLabel)) {
+							continue;
+						}
 						
-						NodeList keywordNodes = keywordsElem.getElementsByTagName("keyword");
-						for (int index2=0; index2<keywordNodes.getLength(); index2++) {
-							Element keywordElem = (Element)keywordNodes.item(index2);
-							
-							labelNodes = keywordElem.getElementsByTagName("label");
-							if (labelNodes.getLength() < 1) {
-								continue;
-							}
-							
-							String keywordLabel = StringEscapeUtils.unescapeXml(labelNodes.item(0).getTextContent());
-							if (StringUtils.isEmpty(keywordLabel)) {
-								continue;
-							}
-							
-							if (!kwList.contains(keywordLabel)) {
-								kwList.add(keywordLabel);
-							}
+						if (!kwList.contains(keywordLabel)) {
+							kwList.add(keywordLabel);
 						}
 					}
 				}
