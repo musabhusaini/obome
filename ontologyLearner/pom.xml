@@ -2,7 +2,6 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.sabanciuniv.dataMining</groupId>
   <artifactId>ontologyLearner</artifactId>
-  <packaging>jar</packaging>
   <version>0.0.1</version>
   <name>Ontology Learner</name>
   
