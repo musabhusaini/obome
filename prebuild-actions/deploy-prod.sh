@@ -12,6 +12,6 @@ mvn install:install-file -Dfile=lucene-hunspell-0.2.jar -DgroupId=org.apache.luc
 rm -rf ~/.m2/repository/org/owlapi/owlapi
 mvn install:install-file -Dfile=owlapi-bin.jar -DgroupId=owlapi -DartifactId=owlapi -Dversion=3.2.4 -Dpackaging=jar
 
-cd..
+cd ..
 cd obomeApp
 play mvn:up
